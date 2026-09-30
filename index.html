@@ -270,7 +270,21 @@
     padding:14px 16px;
   }
   .chart-card .chart-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;}
-  .chart-wrap{position:relative;height:180px;}
+  .chart-wrap{position:relative;height:180px;display:flex;align-items:center;justify-content:center;}
+  .donut-css{
+    width:160px;height:160px;border-radius:50%;position:relative;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .donut-css::after{
+    content:"";position:absolute;inset:34px;border-radius:50%;
+    background:var(--paper-2);z-index:1;
+  }
+  .donut-center{
+    position:absolute;z-index:2;text-align:center;line-height:1.25;
+    font-size:12px;font-weight:900;color:var(--ink);max-width:92px;
+  }
+  .donut-center small{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:2px;}
+
   .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center;}
   .chart-legend .leg-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink);}
   .chart-legend .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
@@ -332,7 +346,7 @@
   <div class="chart-section" id="donutSection" style="display:none;">
     <div class="chart-card">
       <div class="chart-title">🍩 توزيع المصاريف حسب الفئة</div>
-      <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      <div class="chart-wrap"><div id="donutChart" class="donut-css" aria-label="مخطط توزيع المصاريف"></div></div>
       <div class="chart-legend" id="donutLegend"></div>
     </div>
   </div>
@@ -395,7 +409,7 @@
         </select>
       </div>
       <div class="field">
-        <label>المبلغ اللي استلمته بالعملة الجديدة (اختياري)</label>
+        <label>المبلغ اللي استلمته بالعملة الجديدة (مطلوب)</label>
         <input type="number" id="txToAmount" inputmode="decimal" placeholder="0.00">
       </div>
     </div>
@@ -575,7 +589,11 @@ async function submitAdd() {
   if (isTransfer) {
     payload.toCurrency = document.getElementById('txToCurrency').value;
     const toAmountVal = parseFloat(document.getElementById('txToAmount').value);
-    if (toAmountVal > 0) payload.toAmount = toAmountVal;
+    if (!toAmountVal || toAmountVal <= 0) {
+      showToast('اكتب المبلغ المستلم بعد التحويل');
+      return;
+    }
+    payload.toAmount = toAmountVal;
   }
   try {
     await fetch(apiUrl, {
@@ -674,7 +692,7 @@ function populateCategoryOptions() {
 function applyFiltersAndRender() {
   let list = allTransactions.slice();
   if (currentFilters.type) list = list.filter(t => t.type === currentFilters.type);
-  if (currentFilters.currency) list = list.filter(t => t.currency === currentFilters.currency);
+  if (currentFilters.currency) list = list.filter(t => t.currency === currentFilters.currency || (t.type === 'تحويل' && t.toCurrency === currentFilters.currency));
   if (currentFilters.category) list = list.filter(t => t.category === currentFilters.category);
   if (currentFilters.from) list = list.filter(t => t.date >= currentFilters.from);
   if (currentFilters.to) list = list.filter(t => t.date <= currentFilters.to);
@@ -691,87 +709,137 @@ function applyFiltersAndRender() {
 function renderSummary(list) {
   const byCur = {};
   list.forEach(t => {
-    if (t.type !== 'دخل' && t.type !== 'مصروف') return; // التحويل ما بيأثر على الملخص
-    if (!byCur[t.currency]) byCur[t.currency] = { income: 0, expense: 0 };
-    if (t.type === 'دخل') byCur[t.currency].income += t.amount;
-    else byCur[t.currency].expense += t.amount;
+    const amount = Number(t.amount) || 0;
+    if (!t.currency) return;
+
+    if (!byCur[t.currency]) {
+      byCur[t.currency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    }
+
+    if (t.type === 'دخل') {
+      byCur[t.currency].income += amount;
+    } else if (t.type === 'مصروف') {
+      byCur[t.currency].expense += amount;
+    } else if (t.type === 'تحويل') {
+      // التحويل يبقى عملية واحدة، لكنه يغيّر رصيد العملة المصدر والعملة المستلمة.
+      byCur[t.currency].transferOut += amount;
+
+      const toCurrency = t.toCurrency;
+      const toAmount = Number(t.toAmount) || 0;
+      if (toCurrency && toAmount > 0) {
+        if (!byCur[toCurrency]) {
+          byCur[toCurrency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+        }
+        byCur[toCurrency].transferIn += toAmount;
+      }
+    }
   });
+
   const wrap = document.getElementById('summaryCards');
   const currencies = Object.keys(byCur);
   if (currencies.length === 0) {
     wrap.innerHTML = '';
     return;
   }
+
   let html = currencies.map(cur => {
     const d = byCur[cur];
-    const net = d.income - d.expense;
+    const net = d.income - d.expense + d.transferIn - d.transferOut;
     const sym = CUR_SYMBOL[cur] || cur;
     return `<div class="cur-card">
       <div class="cur-name">${CUR_LABEL[cur] || cur}</div>
       <div class="cur-row income"><span class="lbl">الدخل</span><span class="val">${fmt(d.income)} ${sym}</span></div>
       <div class="cur-row expense"><span class="lbl">المصروف</span><span class="val">${fmt(d.expense)} ${sym}</span></div>
-      <div class="cur-row net"><span class="lbl">الصافي</span><span class="val">${fmt(net)} ${sym}</span></div>
+      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="val">${fmt(net)} ${sym}</span></div>
     </div>`;
   }).join('');
 
-  // بطاقة الإجمالي التقريبي بالدولار (لو المستخدم حاط أسعار صرف)
+  // الإجمالي التقريبي يعتمد على الرصيد الفعلي بعد التحويلات.
   if (rateSyp > 0 || rateTry > 0) {
-    const usd = byCur.USD || { income: 0, expense: 0 };
-    const syp = byCur.SYP || { income: 0, expense: 0 };
-    const try_ = byCur.TRY || { income: 0, expense: 0 };
-    const totalIncome = usd.income + syp.income * rateSyp + try_.income * rateTry;
-    const totalExpense = usd.expense + syp.expense * rateSyp + try_.expense * rateTry;
-    const totalNet = totalIncome - totalExpense;
+    const usd = byCur.USD || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    const syp = byCur.SYP || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    const try_ = byCur.TRY || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+
+    const usdBalance = usd.income - usd.expense + usd.transferIn - usd.transferOut;
+    const sypBalance = syp.income - syp.expense + syp.transferIn - syp.transferOut;
+    const tryBalance = try_.income - try_.expense + try_.transferIn - try_.transferOut;
+    const totalBalance = usdBalance + sypBalance * rateSyp + tryBalance * rateTry;
+
     html = `<div class="total-approx-card">
       <div class="cur-name">🌐 الإجمالي التقريبي ($)</div>
-      <div class="cur-row income"><span class="lbl">الدخل</span><span class="val">${fmt(totalIncome)} $</span></div>
-      <div class="cur-row expense"><span class="lbl">المصروف</span><span class="val">${fmt(totalExpense)} $</span></div>
-      <div class="cur-row net"><span class="lbl">الصافي</span><span class="big-val">${fmt(totalNet)} $</span></div>
+      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="big-val">${fmt(totalBalance)} $</span></div>
     </div>` + html;
   }
   wrap.innerHTML = html;
 }
-
 function renderDonutChart(list) {
   const section = document.getElementById('donutSection');
   const expenses = list.filter(t => t.type === 'مصروف');
-  if (expenses.length === 0) { section.style.display = 'none'; return; }
 
-  // نحدد العملة: المفلترة حاليًا، أو أكبر عملة فيها مصاريف
+  if (expenses.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
   let targetCur = currentFilters.currency;
   if (!targetCur) {
     const totals = {};
-    expenses.forEach(t => { totals[t.currency] = (totals[t.currency] || 0) + t.amount; });
+    expenses.forEach(t => {
+      const amount = Number(t.amount) || 0;
+      totals[t.currency] = (totals[t.currency] || 0) + amount;
+    });
     targetCur = Object.keys(totals).sort((a, b) => totals[b] - totals[a])[0];
   }
+
   const filtered = expenses.filter(t => t.currency === targetCur);
-  if (filtered.length === 0) { section.style.display = 'none'; return; }
+  if (filtered.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
 
   const byCategory = {};
-  filtered.forEach(t => { byCategory[t.category] = (byCategory[t.category] || 0) + t.amount; });
+  filtered.forEach(t => {
+    const category = t.category || 'بدون فئة';
+    byCategory[category] = (byCategory[category] || 0) + (Number(t.amount) || 0);
+  });
+
   const labels = Object.keys(byCategory).sort((a, b) => byCategory[b] - byCategory[a]);
   const values = labels.map(l => byCategory[l]);
   const colors = labels.map((_, i) => CAT_COLORS[i % CAT_COLORS.length]);
+  const total = values.reduce((a, b) => a + b, 0);
+
+  if (!total) {
+    section.style.display = 'none';
+    return;
+  }
 
   section.style.display = 'block';
-  section.querySelector('.chart-title').textContent = '🍩 توزيع المصاريف حسب الفئة (' + (CUR_LABEL[targetCur] || targetCur) + ')';
+  section.querySelector('.chart-title').textContent =
+    '🍩 توزيع المصاريف حسب الفئة (' + (CUR_LABEL[targetCur] || targetCur) + ')';
 
-  const ctx = document.getElementById('donutChart').getContext('2d');
-  if (donutChartInstance) donutChartInstance.destroy();
-  donutChartInstance = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
-    options: { plugins: { legend: { display: false } }, cutout: '65%', maintainAspectRatio: false }
-  });
+  // CSS donut: لا يعتمد على Canvas أو Chart.js، لذلك يعمل بثبات داخل APK/WebView.
+  let cursor = 0;
+  const stops = values.map((value, i) => {
+    const startPct = (cursor / total) * 100;
+    cursor += value;
+    const endPct = (cursor / total) * 100;
+    return `${colors[i]} ${startPct}% ${endPct}%`;
+  }).join(', ');
 
-  const total = values.reduce((a, b) => a + b, 0);
+  const chart = document.getElementById('donutChart');
+  chart.style.background = `conic-gradient(${stops})`;
+  chart.innerHTML = `
+    <div class="donut-center">
+      ${fmt(total)}
+      <small>${CUR_SYMBOL[targetCur] || targetCur}</small>
+    </div>`;
+
   const legend = document.getElementById('donutLegend');
   legend.innerHTML = labels.map((l, i) => {
     const pct = total > 0 ? Math.round(values[i] / total * 100) : 0;
     return `<div class="leg-item"><span class="dot" style="background:${colors[i]}"></span>${escapeHtml(l)} ${pct}%</div>`;
   }).join('');
 }
-
 const ARABIC_MONTHS_SHORT = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function formatDisplayDate(dateStr) {
   if (!dateStr || dateStr.length < 10) return dateStr || '';
@@ -858,10 +926,29 @@ function openReportModal() {
 function currencyTotalsFor(list) {
   const byCur = {};
   list.forEach(t => {
-    if (t.type !== 'دخل' && t.type !== 'مصروف') return;
-    if (!byCur[t.currency]) byCur[t.currency] = { income: 0, expense: 0 };
-    if (t.type === 'دخل') byCur[t.currency].income += t.amount;
-    else byCur[t.currency].expense += t.amount;
+    const amount = Number(t.amount) || 0;
+    if (!t.currency) return;
+
+    if (!byCur[t.currency]) {
+      byCur[t.currency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    }
+
+    if (t.type === 'دخل') {
+      byCur[t.currency].income += amount;
+    } else if (t.type === 'مصروف') {
+      byCur[t.currency].expense += amount;
+    } else if (t.type === 'تحويل') {
+      byCur[t.currency].transferOut += amount;
+
+      const toCurrency = t.toCurrency;
+      const toAmount = Number(t.toAmount) || 0;
+      if (toCurrency && toAmount > 0) {
+        if (!byCur[toCurrency]) {
+          byCur[toCurrency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+        }
+        byCur[toCurrency].transferIn += toAmount;
+      }
+    }
   });
   return byCur;
 }
@@ -919,7 +1006,7 @@ function generateReport() {
 
   box.innerHTML = currencies.map(cur => {
     const d = byCur[cur];
-    const net = d.income - d.expense;
+    const net = d.income - d.expense + d.transferIn - d.transferOut;
     const max = Math.max(d.income, d.expense, 1);
     const sym = CUR_SYMBOL[cur] || cur;
     const p = prevByCur[cur] || { income: 0, expense: 0 };
@@ -934,7 +1021,7 @@ function generateReport() {
         <div class="bar-label"><span>المصروف ${hasPrev ? compareBadge(d.expense, p.expense, false) : ''}</span><span>${fmt(d.expense)} ${sym}</span></div>
         <div class="bar-track"><div class="bar-fill expense" style="width:${(d.expense/max*100)}%"></div></div>
       </div>
-      <div class="cur-row net" style="margin-top:2px;"><span class="lbl">الصافي ${hasPrev ? compareBadge(net, (p.income-p.expense), true) : ''}</span><span class="val">${fmt(net)} ${sym}</span></div>
+      <div class="cur-row net" style="margin-top:2px;"><span class="lbl">الصافي ${hasPrev ? compareBadge(net, (p.income - p.expense + p.transferIn - p.transferOut), true) : ''}</span><span class="val">${fmt(net)} ${sym}</span></div>
     </div>`;
   }).join('');
 
@@ -968,7 +1055,7 @@ function exportReportPdf() {
   const { periodLabel, byCur, prevByCur, hasPrev } = lastReportData;
   const rows = Object.keys(byCur).map(cur => {
     const d = byCur[cur];
-    const net = d.income - d.expense;
+    const net = d.income - d.expense + d.transferIn - d.transferOut;
     const sym = CUR_SYMBOL[cur] || cur;
     return `<tr>
       <td>${CUR_LABEL[cur] || cur}</td>
