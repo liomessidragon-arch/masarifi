@@ -97,7 +97,6 @@
   }
   .icon-btn:active{background:var(--line);}
 
-  /* summary cards */
   #summaryCards{
     display:flex;gap:10px;overflow-x:auto;padding:6px 20px 14px;
     scrollbar-width:none;
@@ -118,7 +117,6 @@
   .cur-row.expense .val{color:var(--brick);font-weight:700;}
   .cur-row.net{border-top:1px dashed var(--line);margin-top:6px;padding-top:6px;font-weight:900;}
 
-  /* toolbar */
   .toolbar{display:flex;gap:10px;padding:0 20px 14px;}
   .chip-btn{
     flex:1;
@@ -140,7 +138,6 @@
     text-decoration:underline;cursor:pointer;padding:0;
   }
 
-  /* list */
   #transactionList{list-style:none;margin:0;padding:0 20px;display:flex;flex-direction:column;gap:8px;}
   .tx-item{
     background:var(--paper-2);
@@ -150,6 +147,7 @@
     display:flex;
     align-items:center;
     gap:12px;
+    position:relative;
   }
   .tx-badge{
     width:8px;height:38px;border-radius:6px;flex:0 0 auto;
@@ -172,7 +170,6 @@
   }
   #emptyState .big{font-size:34px;margin-bottom:10px;}
 
-  /* FAB */
   .fab{
     position:fixed;
     bottom:calc(24px + env(safe-area-inset-bottom,0px));
@@ -233,7 +230,6 @@
   }
   .modal-actions .primary-btn{flex:2;max-width:none;}
 
-  /* report */
   .report-card{
     background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
     padding:16px;margin-bottom:10px;
@@ -253,18 +249,15 @@
   }
   .toast.show{opacity:1;}
 
-  /* seg مع 3 أزرار */
   .seg.seg3 button{font-size:12.5px;padding:11px 4px;}
   .seg button.sel-transfer.on{background:#EDE7F6;border-color:#6A4CA0;color:#6A4CA0;}
 
-  /* حقول التحويل */
   #transferFields{
     background:var(--paper-2);border:1.5px dashed var(--line);border-radius:12px;
     padding:12px;margin-bottom:14px;
   }
   #transferFields .field:last-child{margin-bottom:0;}
 
-  /* دائرة توزيع الفئات */
   .chart-section{padding:0 20px 16px;}
   .chart-card{
     background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
@@ -276,7 +269,6 @@
   .chart-legend .leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink);font-weight:500;}
   .chart-legend .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
 
-  /* مقارنة بالشهر السابق */
   .compare-badge{
     display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;
     padding:2px 7px;border-radius:999px;margin-inline-start:6px;
@@ -286,7 +278,6 @@
   .compare-badge.down-good{background:var(--emerald-light);color:var(--emerald);}
   .compare-badge.down-bad{background:var(--brick-light);color:var(--brick);}
 
-  /* بطاقة الإجمالي التقريبي */
   .total-approx-card{
     flex:0 0 auto;min-width:190px;
     background:linear-gradient(135deg,var(--gold-light,#FBF3DC),var(--paper-2));
@@ -294,8 +285,6 @@
   }
   .total-approx-card .cur-name{color:var(--gold);}
   .total-approx-card .big-val{font-size:20px;font-weight:900;margin-top:4px;}
-
-  .tx-item{position:relative;}
 
   @media print{
     body *{visibility:hidden;}
@@ -310,11 +299,11 @@
 <!-- ============ Setup screen ============ -->
 <div id="setupScreen">
   <div class="mark">مصاريفي</div>
-  <p>وصّل التطبيق برابط الويب الخاص بسكربت جوجل شيت (Apps Script Web App URL) اللي نسخته بعد النشر.</p>
+  <p>وصّل التطبيق برابط الويب الخاص بسكربت جوجل شيت (Apps Script Web App URL)</p>
   <input id="apiUrlInput" type="text" placeholder="https://script.google.com/macros/s/xxxxx/exec">
-  <p style="margin-top:6px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار</p>
-  <input id="rateSypInput" type="number" step="any" placeholder="سعر الليرة السورية مقابل الدولار (مثال 0.000077)" style="text-align:right;direction:rtl;">
-  <input id="rateTryInput" type="number" step="any" placeholder="سعر الليرة التركية مقابل الدولار (مثال 0.029)" style="text-align:right;direction:rtl;">
+  <p style="margin-top:6px;">أسعار الصرف مقابل الدولار (اختياري)</p>
+  <input id="rateSypInput" type="number" step="any" placeholder="سعر الدولار بالليرة السورية (مثال 13000)" style="text-align:right;direction:rtl;">
+  <input id="rateTryInput" type="number" step="any" placeholder="سعر الدولار بالليرة التركية (مثال 34)" style="text-align:right;direction:rtl;">
   <div class="setup-error" id="setupError"></div>
   <button class="primary-btn" onclick="saveApiUrl()">حفظ والمتابعة</button>
 </div>
@@ -485,12 +474,14 @@
 const STORAGE_KEY = 'masarifi_api_url';
 const RATE_SYP_KEY = 'masarifi_rate_syp';
 const RATE_TRY_KEY = 'masarifi_rate_try';
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyW-WYbkBTTz62pCWQEyTloPjmbThHMd-vIGYaglHIHNVRvXR2oamhFJaDOvUngM7zVvw/exec';
+
 const CUR_LABEL = { USD: 'دولار ($)', SYP: 'ليرة سورية (ل.س)', TRY: 'ليرة تركية (₺)' };
 const CUR_SYMBOL = { USD: '$', SYP: 'ل.س', TRY: '₺' };
 const CAT_COLORS = ['#1F6E52','#A8452C','#B8860B','#6A4CA0','#2E6F8E','#8C7A3F','#C2694A','#4B8B6F','#9A6B9E','#5A7D9A'];
 const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
-let apiUrl = localStorage.getItem(STORAGE_KEY) || 'https://script.google.com/macros/s/AKfycbyW-WYbkBTTz62pCWQEyTloPjmbThHMd-vIGYaglHIHNVRvXR2oamhFJaDOvUngM7zVvw/exec';
+let apiUrl = localStorage.getItem(STORAGE_KEY) || DEFAULT_API_URL;
 let rateSyp = parseFloat(localStorage.getItem(RATE_SYP_KEY)) || 0;
 let rateTry = parseFloat(localStorage.getItem(RATE_TRY_KEY)) || 0;
 let allTransactions = [];
@@ -523,25 +514,22 @@ function showApp() {
 function saveApiUrl() {
   let val = document.getElementById('apiUrlInput').value.trim();
   const err = document.getElementById('setupError');
-  
+  if (!val) val = DEFAULT_API_URL;
+
   if (!val.includes('script.google.com/macros/s/')) {
     err.textContent = 'تأكد من نسخ رابط الـ Web App الصحيح الذي يبدأ بـ script.google.com';
     return;
   }
-  
   err.textContent = '';
   apiUrl = val;
-  
   const sypVal = document.getElementById('rateSypInput').value;
   const tryVal = document.getElementById('rateTryInput').value;
-  
   rateSyp = sypVal ? parseFloat(sypVal) : 0;
   rateTry = tryVal ? parseFloat(tryVal) : 0;
-  
+
   localStorage.setItem(STORAGE_KEY, apiUrl);
   localStorage.setItem(RATE_SYP_KEY, rateSyp);
   localStorage.setItem(RATE_TRY_KEY, rateTry);
-  
   showApp();
   refreshData();
 }
@@ -555,4 +543,6 @@ function openSettings() {
 }
 
 /* ================= الاتصال بالـ API ================= */
-async function r
+async function refreshData() {
+  try {
+    const res = a
