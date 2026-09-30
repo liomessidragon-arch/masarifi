@@ -490,7 +490,7 @@ const CUR_SYMBOL = { USD: '$', SYP: 'ل.س', TRY: '₺' };
 const CAT_COLORS = ['#1F6E52','#A8452C','#B8860B','#6A4CA0','#2E6F8E','#8C7A3F','#C2694A','#4B8B6F','#9A6B9E','#5A7D9A'];
 const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
-let apiUrl = localStorage.getItem(STORAGE_KEY) || '';
+let apiUrl = localStorage.getItem(STORAGE_KEY) || 'https://script.google.com/macros/s/AKfycbyW-WYbkBTTz62pCWQEyTloPjmbThHMd-vIGYaglHIHNVRvXR2oamhFJaDOvUngM7zVvw/exec';
 let rateSyp = parseFloat(localStorage.getItem(RATE_SYP_KEY)) || 0;
 let rateTry = parseFloat(localStorage.getItem(RATE_TRY_KEY)) || 0;
 let allTransactions = [];
