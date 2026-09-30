@@ -708,70 +708,87 @@ function applyFiltersAndRender() {
 
 function renderSummary(list) {
   const byCur = {};
+
+  const ensureCur = (cur) => {
+    if (!cur) return null;
+    if (!byCur[cur]) {
+      byCur[cur] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    }
+    return byCur[cur];
+  };
+
   list.forEach(t => {
     const amount = Number(t.amount) || 0;
-    if (!t.currency) return;
-
-    if (!byCur[t.currency]) {
-      byCur[t.currency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
-    }
+    const cur = t.currency;
+    if (!cur) return;
 
     if (t.type === 'دخل') {
-      byCur[t.currency].income += amount;
-    } else if (t.type === 'مصروف') {
-      byCur[t.currency].expense += amount;
-    } else if (t.type === 'تحويل') {
-      // التحويل يبقى عملية واحدة، لكنه يغيّر رصيد العملة المصدر والعملة المستلمة.
-      byCur[t.currency].transferOut += amount;
+      ensureCur(cur).income += amount;
+      return;
+    }
 
-      const toCurrency = t.toCurrency;
-      const toAmount = Number(t.toAmount) || 0;
-      if (toCurrency && toAmount > 0) {
-        if (!byCur[toCurrency]) {
-          byCur[toCurrency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
-        }
-        byCur[toCurrency].transferIn += toAmount;
+    if (t.type === 'مصروف') {
+      ensureCur(cur).expense += amount;
+      return;
+    }
+
+    if (t.type === 'تحويل') {
+      // العملة المصدر: تنقص
+      ensureCur(cur).transferOut += amount;
+
+      // العملة المستلمة: تزيد
+      const toCur = String(t.toCurrency || '').trim();
+      const toAmount = Number(t.toAmount);
+      if (toCur && Number.isFinite(toAmount) && toAmount > 0) {
+        ensureCur(toCur).transferIn += toAmount;
       }
     }
   });
 
   const wrap = document.getElementById('summaryCards');
   const currencies = Object.keys(byCur);
+
   if (currencies.length === 0) {
     wrap.innerHTML = '';
     return;
   }
 
+  const balanceOf = d => d.income - d.expense + d.transferIn - d.transferOut;
+
   let html = currencies.map(cur => {
     const d = byCur[cur];
-    const net = d.income - d.expense + d.transferIn - d.transferOut;
+    const balance = balanceOf(d);
     const sym = CUR_SYMBOL[cur] || cur;
+
     return `<div class="cur-card">
       <div class="cur-name">${CUR_LABEL[cur] || cur}</div>
       <div class="cur-row income"><span class="lbl">الدخل</span><span class="val">${fmt(d.income)} ${sym}</span></div>
       <div class="cur-row expense"><span class="lbl">المصروف</span><span class="val">${fmt(d.expense)} ${sym}</span></div>
-      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="val">${fmt(net)} ${sym}</span></div>
+      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="val">${fmt(balance)} ${sym}</span></div>
     </div>`;
   }).join('');
 
-  // الإجمالي التقريبي يعتمد على الرصيد الفعلي بعد التحويلات.
+  // الإجمالي التقريبي بالدولار يحسب الرصيد الفعلي لكل عملة،
+  // بما فيه مبالغ التحويل الداخلة والخارجة.
   if (rateSyp > 0 || rateTry > 0) {
     const usd = byCur.USD || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
     const syp = byCur.SYP || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
     const try_ = byCur.TRY || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
 
-    const usdBalance = usd.income - usd.expense + usd.transferIn - usd.transferOut;
-    const sypBalance = syp.income - syp.expense + syp.transferIn - syp.transferOut;
-    const tryBalance = try_.income - try_.expense + try_.transferIn - try_.transferOut;
-    const totalBalance = usdBalance + sypBalance * rateSyp + tryBalance * rateTry;
+    const totalBalance =
+      balanceOf(usd) +
+      balanceOf(syp) * rateSyp +
+      balanceOf(try_) * rateTry;
 
     html = `<div class="total-approx-card">
       <div class="cur-name">🌐 الإجمالي التقريبي ($)</div>
       <div class="cur-row net"><span class="lbl">الرصيد</span><span class="big-val">${fmt(totalBalance)} $</span></div>
     </div>` + html;
   }
+
   wrap.innerHTML = html;
 }
+
 function renderDonutChart(list) {
   const section = document.getElementById('donutSection');
   const expenses = list.filter(t => t.type === 'مصروف');
@@ -871,7 +888,7 @@ function renderList(list) {
       badgeCls = '';
       const toSym = CUR_SYMBOL[t.toCurrency] || t.toCurrency || '';
       amountText = '💱 ' + fmt(t.amount) + ' ' + (CUR_SYMBOL[t.currency] || t.currency) +
-        (t.toCurrency ? ' ← ' + (t.toAmount ? fmt(t.toAmount) + ' ' : '') + toSym : '');
+        (t.toCurrency ? ' ← ' + (Number(t.toAmount) > 0 ? fmt(t.toAmount) + ' ' : '') + toSym : '');
     } else {
       const isIncome = t.type === 'دخل';
       cls = isIncome ? 'income' : 'expense';
@@ -924,34 +941,36 @@ function openReportModal() {
   document.getElementById('reportModalOverlay').classList.remove('hidden');
 }
 function currencyTotalsFor(list) {
-  const byCur = {};
+  const out = {};
+
+  const ensure = (cur) => {
+    if (!cur) return null;
+    if (!out[cur]) out[cur] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    return out[cur];
+  };
+
   list.forEach(t => {
     const amount = Number(t.amount) || 0;
     if (!t.currency) return;
 
-    if (!byCur[t.currency]) {
-      byCur[t.currency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
-    }
-
     if (t.type === 'دخل') {
-      byCur[t.currency].income += amount;
+      ensure(t.currency).income += amount;
     } else if (t.type === 'مصروف') {
-      byCur[t.currency].expense += amount;
+      ensure(t.currency).expense += amount;
     } else if (t.type === 'تحويل') {
-      byCur[t.currency].transferOut += amount;
+      ensure(t.currency).transferOut += amount;
 
-      const toCurrency = t.toCurrency;
-      const toAmount = Number(t.toAmount) || 0;
-      if (toCurrency && toAmount > 0) {
-        if (!byCur[toCurrency]) {
-          byCur[toCurrency] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
-        }
-        byCur[toCurrency].transferIn += toAmount;
+      const toCur = String(t.toCurrency || '').trim();
+      const toAmount = Number(t.toAmount);
+      if (toCur && Number.isFinite(toAmount) && toAmount > 0) {
+        ensure(toCur).transferIn += toAmount;
       }
     }
   });
-  return byCur;
+
+  return out;
 }
+
 function pctChange(curr, prev) {
   if (prev === 0) return curr === 0 ? null : 100;
   return ((curr - prev) / Math.abs(prev)) * 100;
