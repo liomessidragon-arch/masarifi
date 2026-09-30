@@ -512,24 +512,27 @@ function showApp() {
 }
 
 function saveApiUrl() {
-  let val = document.getElementById('apiUrlInput').value.trim();
+  const inputEl = document.getElementById('apiUrlInput');
+  const val = inputEl ? inputEl.value.trim() : '';
   const err = document.getElementById('setupError');
-  if (!val) val = DEFAULT_API_URL;
-
+  
   if (!val.includes('script.google.com/macros/s/')) {
-    err.textContent = 'تأكد من نسخ رابط الـ Web App الصحيح الذي يبدأ بـ script.google.com';
+    if (err) err.textContent = 'تأكد من إدخال الرابط الصحيح المنتهي بـ exec';
     return;
   }
-  err.textContent = '';
+  
+  if (err) err.textContent = '';
   apiUrl = val;
-  const sypVal = document.getElementById('rateSypInput').value;
-  const tryVal = document.getElementById('rateTryInput').value;
-  rateSyp = sypVal ? parseFloat(sypVal) : 0;
-  rateTry = tryVal ? parseFloat(tryVal) : 0;
-
+  
+  const sypEl = document.getElementById('rateSypInput');
+  const tryEl = document.getElementById('rateTryInput');
+  rateSyp = (sypEl && sypEl.value) ? parseFloat(sypEl.value) : 0;
+  rateTry = (tryEl && tryEl.value) ? parseFloat(tryEl.value) : 0;
+  
   localStorage.setItem(STORAGE_KEY, apiUrl);
   localStorage.setItem(RATE_SYP_KEY, rateSyp);
   localStorage.setItem(RATE_TRY_KEY, rateTry);
+  
   showApp();
   refreshData();
 }
