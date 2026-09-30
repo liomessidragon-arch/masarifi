@@ -494,10 +494,10 @@ let lastReportData = null;
 /* ================= الإقلاع ================= */
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('txDate').value = todayStr();
-  if (apiUrl) {
-    showApp();
-    refreshData();
-  }
+  if (!apiUrl) apiUrl = DEFAULT_API_URL;
+  localStorage.setItem(STORAGE_KEY, apiUrl);
+  showApp();
+  refreshData();
 });
 
 function todayStr() {
