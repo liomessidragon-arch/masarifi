@@ -327,9 +327,9 @@
   <div class="mark">مصاريفي</div>
   <p>وصّل التطبيق برابط الويب الخاص بسكربت جوجل شيت (Apps Script Web App URL) اللي نسخته بعد النشر.</p>
   <input id="apiUrlInput" type="text" placeholder="https://script.google.com/macros/s/xxxxx/exec">
-  <p style="margin-top:6px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار</p>
-  <input id="rateSypInput" type="number" step="any" placeholder="سعر الليرة السورية مقابل الدولار (مثال 0.000077)" style="text-align:right;direction:rtl;">
-  <input id="rateTryInput" type="number" step="any" placeholder="سعر الليرة التركية مقابل الدولار (مثال 0.029)" style="text-align:right;direction:rtl;">
+  <p style="margin-top:6px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار — كم وحدة = دولار واحد</p>
+  <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية تساوي دولار واحد؟ (مثال 13000)" style="text-align:right;direction:rtl;">
+  <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية تساوي دولار واحد؟ (مثال 34)" style="text-align:right;direction:rtl;">
   <div class="setup-error" id="setupError"></div>
   <button class="primary-btn" onclick="saveApiUrl()">حفظ والمتابعة</button>
 </div>
@@ -341,6 +341,7 @@
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </header>
 
+  <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
   <div id="summaryCards"></div>
 
   <div class="chart-section" id="donutSection" style="display:none;">
@@ -498,8 +499,8 @@
 <script>
 /* ================= إعدادات وحالة عامة ================= */
 const STORAGE_KEY = 'masarifi_api_url';
-const RATE_SYP_KEY = 'masarifi_rate_syp';
-const RATE_TRY_KEY = 'masarifi_rate_try';
+const RATE_SYP_KEY = 'masarifi_syp_per_usd';
+const RATE_TRY_KEY = 'masarifi_try_per_usd';
 const CUR_LABEL = { USD: 'دولار ($)', SYP: 'ليرة سورية (ل.س)', TRY: 'ليرة تركية (₺)' };
 const CUR_SYMBOL = { USD: '$', SYP: 'ل.س', TRY: '₺' };
 const CAT_COLORS = ['#1F6E52','#A8452C','#B8860B','#6A4CA0','#2E6F8E','#8C7A3F','#C2694A','#4B8B6F','#9A6B9E','#5A7D9A'];
@@ -689,6 +690,15 @@ function populateCategoryOptions() {
 }
 
 /* ================= العرض ================= */
+function currentMonthPrefix() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+}
+function currentMonthTransactions() {
+  const prefix = currentMonthPrefix();
+  return allTransactions.filter(t => t.date && t.date.slice(0, 7) === prefix);
+}
+
 function applyFiltersAndRender() {
   let list = allTransactions.slice();
   if (currentFilters.type) list = list.filter(t => t.type === currentFilters.type);
@@ -701,7 +711,10 @@ function applyFiltersAndRender() {
   document.getElementById('filterChip').classList.toggle('active', filterActive);
   document.getElementById('clearFiltersBtn').style.display = filterActive ? 'block' : 'none';
 
-  renderSummary(list);
+  // الرصيد دايمًا بيعكس الشهر الحالي بس، بغض النظر عن فلترة القائمة تحته
+  const nowD = new Date();
+  document.getElementById('balanceLabel').textContent = '💼 رصيد ' + ARABIC_MONTHS_SHORT[nowD.getMonth()] + ' ' + nowD.getFullYear();
+  renderSummary(currentMonthTransactions());
   renderList(list);
   renderDonutChart(list);
 }
@@ -777,8 +790,8 @@ function renderSummary(list) {
 
     const totalBalance =
       balanceOf(usd) +
-      balanceOf(syp) * rateSyp +
-      balanceOf(try_) * rateTry;
+      (rateSyp > 0 ? balanceOf(syp) / rateSyp : 0) +
+      (rateTry > 0 ? balanceOf(try_) / rateTry : 0);
 
     html = `<div class="total-approx-card">
       <div class="cur-name">🌐 الإجمالي التقريبي ($)</div>
