@@ -133,6 +133,17 @@
     color:var(--ink);
   }
   .chip-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald);}
+  .dashboard-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px 14px;}
+  .dash-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
+  .dash-card .dash-icon{font-size:17px;}
+  .dash-card .dash-label{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:700;}
+  .dash-card .dash-value{display:block;font-size:14px;font-weight:900;margin-top:2px;}
+  .search-wrap{padding:0 20px 10px;position:relative;}
+  #searchInput{width:100%;padding:11px 40px 11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper-2);font:inherit;font-size:14px;color:var(--ink);outline:none;}
+  #searchInput:focus{border-color:var(--emerald);}
+  .search-icon{position:absolute;right:33px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  .tx-edit{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 5px;flex:0 0 auto;}
+  .tx-edit:active{color:var(--emerald);}
   #clearFiltersBtn{
     display:none;
     margin:0 20px 12px;
@@ -343,6 +354,11 @@
 
   <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
   <div id="summaryCards"></div>
+  <div id="dashboardStrip" class="dashboard-strip"></div>
+  <div class="search-wrap">
+    <span class="search-icon">🔎</span>
+    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off">
+  </div>
 
   <div class="chart-section" id="donutSection" style="display:none;">
     <div class="chart-card">
@@ -514,10 +530,12 @@ let selectedTxType = 'مصروف';
 let donutChartInstance = null;
 let reportChartInstance = null;
 let lastReportData = null;
+let editingTxId = null;
 
 /* ================= الإقلاع ================= */
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('txDate').value = todayStr();
+  document.getElementById('searchInput').addEventListener('input', () => applyFiltersAndRender());
   if (apiUrl) {
     showApp();
     refreshData();
@@ -582,68 +600,89 @@ async function submitAdd() {
   const date = document.getElementById('txDate').value;
   const isTransfer = selectedTxType === 'تحويل';
 
+  if (!date) { showToast('اختر التاريخ'); return; }
   if (isTransfer && !category) category = 'تحويل عملة';
   if (!category) { showToast('اكتب الفئة أو البيان'); return; }
-  if (!amount || amount <= 0) { showToast('اكتب مبلغ صحيح'); return; }
+  if (!Number.isFinite(amount) || amount <= 0) { showToast('اكتب مبلغ صحيح'); return; }
 
-  const payload = { action: 'add', date, category, type: selectedTxType, amount, currency };
+  const payload = { action: editingTxId ? 'update' : 'add', date, category, type: selectedTxType, amount, currency };
+  if (editingTxId) payload.id = editingTxId;
   if (isTransfer) {
     payload.toCurrency = document.getElementById('txToCurrency').value;
     const toAmountVal = parseFloat(document.getElementById('txToAmount').value);
-    if (!toAmountVal || toAmountVal <= 0) {
+    if (!Number.isFinite(toAmountVal) || toAmountVal <= 0) {
       showToast('اكتب المبلغ المستلم بعد التحويل');
+      return;
+    }
+    if (payload.toCurrency === currency) {
+      showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');
       return;
     }
     payload.toAmount = toAmountVal;
   }
+
+  const wasEditing = Boolean(editingTxId);
   try {
-    await fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'API error');
+
     closeModal('addModalOverlay');
-    showToast('تمت الإضافة ✅');
+    showToast(wasEditing ? 'تم تعديل العملية ✅' : 'تمت الإضافة ✅');
+    editingTxId = null;
     document.getElementById('txCategory').value = '';
     document.getElementById('txAmount').value = '';
     document.getElementById('txToAmount').value = '';
-    refreshData();
+    await refreshData();
   } catch (e) {
-    showToast('تعذّرت الإضافة، حاول مرة ثانية');
+    showToast((wasEditing ? 'تعذّر تعديل العملية: ' : 'تعذّرت الإضافة: ') + (e.message || 'حاول مرة ثانية'));
   }
 }
 
 async function deleteTx(id) {
   if (!confirm('حذف هذه العملية؟')) return;
   try {
-    await fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'delete', id })
     });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'not found');
     showToast('تم الحذف');
-    refreshData();
+    await refreshData();
   } catch (e) {
-    showToast('تعذّر الحذف');
+    showToast('تعذّر الحذف: ' + (e.message || 'حاول مرة ثانية'));
   }
 }
 
 /* ================= إضافة عملية ================= */
 function openAddModal(prefill) {
-  document.getElementById('txDate').value = todayStr();
+  editingTxId = prefill && prefill.id ? prefill.id : null;
+  document.querySelector('#addModalOverlay h2').textContent = editingTxId ? 'تعديل العملية' : 'إضافة عملية';
+  document.getElementById('txDate').value = (prefill && prefill.date) || todayStr();
+
   if (prefill) {
-    setTxType(prefill.type === 'تحويل' ? 'مصروف' : prefill.type);
+    setTxType(prefill.type || 'مصروف');
     document.getElementById('txCategory').value = prefill.category || '';
     document.getElementById('txAmount').value = prefill.amount || '';
     document.getElementById('txCurrency').value = prefill.currency || 'USD';
+    document.getElementById('txToCurrency').value = prefill.toCurrency || 'SYP';
+    document.getElementById('txToAmount').value = prefill.toAmount || '';
   } else {
     setTxType('مصروف');
     document.getElementById('txCategory').value = '';
     document.getElementById('txAmount').value = '';
+    document.getElementById('txToCurrency').value = 'SYP';
     document.getElementById('txToAmount').value = '';
   }
   document.getElementById('addModalOverlay').classList.remove('hidden');
 }
+
 function setTxType(type) {
   selectedTxType = type;
   document.getElementById('typeIncomeBtn').classList.toggle('on', type === 'دخل');
@@ -706,6 +745,10 @@ function applyFiltersAndRender() {
   if (currentFilters.category) list = list.filter(t => t.category === currentFilters.category);
   if (currentFilters.from) list = list.filter(t => t.date >= currentFilters.from);
   if (currentFilters.to) list = list.filter(t => t.date <= currentFilters.to);
+  const search = document.getElementById('searchInput').value.trim().toLocaleLowerCase('ar');
+  if (search) {
+    list = list.filter(t => [t.category, t.type, t.currency, t.toCurrency].filter(Boolean).some(v => String(v).toLocaleLowerCase('ar').includes(search)));
+  }
 
   const filterActive = Object.values(currentFilters).some(Boolean);
   document.getElementById('filterChip').classList.toggle('active', filterActive);
@@ -714,9 +757,24 @@ function applyFiltersAndRender() {
   // الرصيد دايمًا بيعكس الشهر الحالي بس، بغض النظر عن فلترة القائمة تحته
   const nowD = new Date();
   document.getElementById('balanceLabel').textContent = '💼 رصيد ' + ARABIC_MONTHS_SHORT[nowD.getMonth()] + ' ' + nowD.getFullYear();
-  renderSummary(currentMonthTransactions());
+  const monthList = currentMonthTransactions();
+  renderSummary(monthList);
+  renderDashboard(monthList);
   renderList(list);
   renderDonutChart(list);
+}
+
+function renderDashboard(list) {
+  const income = list.filter(t => t.type === 'دخل').length;
+  const expense = list.filter(t => t.type === 'مصروف').length;
+  const transfer = list.filter(t => t.type === 'تحويل').length;
+  const latest = list.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)))[0];
+  const cats = new Set(list.map(t => t.category).filter(Boolean)).size;
+  const strip = document.getElementById('dashboardStrip');
+  strip.innerHTML = `
+    <div class="dash-card"><span class="dash-icon">🧾</span><span class="dash-value">${list.length}</span><span class="dash-label">عملية هذا الشهر</span></div>
+    <div class="dash-card"><span class="dash-icon">🏷️</span><span class="dash-value">${cats}</span><span class="dash-label">فئات مستخدمة</span></div>
+    <div class="dash-card"><span class="dash-icon">📅</span><span class="dash-value">${latest ? formatDisplayDate(latest.date) : '—'}</span><span class="dash-label">آخر عملية</span></div>`;
 }
 
 function renderSummary(list) {
@@ -916,9 +974,16 @@ function renderList(list) {
         <div class="tx-date">${formatDisplayDate(t.date)}</div>
       </div>
       <div class="tx-amount ${cls}">${amountText}</div>
-      <button class="tx-del" onclick="deleteTx('${t.id}')">✕</button>
+      <button class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${t.id}'])">✎</button>
+      <button class="tx-del" onclick="event.stopPropagation(); deleteTx('${t.id}')">✕</button>
     </li>`;
   }).join('');
+  document.querySelectorAll('.tx-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.tx-del') || e.target.closest('.tx-edit')) return;
+      openAddModal(txDataById[item.dataset.id]);
+    });
+  });
   attachLongPress();
 }
 
