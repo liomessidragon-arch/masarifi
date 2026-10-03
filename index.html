@@ -34,6 +34,11 @@
   }
   button{font-family:inherit;}
   .hidden{display:none !important;}
+  /* أثناء تهيئة Firebase لا نعرض شاشة Apps Script القديمة ولو لثوانٍ */
+  body:not(.firebase-ready) #setupScreen{visibility:hidden;}
+  .firebase-boot-screen{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:9999;}
+  .firebase-boot-screen .boot-mark{font-size:30px;font-weight:900;color:var(--emerald);}
+  .firebase-boot-screen.hidden{display:none !important;}
 
   /* ---------- Setup screen ---------- */
   #setupScreen{
@@ -231,6 +236,15 @@
     max-height:88vh;
     overflow-y:auto;
   }
+  .modal-card{
+    background:var(--paper) !important;
+    color:var(--ink);
+    width:100%;max-width:520px;
+    border-radius:22px 22px 0 0;
+    padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
+    max-height:88vh;overflow-y:auto;
+    box-shadow:0 -8px 30px rgba(0,0,0,.12);
+  }
   .modal-sheet h2{font-size:18px;font-weight:900;margin:0 0 16px;}
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
@@ -377,6 +391,7 @@
 </style>
 </head>
 <body>
+<div id="firebaseBootScreen" class="firebase-boot-screen"><div class="boot-mark">مصاريفي</div></div>
 
 <!-- ============ Setup screen ============ -->
 <div id="setupScreen">
@@ -1357,6 +1372,10 @@ async function generateReport() {
     </div>`;
   }).join('');
 
+  // زر PDF لا يعتمد على نجاح تحميل Chart.js.
+  lastReportData = { periodLabel, byCur, prevByCur, hasPrev: !!(month && year) };
+  exportBtn.classList.remove('hidden');
+
   // Chart.js يُحمّل عند طلب التقرير فقط، وليس عند فتح التطبيق.
   try {
     await ensureChartJs();
@@ -1385,8 +1404,6 @@ async function generateReport() {
     }
   });
 
-  lastReportData = { periodLabel, byCur, prevByCur, hasPrev: !!(month && year) };
-  exportBtn.classList.remove('hidden');
 }
 
 /* ================= تصدير PDF ================= */
@@ -1844,11 +1861,15 @@ function openAccountMenu_(){
   }
 }
 function showFirebaseApp_(){
+  document.body.classList.add('firebase-ready');
+  const boot=document.getElementById('firebaseBootScreen'); if(boot) boot.classList.add('hidden');
   document.getElementById('setupScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   ensureUserMenu_();
 }
 function showFirebaseLogin_(){
+  document.body.classList.add('firebase-ready');
+  const boot=document.getElementById('firebaseBootScreen'); if(boot) boot.classList.add('hidden');
   document.getElementById('app').classList.add('hidden');
   document.getElementById('setupScreen').classList.remove('hidden');
   setAuthScreen_(authMode_);
@@ -1984,7 +2005,7 @@ async function refreshCategories_(silent=true){
   }
 }
 async function addCategory(){
-  const input=document.getElementById('newCategoryInput'); if(!input)return;
+  const input=document.getElementById('newCategoryName'); if(!input)return;
   const name=input.value.trim(); if(!name){showToast('اكتب اسم الفئة');return;}
   if(managedCategories.some(c=>c.name===name)){showToast('الفئة موجودة مسبقاً');return;}
   try{await catCol_().add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value='';await refreshCategories_(true);showToast('تمت إضافة الفئة ✅');}
@@ -2004,8 +2025,55 @@ async function deleteCategoryUi(id){
   catch(e){showToast('فشل حذف الفئة');}
 }
 
-/* Budgets are intentionally left for the next phase. */
-async function refreshBudgets_(){ return false; }
+/* Firebase budget data layer */
+async function refreshBudgets_(month=currentMonthPrefixSafe_(), silent=true){
+  if(!firebaseUser)return false;
+  try{
+    const snap=await budgetCol_().where('month','==',month).get();
+    budgetData=[];
+    snap.forEach(doc=>{const d=doc.data()||{};budgetData.push({id:doc.id,month:d.month||month,category:d.category||'',amount:Number(d.amount)||0,currency:d.currency||'USD'});});
+    budgetMonth=month;
+    renderBudgetSection();
+    if(document.getElementById('budgetModalOverlay') && !document.getElementById('budgetModalOverlay').classList.contains('hidden')) renderBudgetManagerRows();
+    return true;
+  }catch(e){
+    if(!silent)showToast('تعذر تحميل الميزانية');
+    return false;
+  }
+}
+async function saveAllBudgets(){
+  if(!firebaseUser){showToast('سجّل الدخول أولاً');return;}
+  const month=document.getElementById('budgetMonth').value||currentMonthPrefixSafe_();
+  const ops=[];
+  const totalAmount=parseFloat(document.getElementById('totalBudgetAmount').value);
+  const totalCurrency=document.getElementById('totalBudgetCurrency').value;
+  const oldTotal=budgetData.find(b=>!b.category);
+  if(Number.isFinite(totalAmount)&&totalAmount>=0) ops.push({old:oldTotal,month,category:'',amount:totalAmount,currency:totalCurrency});
+  else if(oldTotal) ops.push({old:oldTotal,delete:true});
+  document.querySelectorAll('.budget-cat-input').forEach((input,index)=>{
+    const amount=parseFloat(input.value); const cat=input.dataset.category;
+    const currency=document.querySelectorAll('.budget-cat-currency')[index].value;
+    const old=budgetData.find(b=>b.category===cat);
+    if(Number.isFinite(amount)&&amount>=0) ops.push({old,month,category:cat,amount,currency});
+    else if(old) ops.push({old,delete:true});
+  });
+  if(!ops.length){closeModal('budgetModalOverlay');return;}
+  try{
+    const batch=firebaseDb.batch();
+    ops.forEach(op=>{
+      const ref=op.old ? budgetCol_().doc(String(op.old.id)) : budgetCol_().doc();
+      if(op.delete) batch.delete(ref);
+      else batch.set(ref,{month:op.month,category:op.category||'',amount:Number(op.amount)||0,currency:op.currency||'USD',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    });
+    await batch.commit();
+    await refreshBudgets_(month,true);
+    closeModal('budgetModalOverlay');
+    showToast('تم حفظ الميزانية ✅');
+  }catch(e){
+    console.error(e);
+    showToast('فشل حفظ الميزانية');
+  }
+}
 
 const DEFAULT_CATEGORIES_ = ['راتب','عمل حر','طعام','مواصلات','فواتير','تسوق','صحة','ترفيه','منزل','أخرى'];
 function populateCategoryOptions(){
@@ -2114,6 +2182,7 @@ firebaseAuth.onAuthStateChanged(async user=>{
   showFirebaseApp_();
   await ensureDefaultCategories_();
   await loadFirebaseSettings_();
+  await refreshBudgets_(currentMonthPrefixSafe_(), true);
   const hadCache=loadFirebaseCache_();
   await refreshData({silent:hadCache});
 });
