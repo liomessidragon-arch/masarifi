@@ -7,327 +7,327 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#20261f;
-    --paper:#F4F2EC;
-    --paper-2:#FFFFFF;
-    --line:#DAD5C6;
-    --emerald:#1F6E52;
-    --emerald-light:#E4F0EA;
-    --brick:#A8452C;
-    --brick-light:#F6E4DE;
-    --gold:#B8860B;
-    --gold-light:#FBF3DC;
-    --muted:#7A7566;
-    --radius:14px;
-  }
-  *{box-sizing:border-box;}
-  html,body{height:100%;margin:0;}
-  body{
-    font-family:'Tajawal',system-ui,sans-serif;
-    background:var(--paper);
-    color:var(--ink);
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-    -webkit-tap-highlight-color:transparent;
-  }
-  button{font-family:inherit;}
-  .hidden{display:none !important;}
+  :root{
+    --ink:#20261f;
+    --paper:#F4F2EC;
+    --paper-2:#FFFFFF;
+    --line:#DAD5C6;
+    --emerald:#1F6E52;
+    --emerald-light:#E4F0EA;
+    --brick:#A8452C;
+    --brick-light:#F6E4DE;
+    --gold:#B8860B;
+    --gold-light:#FBF3DC;
+    --muted:#7A7566;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Tajawal',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-tap-highlight-color:transparent;
+  }
+  button{font-family:inherit;}
+  .hidden{display:none !important;}
 
-  #setupScreen{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    padding:32px 24px;
-    text-align:center;
-    gap:14px;
-  }
-  #setupScreen .mark{
-    font-size:40px;
-    font-weight:900;
-    color:var(--emerald);
-    letter-spacing:-1px;
-  }
-  #setupScreen p{color:var(--muted);font-size:14px;line-height:1.6;max-width:340px;margin:0;}
-  #setupScreen input{
-    width:100%;
-    max-width:340px;
-    padding:13px 16px;
-    border-radius:var(--radius);
-    border:1.5px solid var(--line);
-    background:var(--paper-2);
-    font-size:14px;
-    font-family:inherit;
-    direction:ltr;
-    text-align:left;
-  }
-  .primary-btn{
-    background:var(--emerald);
-    color:#fff;
-    border:none;
-    padding:14px 28px;
-    border-radius:var(--radius);
-    font-size:15px;
-    font-weight:700;
-    cursor:pointer;
-    width:100%;
-    max-width:340px;
-  }
-  .primary-btn:active{opacity:.85;}
-  .setup-error{color:var(--brick);font-size:13px;min-height:16px;}
+  #setupScreen{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:32px 24px;
+    text-align:center;
+    gap:14px;
+  }
+  #setupScreen .mark{
+    font-size:40px;
+    font-weight:900;
+    color:var(--emerald);
+    letter-spacing:-1px;
+  }
+  #setupScreen p{color:var(--muted);font-size:14px;line-height:1.6;max-width:340px;margin:0;}
+  #setupScreen input{
+    width:100%;
+    max-width:340px;
+    padding:13px 16px;
+    border-radius:var(--radius);
+    border:1.5px solid var(--line);
+    background:var(--paper-2);
+    font-size:14px;
+    font-family:inherit;
+    direction:ltr;
+    text-align:left;
+  }
+  .primary-btn{
+    background:var(--emerald);
+    color:#fff;
+    border:none;
+    padding:14px 28px;
+    border-radius:var(--radius);
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    width:100%;
+    max-width:340px;
+  }
+  .primary-btn:active{opacity:.85;}
+  .setup-error{color:var(--brick);font-size:13px;min-height:16px;}
 
-  #app{max-width:520px;margin:0 auto;padding-bottom:100px;}
-  header.top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:18px 20px 10px;
-  }
-  header.top h1{font-size:22px;font-weight:900;margin:0;}
-  .icon-btn{
-    background:none;border:none;font-size:20px;cursor:pointer;
-    width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-    color:var(--ink);
-  }
-  .icon-btn:active{background:var(--line);}
+  #app{max-width:520px;margin:0 auto;padding-bottom:100px;}
+  header.top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px 10px;
+  }
+  header.top h1{font-size:22px;font-weight:900;margin:0;}
+  .icon-btn{
+    background:none;border:none;font-size:20px;cursor:pointer;
+    width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    color:var(--ink);
+  }
+  .icon-btn:active{background:var(--line);}
 
-  #summaryCards{
-    display:flex;gap:10px;overflow-x:auto;padding:6px 20px 14px;
-    scrollbar-width:none;
-  }
-  #summaryCards::-webkit-scrollbar{display:none;}
-  .cur-card{
-    flex:0 0 auto;
-    min-width:190px;
-    background:var(--paper-2);
-    border:1.5px solid var(--line);
-    border-radius:var(--radius);
-    padding:14px 16px;
-  }
-  .cur-card .cur-name{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:8px;}
-  .cur-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
-  .cur-row .lbl{color:var(--muted);}
-  .cur-row.income .val{color:var(--emerald);font-weight:700;}
-  .cur-row.expense .val{color:var(--brick);font-weight:700;}
-  .cur-row.net{border-top:1px dashed var(--line);margin-top:6px;padding-top:6px;font-weight:900;}
+  #summaryCards{
+    display:flex;gap:10px;overflow-x:auto;padding:6px 20px 14px;
+    scrollbar-width:none;
+  }
+  #summaryCards::-webkit-scrollbar{display:none;}
+  .cur-card{
+    flex:0 0 auto;
+    min-width:190px;
+    background:var(--paper-2);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .cur-card .cur-name{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:8px;}
+  .cur-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
+  .cur-row .lbl{color:var(--muted);}
+  .cur-row.income .val{color:var(--emerald);font-weight:700;}
+  .cur-row.expense .val{color:var(--brick);font-weight:700;}
+  .cur-row.net{border-top:1px dashed var(--line);margin-top:6px;padding-top:6px;font-weight:900;}
 
-  .toolbar{display:flex;gap:10px;padding:0 20px 14px;}
-  .chip-btn{
-    flex:1;
-    display:flex;align-items:center;justify-content:center;gap:6px;
-    background:var(--paper-2);
-    border:1.5px solid var(--line);
-    border-radius:999px;
-    padding:10px 14px;
-    font-size:13.5px;
-    font-weight:700;
-    cursor:pointer;
-    color:var(--ink);
-  }
-  .chip-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald);}
-  .dashboard-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 14px;}
-  @media(max-width:380px){.dashboard-strip{grid-template-columns:repeat(2,1fr);}}
-  .dash-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
-  .dash-card .dash-icon{font-size:17px;}
-  .dash-card .dash-label{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:700;}
-  .dash-card .dash-value{display:block;font-size:14px;font-weight:900;margin-top:2px;}
-  .search-wrap{padding:0 20px 10px;position:relative;}
-  #searchInput{width:100%;padding:11px 40px 11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper-2);font:inherit;font-size:14px;color:var(--ink);outline:none;}
-  #searchInput:focus{border-color:var(--emerald);}
-  .search-icon{position:absolute;right:33px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-  .tx-edit{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 5px;flex:0 0 auto;}
-  .tx-edit:active{color:var(--emerald);}
-  #clearFiltersBtn{
-    display:none;
-    margin:0 20px 12px;
-    background:none;border:none;color:var(--brick);font-size:13px;font-weight:700;
-    text-decoration:underline;cursor:pointer;padding:0;
-  }
+  .toolbar{display:flex;gap:10px;padding:0 20px 14px;}
+  .chip-btn{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--paper-2);
+    border:1.5px solid var(--line);
+    border-radius:999px;
+    padding:10px 14px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .chip-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald);}
+  .dashboard-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 14px;}
+  @media(max-width:380px){.dashboard-strip{grid-template-columns:repeat(2,1fr);}}
+  .dash-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
+  .dash-card .dash-icon{font-size:17px;}
+  .dash-card .dash-label{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:700;}
+  .dash-card .dash-value{display:block;font-size:14px;font-weight:900;margin-top:2px;}
+  .search-wrap{padding:0 20px 10px;position:relative;}
+  #searchInput{width:100%;padding:11px 40px 11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper-2);font:inherit;font-size:14px;color:var(--ink);outline:none;}
+  #searchInput:focus{border-color:var(--emerald);}
+  .search-icon{position:absolute;right:33px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  .tx-edit{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 5px;flex:0 0 auto;}
+  .tx-edit:active{color:var(--emerald);}
+  #clearFiltersBtn{
+    display:none;
+    margin:0 20px 12px;
+    background:none;border:none;color:var(--brick);font-size:13px;font-weight:700;
+    text-decoration:underline;cursor:pointer;padding:0;
+  }
 
-  #transactionList{list-style:none;margin:0;padding:0 20px;display:flex;flex-direction:column;gap:8px;}
-  .tx-item{
-    background:var(--paper-2);
-    border:1.5px solid var(--line);
-    border-radius:var(--radius);
-    padding:12px 14px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .tx-badge{width:8px;height:38px;border-radius:6px;flex:0 0 auto;}
-  .tx-badge.income{background:var(--emerald);}
-  .tx-badge.expense{background:var(--brick);}
-  .tx-mid{flex:1;min-width:0;}
-  .tx-cat{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .tx-date{font-size:12px;color:var(--muted);margin-top:2px;}
-  .tx-amount{font-size:15px;font-weight:900;white-space:nowrap;}
-  .tx-amount.income{color:var(--emerald);}
-  .tx-amount.expense{color:var(--brick);}
-  .tx-del{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px;flex:0 0 auto;}
-  #emptyState{text-align:center;color:var(--muted);padding:60px 20px;font-size:14px;line-height:1.8;}
-  #emptyState .big{font-size:34px;margin-bottom:10px;}
+  #transactionList{list-style:none;margin:0;padding:0 20px;display:flex;flex-direction:column;gap:8px;}
+  .tx-item{
+    background:var(--paper-2);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .tx-badge{width:8px;height:38px;border-radius:6px;flex:0 0 auto;}
+  .tx-badge.income{background:var(--emerald);}
+  .tx-badge.expense{background:var(--brick);}
+  .tx-mid{flex:1;min-width:0;}
+  .tx-cat{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tx-date{font-size:12px;color:var(--muted);margin-top:2px;}
+  .tx-amount{font-size:15px;font-weight:900;white-space:nowrap;}
+  .tx-amount.income{color:var(--emerald);}
+  .tx-amount.expense{color:var(--brick);}
+  .tx-del{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px;flex:0 0 auto;}
+  #emptyState{text-align:center;color:var(--muted);padding:60px 20px;font-size:14px;line-height:1.8;}
+  #emptyState .big{font-size:34px;margin-bottom:10px;}
 
-  .fab{
-    position:fixed;
-    bottom:calc(24px + env(safe-area-inset-bottom,0px));
-    left:24px;
-    width:58px;height:58px;
-    border-radius:50%;
-    background:var(--emerald);
-    color:#fff;
-    border:none;
-    font-size:28px;
-    box-shadow:0 6px 18px rgba(31,110,82,.4);
-    cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-    z-index:20;
-  }
-  .fab:active{transform:scale(.94);}
+  .fab{
+    position:fixed;
+    bottom:calc(24px + env(safe-area-inset-bottom,0px));
+    left:24px;
+    width:58px;height:58px;
+    border-radius:50%;
+    background:var(--emerald);
+    color:#fff;
+    border:none;
+    font-size:28px;
+    box-shadow:0 6px 18px rgba(31,110,82,.4);
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    z-index:20;
+  }
+  .fab:active{transform:scale(.94);}
 
-  .modal-overlay{
-    position:fixed;inset:0;
-    background:rgba(20,20,15,.45);
-    display:flex;align-items:flex-end;justify-content:center;
-    z-index:50;
-  }
-  .modal-overlay.hidden{display:none;}
-  .modal-sheet{
-    background:var(--paper);
-    width:100%;max-width:520px;
-    border-radius:22px 22px 0 0;
-    padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
-    max-height:88vh;
-    overflow-y:auto;
-  }
-  .modal-sheet h2{font-size:18px;font-weight:900;margin:0 0 16px;}
-  .field{margin-bottom:14px;}
-  .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
-  .field input, .field select{
-    width:100%;
-    padding:12px 14px;
-    border-radius:12px;
-    border:1.5px solid var(--line);
-    background:var(--paper-2);
-    font-size:15px;
-    font-family:inherit;
-    color:var(--ink);
-  }
-  .seg{display:flex;gap:8px;}
-  .seg button{
-    flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--line);
-    background:var(--paper-2);font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);
-  }
-  .seg button.sel-income.on{background:var(--emerald-light);border-color:var(--emerald);color:var(--emerald);}
-  .seg button.sel-expense.on{background:var(--brick-light);border-color:var(--brick);color:var(--brick);}
-  .modal-actions{display:flex;gap:10px;margin-top:8px;}
-  .secondary-btn{
-    flex:1;background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;
-    padding:13px;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);
-  }
-  .modal-actions .primary-btn{flex:2;max-width:none;}
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(20,20,15,.45);
+    display:flex;align-items:flex-end;justify-content:center;
+    z-index:50;
+  }
+  .modal-overlay.hidden{display:none;}
+  .modal-sheet{
+    background:var(--paper);
+    width:100%;max-width:520px;
+    border-radius:22px 22px 0 0;
+    padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .modal-sheet h2{font-size:18px;font-weight:900;margin:0 0 16px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .field input, .field select{
+    width:100%;
+    padding:12px 14px;
+    border-radius:12px;
+    border:1.5px solid var(--line);
+    background:var(--paper-2);
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+  }
+  .seg{display:flex;gap:8px;}
+  .seg button{
+    flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--paper-2);font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);
+  }
+  .seg button.sel-income.on{background:var(--emerald-light);border-color:var(--emerald);color:var(--emerald);}
+  .seg button.sel-expense.on{background:var(--brick-light);border-color:var(--brick);color:var(--brick);}
+  .modal-actions{display:flex;gap:10px;margin-top:8px;}
+  .secondary-btn{
+    flex:1;background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;
+    padding:13px;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);
+  }
+  .modal-actions .primary-btn{flex:2;max-width:none;}
 
-  .report-card{
-    background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
-    padding:16px;margin-bottom:10px;
-  }
-  .report-card .cur-name{font-weight:900;font-size:15px;margin-bottom:10px;}
-  .bar-row{margin-bottom:10px;}
-  .bar-row .bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
-  .bar-track{height:8px;background:var(--paper);border-radius:6px;overflow:hidden;}
-  .bar-fill{height:100%;border-radius:6px;}
-  .bar-fill.income{background:var(--emerald);}
-  .bar-fill.expense{background:var(--brick);}
+  .report-card{
+    background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:10px;
+  }
+  .report-card .cur-name{font-weight:900;font-size:15px;margin-bottom:10px;}
+  .bar-row{margin-bottom:10px;}
+  .bar-row .bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
+  .bar-track{height:8px;background:var(--paper);border-radius:6px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:6px;}
+  .bar-fill.income{background:var(--emerald);}
+  .bar-fill.expense{background:var(--brick);}
 
-  .toast{
-    position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
-    background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;
-    font-size:13px;z-index:80;opacity:0;transition:opacity .25s;pointer-events:none;
-  }
-  .toast.show{opacity:1;}
+  .toast{
+    position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;
+    font-size:13px;z-index:80;opacity:0;transition:opacity .25s;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
 
-  .seg.seg3 button{font-size:12.5px;padding:11px 4px;}
-  .seg button.sel-transfer.on{background:#EDE7F6;border-color:#6A4CA0;color:#6A4CA0;}
+  .seg.seg3 button{font-size:12.5px;padding:11px 4px;}
+  .seg button.sel-transfer.on{background:#EDE7F6;border-color:#6A4CA0;color:#6A4CA0;}
 
-  #transferFields{
-    background:var(--paper-2);border:1.5px dashed var(--line);border-radius:12px;
-    padding:12px;margin-bottom:14px;
-  }
-  #transferFields .field:last-child{margin-bottom:0;}
+  #transferFields{
+    background:var(--paper-2);border:1.5px dashed var(--line);border-radius:12px;
+    padding:12px;margin-bottom:14px;
+  }
+  #transferFields .field:last-child{margin-bottom:0;}
 
-  .chart-section{padding:0 20px 16px;}
-  .chart-card{
-    background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
-    padding:14px 16px;
-  }
-  .chart-card .chart-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;}
-  .chart-wrap{position:relative;height:180px;display:flex;align-items:center;justify-content:center;}
-  .donut-css{
-    width:160px;height:160px;border-radius:50%;position:relative;flex:0 0 auto;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .donut-css::after{
-    content:"";position:absolute;inset:34px;border-radius:50%;
-    background:var(--paper-2);z-index:1;
-  }
-  .donut-center{
-    position:absolute;z-index:2;text-align:center;line-height:1.25;
-    font-size:12px;font-weight:900;color:var(--ink);max-width:92px;
-  }
-  .donut-center small{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:2px;}
-  .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center;}
-  .chart-legend .leg-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink);}
-  .chart-legend .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .chart-section{padding:0 20px 16px;}
+  .chart-card{
+    background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .chart-card .chart-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px;}
+  .chart-wrap{position:relative;height:180px;display:flex;align-items:center;justify-content:center;}
+  .donut-css{
+    width:160px;height:160px;border-radius:50%;position:relative;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .donut-css::after{
+    content:"";position:absolute;inset:34px;border-radius:50%;
+    background:var(--paper-2);z-index:1;
+  }
+  .donut-center{
+    position:absolute;z-index:2;text-align:center;line-height:1.25;
+    font-size:12px;font-weight:900;color:var(--ink);max-width:92px;
+  }
+  .donut-center small{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:2px;}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center;}
+  .chart-legend .leg-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink);}
+  .chart-legend .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
 
-  .compare-badge{
-    display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;
-    padding:2px 7px;border-radius:999px;margin-inline-start:6px;
-  }
-  .compare-badge.up-bad{background:var(--brick-light);color:var(--brick);}
-  .compare-badge.up-good{background:var(--emerald-light);color:var(--emerald);}
-  .compare-badge.down-good{background:var(--emerald-light);color:var(--emerald);}
-  .compare-badge.down-bad{background:var(--brick-light);color:var(--brick);}
+  .compare-badge{
+    display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;
+    padding:2px 7px;border-radius:999px;margin-inline-start:6px;
+  }
+  .compare-badge.up-bad{background:var(--brick-light);color:var(--brick);}
+  .compare-badge.up-good{background:var(--emerald-light);color:var(--emerald);}
+  .compare-badge.down-good{background:var(--emerald-light);color:var(--emerald);}
+  .compare-badge.down-bad{background:var(--brick-light);color:var(--brick);}
 
-  .total-approx-card{
-    flex:0 0 auto;min-width:190px;
-    background:linear-gradient(135deg,var(--gold-light,#FBF3DC),var(--paper-2));
-    border:1.5px solid var(--gold);border-radius:var(--radius);padding:14px 16px;
-  }
-  .total-approx-card .cur-name{color:var(--gold);}
-  .total-approx-card .big-val{font-size:20px;font-weight:900;margin-top:4px;}
+  .total-approx-card{
+    flex:0 0 auto;min-width:190px;
+    background:linear-gradient(135deg,var(--gold-light,#FBF3DC),var(--paper-2));
+    border:1.5px solid var(--gold);border-radius:var(--radius);padding:14px 16px;
+  }
+  .total-approx-card .cur-name{color:var(--gold);}
+  .total-approx-card .big-val{font-size:20px;font-weight:900;margin-top:4px;}
 
-  @media print{
-    body *{visibility:hidden;}
-    #printArea, #printArea *{visibility:visible;}
-    #printArea{position:absolute;top:0;right:0;left:0;padding:16px;}
-  }
-  #printArea{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{position:absolute;top:0;right:0;left:0;padding:16px;}
+  }
+  #printArea{display:none;}
 
-  .tx-statement{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .budget-section{padding:0 20px 14px;}
-  .budget-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;}
-  .budget-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
-  .budget-title{font-size:13px;font-weight:900;}
-  .budget-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-  .mini-btn{border:1.5px solid var(--line);background:var(--paper-2);border-radius:10px;padding:7px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
-  .budget-progress{height:10px;background:var(--paper);border-radius:999px;overflow:hidden;}
-  .budget-progress-fill{height:100%;border-radius:999px;background:var(--emerald);transition:width .25s;}
-  .budget-progress-fill.over{background:var(--brick);}
-  .budget-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:7px;}
-  .budget-cats{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
-  .budget-cat-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;}
-  .budget-cat-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .budget-cat-bar{height:6px;background:var(--paper);border-radius:999px;overflow:hidden;margin-top:4px;}
-  .budget-cat-fill{height:100%;background:var(--gold);border-radius:999px;}
-  .budget-cat-fill.over{background:var(--brick);}
-  .budget-cat-amount{font-size:11px;color:var(--muted);white-space:nowrap;}
-  .category-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
-  .category-row{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:9px 10px;}
-  .category-row .name{flex:1;font-size:13px;font-weight:700;}
-  .category-row button{border:0;background:none;cursor:pointer;padding:5px;color:var(--muted);font-size:15px;}
-  .category-add-row{display:flex;gap:8px;}
-  .category-add-row input{flex:1;}
+  .tx-statement{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .budget-section{padding:0 20px 14px;}
+  .budget-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;}
+  .budget-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .budget-title{font-size:13px;font-weight:900;}
+  .budget-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .mini-btn{border:1.5px solid var(--line);background:var(--paper-2);border-radius:10px;padding:7px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+  .budget-progress{height:10px;background:var(--paper);border-radius:999px;overflow:hidden;}
+  .budget-progress-fill{height:100%;border-radius:999px;background:var(--emerald);transition:width .25s;}
+  .budget-progress-fill.over{background:var(--brick);}
+  .budget-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:7px;}
+  .budget-cats{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
+  .budget-cat-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;}
+  .budget-cat-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .budget-cat-bar{height:6px;background:var(--paper);border-radius:999px;overflow:hidden;margin-top:4px;}
+  .budget-cat-fill{height:100%;background:var(--gold);border-radius:999px;}
+  .budget-cat-fill.over{background:var(--brick);}
+  .budget-cat-amount{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .category-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .category-row{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:9px 10px;}
+  .category-row .name{flex:1;font-size:13px;font-weight:700;}
+  .category-row button{border:0;background:none;cursor:pointer;padding:5px;color:var(--muted);font-size:15px;}
+  .category-add-row{display:flex;gap:8px;}
+  .category-add-row input{flex:1;}
 </style>
 
 <!-- Firebase SDKs (Compat - Global) -->
@@ -340,148 +340,147 @@
 
 <!-- ============ Setup/Auth screen ============ -->
 <div id="setupScreen">
-  <div class="mark">مصاريفي</div>
-  <p id="authDesc">سجّل دخولك لحفظ ومزامنة مصاريفك سحابياً وبشكل آمن عبر حسابك الخاص.</p>
-  
-  <input id="authEmail" type="email" placeholder="البريد الإلكتروني (Email)">
-  <input id="authPassword" type="password" placeholder="كلمة المرور (6 أحرف أو أكثر)">
-  
-  <div style="width:100%;max-width:340px;display:flex;gap:10px;">
-    <button class="primary-btn" id="loginBtn" onclick="handleAuth('login')">تسجيل الدخول</button>
-    <button class="secondary-btn" id="registerBtn" onclick="handleAuth('register')">حساب جديد</button>
-  </div>
+  <div class="mark">مصاريفي</div>
+  <p id="authDesc">سجّل دخولك لحفظ ومزامنة مصاريفك سحابياً وبشكل آمن عبر حسابك الخاص.</p>
+  
+  <input id="authEmail" type="email" placeholder="البريد الإلكتروني (Email)">
+  <input id="authPassword" type="password" placeholder="كلمة المرور (6 أحرف أو أكثر)">
+  
+  <div style="width:100%;max-width:340px;display:flex;gap:10px;">
+    <button class="primary-btn" id="loginBtn" onclick="handleAuth('login')">تسجيل الدخول</button>
+    <button class="secondary-btn" id="registerBtn" onclick="handleAuth('register')">حساب جديد</button>
+  </div>
 
-  <p style="margin-top:10px;font-size:12px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار</p>
-  <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية = 1 دولار؟" style="text-align:right;direction:rtl;">
-  <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية = 1 دولار؟" style="text-align:right;direction:rtl;">
-  <button class="secondary-btn" style="max-width:340px;padding:10px;" onclick="saveExchangeRates()">حفظ أسعار الصرف فقط</button>
-  
-  <div class="setup-error" id="setupError"></div>
+  <p style="margin-top:10px;font-size:12px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار</p>
+  <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية = 1 دولار؟" style="text-align:right;direction:rtl;">
+  <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية = 1 دولار؟" style="text-align:right;direction:rtl;">
+  <button class="secondary-btn" style="max-width:340px;padding:10px;" onclick="saveExchangeRates()">حفظ أسعار الصرف فقط</button>
+  
+  <div class="setup-error" id="setupError"></div>
 </div>
 
 <!-- ============ Main app ============ -->
 <div id="app" class="hidden">
-  <header class="top">
-    <div>
-      <h1>مصاريفي</h1>
-      <span id="userBadge" style="font-size:11px;color:var(--muted);font-weight:700;"></span>
-    </div>
-    <button class="icon-btn" onclick="openSettings()">⚙️</button>
-  </header>
+  <header class="top">
+    <div>
+      <h1>مصاريفي</h1>
+      <span id="userBadge" style="font-size:11px;color:var(--muted);font-weight:700;"></span>
+    </div>
+    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+  </header>
 
-  <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
-  <div id="summaryCards"></div>
-  <div id="dashboardStrip" class="dashboard-strip"></div>
-  <div class="budget-section" id="budgetSection"></div>
-  <div class="search-wrap">
-    <span class="search-icon">🔎</span>
-    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off">
-  </div>
+  <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
+  <div id="summaryCards"></div>
+  <div id="dashboardStrip" class="dashboard-strip"></div>
+  <div class="budget-section" id="budgetSection"></div>
+  <div class="search-wrap">
+    <span class="search-icon">🔎</span>
+    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off">
+  </div>
 
-  <div class="chart-section" id="donutSection" style="display:none;">
-    <div class="chart-card">
-      <div class="chart-title">🍩 توزيع المصاريف حسب الفئة</div>
-      <div class="chart-wrap"><div id="donutChart" class="donut-css" aria-label="مخطط توزيع المصاريف"></div></div>
-      <div class="chart-legend" id="donutLegend"></div>
-    </div>
-  </div>
+  <div class="chart-section" id="donutSection" style="display:none;">
+    <div class="chart-card">
+      <div class="chart-title">🍩 توزيع المصاريف حسب الفئة</div>
+      <div class="chart-wrap"><div id="donutChart" class="donut-css" aria-label="مخطط توزيع المصاريف"></div></div>
+      <div class="chart-legend" id="donutLegend"></div>
+    </div>
+  </div>
 
-  <div class="toolbar">
-    <button class="chip-btn" id="filterChip" onclick="openFilterModal()">🔍 فلترة</button>
-    <button class="chip-btn" onclick="openBudgetModal()">💰 الميزانية</button>
-    <button class="chip-btn" onclick="openReportModal()">📊 التقارير</button>
-  </div>
-  <button id="clearFiltersBtn" onclick="clearFilters()">مسح الفلاتر</button>
+  <div class="toolbar">
+    <button class="chip-btn" id="filterChip" onclick="openFilterModal()">🔍 فلترة</button>
+    <button class="chip-btn" onclick="openBudgetModal()">💰 الميزانية</button>
+    <button class="chip-btn" onclick="openReportModal()">📊 التقارير</button>
+  </div>
+  <button id="clearFiltersBtn" onclick="clearFilters()">مسح الفلاتر</button>
 
-  <ul id="transactionList"></ul>
-  <div id="emptyState" class="hidden">
-    <div class="big">📭</div>
-    لا يوجد أي مصاريف أو دخل مسجّل بعد.<br>اضغط + لإضافة أول عملية.
-  </div>
+  <ul id="transactionList"></ul>
+  <div id="emptyState" class="hidden">
+    <div class="big">📭</div>
+    لا يوجد أي مصاريف أو دخل مسجّل بعد.<br>اضغط + لإضافة أول عملية.
+  </div>
 
-  <button class="fab" onclick="openAddModal()">+</button>
+  <button class="fab" onclick="openAddModal()">+</button>
 </div>
 
 <!-- ============ Add modal ============ -->
 <div class="modal-overlay hidden" id="addModalOverlay">
-  <div class="modal-sheet">
-    <h2>إضافة عملية</h2>
-    <div class="field">
-      <label>النوع</label>
-      <div class="seg seg3">
-        <button type="button" class="sel-income" id="typeIncomeBtn" onclick="setTxType('دخل')">⬆️ دخل</button>
-        <button type="button" class="sel-expense" id="typeExpenseBtn" onclick="setTxType('مصروف')">⬇️ مصروف</button>
-        <button type="button" class="sel-transfer" id="typeTransferBtn" onclick="setTxType('تحويل')">💱 تحويل</button>
-      </div>
-    </div>
-    <div class="field">
-      <label>التاريخ</label>
-      <input type="date" id="txDate">
-    </div>
-    <div class="field">
-      <label>الفئة</label>
-      <select id="txCategory"></select>
-    </div>
-    <div class="field">
-      <label>البيان</label>
-      <input type="text" id="txStatement" placeholder="مثال: فروج مشوي، خضار وفواكه..." autocomplete="off">
-    </div>
-    <div class="field">
-      <label id="txAmountLabel">المبلغ</label>
-      <input type="number" id="txAmount" inputmode="decimal" placeholder="0.00">
-    </div>
-    <div class="field">
-      <label id="txCurrencyLabel">العملة</label>
-      <select id="txCurrency">
-        <option value="USD">دولار ($)</option>
-        <option value="SYP">ليرة سورية (ل.س)</option>
-        <option value="TRY">ليرة تركية (₺)</option>
-      </select>
-    </div>
-    <div id="transferFields" class="hidden">
-      <div class="field">
-        <label>العملة الجديدة (بعد التحويل)</label>
-        <select id="txToCurrency">
-          <option value="USD">دولار ($)</option>
-          <option value="SYP">ليرة سورية (ل.س)</option>
-          <option value="TRY">ليرة تركية (₺)</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>المبلغ اللي استلمته بالعملة الجديدة (مطلوب)</label>
-        <input type="number" id="txToAmount" inputmode="decimal" placeholder="0.00">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModal('addModalOverlay')">إلغاء</button>
-      <button class="primary-btn" onclick="submitAdd()">حفظ</button>
-    </div>
-  </div>
+  <div class="modal-sheet">
+    <h2>إضافة عملية</h2>
+    <div class="field">
+      <label>النوع</label>
+      <div class="seg seg3">
+        <button type="button" class="sel-income" id="typeIncomeBtn" onclick="setTxType('دخل')">⬆️ دخل</button>
+        <button type="button" class="sel-expense" id="typeExpenseBtn" onclick="setTxType('مصروف')">⬇️ مصروف</button>
+        <button type="button" class="sel-transfer" id="typeTransferBtn" onclick="setTxType('تحويل')">💱 تحويل</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>التاريخ</label>
+      <input type="date" id="txDate">
+    </div>
+    <div class="field">
+      <label>الفئة</label>
+      <select id="txCategory"></select>
+    </div>
+    <div class="field">
+      <label>البيان</label>
+      <input type="text" id="txStatement" placeholder="مثال: فروج مشوي، خضار وفواكه..." autocomplete="off">
+    </div>
+    <div class="field">
+      <label id="txAmountLabel">المبلغ</label>
+      <input type="number" id="txAmount" inputmode="decimal" placeholder="0.00">
+    </div>
+    <div class="field">
+      <label id="txCurrencyLabel">العملة</label>
+      <select id="txCurrency">
+        <option value="USD">دولار ($)</option>
+        <option value="SYP">ليرة سورية (ل.س)</option>
+        <option value="TRY">ليرة تركية (₺)</option>
+      </select>
+    </div>
+    <div id="transferFields" class="hidden">
+      <div class="field">
+        <label>العملة الجديدة (بعد التحويل)</label>
+        <select id="txToCurrency">
+          <option value="USD">دولار ($)</option>
+          <option value="SYP">ليرة سورية (ل.س)</option>
+          <option value="TRY">ليرة تركية (₺)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>المبلغ اللي استلمته بالعملة الجديدة (مطلوب)</label>
+        <input type="number" id="txToAmount" inputmode="decimal" placeholder="0.00">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal('addModalOverlay')">إلغاء</button>
+      <button class="primary-btn" onclick="submitAdd()">حفظ</button>
+    </div>
+  </div>
 </div>
 
 <!-- ============ Filter modal ============ -->
 <div class="modal-overlay hidden" id="filterModalOverlay">
-  <div class="modal-sheet">
-    <h2>فلترة العمليات</h2>
-    <div class="field">
-      <label>النوع</label>
-      <select id="filterType">
-        <option value="">الكل</option>
-        <option value="دخل">دخل</option>
-        <option value="مصروف">مصروف</option>
-        <option value="تحويل">تحويل</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>العملة</label>
-      <select id="filterCurrency">
-        <option value="">الكل</option>
-        <option value="USD">دولار ($)</option>
-        <option value="SYP">ليرة سورية (ل.س)</option>
-        <option value="TRY">ليرة تركية (₺)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>الفئة</label>
-      <select id="filterCateg
-
+  <div class="modal-sheet">
+    <h2>فلترة العمليات</h2>
+    <div class="field">
+      <label>النوع</label>
+      <select id="filterType">
+        <option value="">الكل</option>
+        <option value="دخل">دخل</option>
+        <option value="مصروف">مصروف</option>
+        <option value="تحويل">تحويل</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>العملة</label>
+      <select id="filterCurrency">
+        <option value="">الكل</option>
+        <option value="USD">دولار ($)</option>
+        <option value="SYP">ليرة سورية (ل.س)</option>
+        <option value="TRY">ليرة تركية (₺)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>الفئة</label>
+      <select id="filterCateg
