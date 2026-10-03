@@ -1411,45 +1411,108 @@ async function generateReport() {
 }
 
 /* ================= تصدير PDF ================= */
-function exportReportPdf() {
+async function exportReportPdf() {
   if (!lastReportData) { showToast('ولّد التقرير أولاً'); return; }
+  if (typeof html2pdf !== 'function') {
+    showToast('مكتبة PDF لم تُحمّل، أعد المحاولة');
+    return;
+  }
+
   const { periodLabel, byCur } = lastReportData;
   const rows = Object.keys(byCur).map(cur => {
     const d = byCur[cur];
     const net = d.income - d.expense + d.transferIn - d.transferOut;
     const sym = CUR_SYMBOL[cur] || cur;
     return `<tr>
-      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${escapeHtml(CUR_LABEL[cur] || cur)}</td>
-      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${fmt(d.income)} ${sym}</td>
-      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${fmt(d.expense)} ${sym}</td>
-      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${fmt(net)} ${sym}</td>
+      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${escapeHtml(CUR_LABEL[cur] || cur)}</td>
+      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${fmt(d.income)} ${sym}</td>
+      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${fmt(d.expense)} ${sym}</td>
+      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${fmt(net)} ${sym}</td>
     </tr>`;
   }).join('');
-  const printArea = document.getElementById('printArea');
-  printArea.innerHTML = `<div style="font-family:Tajawal,Arial,sans-serif;direction:rtl;background:#fff;color:#20261f;padding:24px;width:100%;">
-    <h1 style="font-size:20px;margin:0 0 18px;">📊 تقرير مصاريفي — ${escapeHtml(periodLabel)}</h1>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <thead><tr style="background:#1F6E52;color:#fff;">
-        <th style="padding:8px;border:1px solid #ccc;">العملة</th><th style="padding:8px;border:1px solid #ccc;">الدخل</th><th style="padding:8px;border:1px solid #ccc;">المصروف</th><th style="padding:8px;border:1px solid #ccc;">الصافي</th>
-      </tr></thead><tbody>${rows}</tbody>
-    </table>
-    <p style="margin-top:16px;color:#666;font-size:11px;">تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}</p>
-  </div>`;
-  printArea.style.display='block';
-  const options={margin:8,filename:`masarifi-report-${todayStr()}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
-  if(typeof html2pdf !== 'function'){
-    printArea.style.display='none';
-    showToast('مكتبة PDF لم تُحمّل، أعد المحاولة');
-    return;
-  }
-  html2pdf().set(options).from(printArea).save().then(()=>{
-    printArea.style.display='none';
+
+  // ننشئ حاوية مستقلة خاصة بالتصدير حتى لا تتأثر بقواعد #printArea
+  // أو بعناصر الواجهة المخفية داخل WebView.
+  const pdfArea = document.createElement('div');
+  pdfArea.id = 'pdfRenderArea';
+  pdfArea.dir = 'rtl';
+  pdfArea.style.cssText = [
+    'position:fixed',
+    'top:0',
+    'left:0',
+    'width:794px',
+    'min-height:1123px',
+    'box-sizing:border-box',
+    'padding:32px',
+    'background:#ffffff',
+    'color:#20261f',
+    'font-family:Tajawal,Arial,sans-serif',
+    'font-size:14px',
+    'line-height:1.6',
+    'direction:rtl',
+    'z-index:2147483647',
+    'display:block'
+  ].join(';');
+
+  pdfArea.innerHTML = `
+    <div style="width:100%;box-sizing:border-box;background:#fff;">
+      <h1 style="font-family:Tajawal,Arial,sans-serif;font-size:24px;margin:0 0 24px;text-align:right;color:#20261f;">📊 تقرير مصاريفي</h1>
+      <div style="font-size:16px;margin-bottom:20px;color:#555;">${escapeHtml(periodLabel)}</div>
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:Tajawal,Arial,sans-serif;font-size:14px;">
+        <thead>
+          <tr style="background:#1F6E52;color:#fff;">
+            <th style="padding:10px;border:1px solid #ccc;text-align:center;">العملة</th>
+            <th style="padding:10px;border:1px solid #ccc;text-align:center;">الدخل</th>
+            <th style="padding:10px;border:1px solid #ccc;text-align:center;">المصروف</th>
+            <th style="padding:10px;border:1px solid #ccc;text-align:center;">الصافي</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;color:#777;font-size:11px;text-align:right;">
+        تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}
+      </div>
+    </div>`;
+
+  document.body.appendChild(pdfArea);
+
+  try {
+    // نعطي المتصفح وقتاً لرسم النص العربي قبل أخذ لقطة الـ canvas.
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(resolve => setTimeout(resolve, 250));
+
+    const options = {
+      margin: 0,
+      filename: `masarifi-report-${todayStr()}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: 794,
+        windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait',
+        compress: true
+      },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+
+    await html2pdf().set(options).from(pdfArea).save();
     showToast('تم إنشاء ملف PDF ✅');
-  }).catch(e=>{
-    printArea.style.display='none';
-    console.error('PDF error',e);
+  } catch (e) {
+    console.error('PDF error', e);
     showToast('تعذر إنشاء ملف PDF');
-  });
+  } finally {
+    pdfArea.remove();
+  }
 }
 
 /* ================= أدوات مساعدة ================= */
