@@ -22,8 +22,9 @@
     --radius:14px;
   }
   *{box-sizing:border-box;}
-  html,body{height:100%;margin:0;}
+  html,body{height:100%;}
   body{
+    margin:0;
     font-family:'Tajawal',system-ui,sans-serif;
     background:var(--paper);
     color:var(--ink);
@@ -34,6 +35,7 @@
   button{font-family:inherit;}
   .hidden{display:none !important;}
 
+  /* ---------- Setup screen ---------- */
   #setupScreen{
     min-height:100vh;
     display:flex;
@@ -42,7 +44,7 @@
     align-items:center;
     padding:32px 24px;
     text-align:center;
-    gap:14px;
+    gap:18px;
   }
   #setupScreen .mark{
     font-size:40px;
@@ -50,11 +52,11 @@
     color:var(--emerald);
     letter-spacing:-1px;
   }
-  #setupScreen p{color:var(--muted);font-size:14px;line-height:1.6;max-width:340px;margin:0;}
+  #setupScreen p{color:var(--muted);font-size:15px;line-height:1.7;max-width:340px;margin:0;}
   #setupScreen input{
     width:100%;
     max-width:340px;
-    padding:13px 16px;
+    padding:14px 16px;
     border-radius:var(--radius);
     border:1.5px solid var(--line);
     background:var(--paper-2);
@@ -78,6 +80,7 @@
   .primary-btn:active{opacity:.85;}
   .setup-error{color:var(--brick);font-size:13px;min-height:16px;}
 
+  /* ---------- App shell ---------- */
   #app{max-width:520px;margin:0 auto;padding-bottom:100px;}
   header.top{
     display:flex;
@@ -93,6 +96,7 @@
   }
   .icon-btn:active{background:var(--line);}
 
+  /* summary cards */
   #summaryCards{
     display:flex;gap:10px;overflow-x:auto;padding:6px 20px 14px;
     scrollbar-width:none;
@@ -113,6 +117,7 @@
   .cur-row.expense .val{color:var(--brick);font-weight:700;}
   .cur-row.net{border-top:1px dashed var(--line);margin-top:6px;padding-top:6px;font-weight:900;}
 
+  /* toolbar */
   .toolbar{display:flex;gap:10px;padding:0 20px 14px;}
   .chip-btn{
     flex:1;
@@ -127,8 +132,7 @@
     color:var(--ink);
   }
   .chip-btn.active{background:var(--emerald);color:#fff;border-color:var(--emerald);}
-  .dashboard-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 14px;}
-  @media(max-width:380px){.dashboard-strip{grid-template-columns:repeat(2,1fr);}}
+  .dashboard-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px 14px;}
   .dash-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
   .dash-card .dash-icon{font-size:17px;}
   .dash-card .dash-label{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:700;}
@@ -146,6 +150,7 @@
     text-decoration:underline;cursor:pointer;padding:0;
   }
 
+  /* list */
   #transactionList{list-style:none;margin:0;padding:0 20px;display:flex;flex-direction:column;gap:8px;}
   .tx-item{
     background:var(--paper-2);
@@ -156,7 +161,9 @@
     align-items:center;
     gap:12px;
   }
-  .tx-badge{width:8px;height:38px;border-radius:6px;flex:0 0 auto;}
+  .tx-badge{
+    width:8px;height:38px;border-radius:6px;flex:0 0 auto;
+  }
   .tx-badge.income{background:var(--emerald);}
   .tx-badge.expense{background:var(--brick);}
   .tx-mid{flex:1;min-width:0;}
@@ -165,10 +172,16 @@
   .tx-amount{font-size:15px;font-weight:900;white-space:nowrap;}
   .tx-amount.income{color:var(--emerald);}
   .tx-amount.expense{color:var(--brick);}
-  .tx-del{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px;flex:0 0 auto;}
-  #emptyState{text-align:center;color:var(--muted);padding:60px 20px;font-size:14px;line-height:1.8;}
+  .tx-del{
+    background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;
+    padding:4px 6px;flex:0 0 auto;
+  }
+  #emptyState{
+    text-align:center;color:var(--muted);padding:60px 20px;font-size:14px;line-height:1.8;
+  }
   #emptyState .big{font-size:34px;margin-bottom:10px;}
 
+  /* FAB */
   .fab{
     position:fixed;
     bottom:calc(24px + env(safe-area-inset-bottom,0px));
@@ -186,6 +199,7 @@
   }
   .fab:active{transform:scale(.94);}
 
+  /* ---------- Modals ---------- */
   .modal-overlay{
     position:fixed;inset:0;
     background:rgba(20,20,15,.45);
@@ -228,6 +242,7 @@
   }
   .modal-actions .primary-btn{flex:2;max-width:none;}
 
+  /* report */
   .report-card{
     background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
     padding:16px;margin-bottom:10px;
@@ -247,15 +262,18 @@
   }
   .toast.show{opacity:1;}
 
+  /* seg مع 3 أزرار (دخل / مصروف / تحويل) */
   .seg.seg3 button{font-size:12.5px;padding:11px 4px;}
   .seg button.sel-transfer.on{background:#EDE7F6;border-color:#6A4CA0;color:#6A4CA0;}
 
+  /* حقول التحويل */
   #transferFields{
     background:var(--paper-2);border:1.5px dashed var(--line);border-radius:12px;
     padding:12px;margin-bottom:14px;
   }
   #transferFields .field:last-child{margin-bottom:0;}
 
+  /* دائرة توزيع الفئات */
   .chart-section{padding:0 20px 16px;}
   .chart-card{
     background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);
@@ -276,10 +294,12 @@
     font-size:12px;font-weight:900;color:var(--ink);max-width:92px;
   }
   .donut-center small{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:2px;}
+
   .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center;}
   .chart-legend .leg-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink);}
   .chart-legend .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
 
+  /* مقارنة بالشهر السابق */
   .compare-badge{
     display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;
     padding:2px 7px;border-radius:999px;margin-inline-start:6px;
@@ -289,6 +309,7 @@
   .compare-badge.down-good{background:var(--emerald-light);color:var(--emerald);}
   .compare-badge.down-bad{background:var(--brick-light);color:var(--brick);}
 
+  /* بطاقة الإجمالي التقريبي */
   .total-approx-card{
     flex:0 0 auto;min-width:190px;
     background:linear-gradient(135deg,var(--gold-light,#FBF3DC),var(--paper-2));
@@ -297,6 +318,10 @@
   .total-approx-card .cur-name{color:var(--gold);}
   .total-approx-card .big-val{font-size:20px;font-weight:900;margin-top:4px;}
 
+  /* تكرار العملية (نصيحة بصرية بسيطة) */
+  .tx-item{position:relative;}
+
+  /* طباعة/تصدير PDF */
   @media print{
     body *{visibility:hidden;}
     #printArea, #printArea *{visibility:visible;}
@@ -304,6 +329,7 @@
   }
   #printArea{display:none;}
 
+  /* ========== V2.2: categories, statements, budgets ========== */
   .tx-statement{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .budget-section{padding:0 20px 14px;}
   .budget-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;}
@@ -328,45 +354,31 @@
   .category-row button{border:0;background:none;cursor:pointer;padding:5px;color:var(--muted);font-size:15px;}
   .category-add-row{display:flex;gap:8px;}
   .category-add-row input{flex:1;}
+
+
+  .dashboard-strip{grid-template-columns:repeat(4,1fr);}
+  @media(max-width:380px){.dashboard-strip{grid-template-columns:repeat(2,1fr);}}
 </style>
-
-<!-- Firebase SDKs (Compat - Global) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
 </head>
 <body>
 
-<!-- ============ Setup/Auth screen ============ -->
+<!-- ============ Setup screen ============ -->
 <div id="setupScreen">
   <div class="mark">مصاريفي</div>
-  <p id="authDesc">سجّل دخولك لحفظ ومزامنة مصاريفك سحابياً وبشكل آمن عبر حسابك الخاص.</p>
-  
-  <input id="authEmail" type="email" placeholder="البريد الإلكتروني (Email)">
-  <input id="authPassword" type="password" placeholder="كلمة المرور (6 أحرف أو أكثر)">
-  
-  <div style="width:100%;max-width:340px;display:flex;gap:10px;">
-    <button class="primary-btn" id="loginBtn" onclick="window.handleAuth('login')">تسجيل الدخول</button>
-    <button class="secondary-btn" id="registerBtn" onclick="window.handleAuth('register')">حساب جديد</button>
-  </div>
-
-  <p style="margin-top:10px;font-size:12px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار</p>
-  <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية = 1 دولار؟" style="text-align:right;direction:rtl;">
-  <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية = 1 دولار؟" style="text-align:right;direction:rtl;">
-  <button class="secondary-btn" style="max-width:340px;padding:10px;" onclick="window.saveExchangeRates()">حفظ أسعار الصرف فقط</button>
-  
+  <p>وصّل التطبيق برابط الويب الخاص بسكربت جوجل شيت (Apps Script Web App URL) اللي نسخته بعد النشر.</p>
+  <input id="apiUrlInput" type="text" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+  <p style="margin-top:6px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار — كم وحدة = دولار واحد</p>
+  <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية تساوي دولار واحد؟ (مثال 13000)" style="text-align:right;direction:rtl;">
+  <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية تساوي دولار واحد؟ (مثال 34)" style="text-align:right;direction:rtl;">
   <div class="setup-error" id="setupError"></div>
+  <button class="primary-btn" onclick="saveApiUrl()">حفظ والمتابعة</button>
 </div>
 
 <!-- ============ Main app ============ -->
 <div id="app" class="hidden">
   <header class="top">
-    <div>
-      <h1>مصاريفي</h1>
-      <span id="userBadge" style="font-size:11px;color:var(--muted);font-weight:700;"></span>
-    </div>
-    <button class="icon-btn" onclick="window.openSettings()">⚙️</button>
+    <h1>مصاريفي</h1>
+    <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </header>
 
   <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
@@ -387,11 +399,11 @@
   </div>
 
   <div class="toolbar">
-    <button class="chip-btn" id="filterChip" onclick="window.openFilterModal()">🔍 فلترة</button>
-    <button class="chip-btn" onclick="window.openBudgetModal()">💰 الميزانية</button>
-    <button class="chip-btn" onclick="window.openReportModal()">📊 التقارير</button>
+    <button class="chip-btn" id="filterChip" onclick="openFilterModal()">🔍 فلترة</button>
+    <button class="chip-btn" onclick="openBudgetModal()">💰 الميزانية</button>
+    <button class="chip-btn" onclick="openReportModal()">📊 التقارير</button>
   </div>
-  <button id="clearFiltersBtn" onclick="window.clearFilters()">مسح الفلاتر</button>
+  <button id="clearFiltersBtn" onclick="clearFilters()">مسح الفلاتر</button>
 
   <ul id="transactionList"></ul>
   <div id="emptyState" class="hidden">
@@ -399,7 +411,7 @@
     لا يوجد أي مصاريف أو دخل مسجّل بعد.<br>اضغط + لإضافة أول عملية.
   </div>
 
-  <button class="fab" onclick="window.openAddModal()">+</button>
+  <button class="fab" onclick="openAddModal()">+</button>
 </div>
 
 <!-- ============ Add modal ============ -->
@@ -409,9 +421,9 @@
     <div class="field">
       <label>النوع</label>
       <div class="seg seg3">
-        <button type="button" class="sel-income" id="typeIncomeBtn" onclick="window.setTxType('دخل')">⬆️ دخل</button>
-        <button type="button" class="sel-expense" id="typeExpenseBtn" onclick="window.setTxType('مصروف')">⬇️ مصروف</button>
-        <button type="button" class="sel-transfer" id="typeTransferBtn" onclick="window.setTxType('تحويل')">💱 تحويل</button>
+        <button type="button" class="sel-income" id="typeIncomeBtn" onclick="setTxType('دخل')">⬆️ دخل</button>
+        <button type="button" class="sel-expense" id="typeExpenseBtn" onclick="setTxType('مصروف')">⬇️ مصروف</button>
+        <button type="button" class="sel-transfer" id="typeTransferBtn" onclick="setTxType('تحويل')">💱 تحويل</button>
       </div>
     </div>
     <div class="field">
@@ -453,8 +465,8 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button class="secondary-btn" onclick="window.closeModal('addModalOverlay')">إلغاء</button>
-      <button class="primary-btn" onclick="window.submitAdd()">حفظ</button>
+      <button class="secondary-btn" onclick="closeModal('addModalOverlay')">إلغاء</button>
+      <button class="primary-btn" onclick="submitAdd()">حفظ</button>
     </div>
   </div>
 </div>
@@ -479,4 +491,1533 @@
         <option value="USD">دولار ($)</option>
         <option value="SYP">ليرة سورية (ل.س)</option>
         <option value="TRY">ليرة تركية (₺)</option>
-      </s
+      </select>
+    </div>
+    <div class="field">
+      <label>الفئة</label>
+      <select id="filterCategory">
+        <option value="">الكل</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>من تاريخ</label>
+      <input type="date" id="filterFrom">
+    </div>
+    <div class="field">
+      <label>إلى تاريخ</label>
+      <input type="date" id="filterTo">
+    </div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal('filterModalOverlay')">إلغاء</button>
+      <button class="primary-btn" onclick="applyFilters()">تطبيق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Budget modal ============ -->
+<div class="modal-overlay hidden" id="budgetModalOverlay">
+  <div class="modal-sheet">
+    <h2>💰 الميزانية</h2>
+    <div class="field">
+      <label>الشهر</label>
+      <input type="month" id="budgetMonth" onchange="loadBudgetMonth(this.value)">
+    </div>
+    <div class="field">
+      <label>الميزانية الشهرية العامة</label>
+      <div style="display:flex;gap:8px;">
+        <input type="number" id="totalBudgetAmount" inputmode="decimal" placeholder="0.00" style="flex:1;">
+        <select id="totalBudgetCurrency" style="width:115px;">
+          <option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 8px;">
+      <strong style="font-size:14px;">ميزانيات الفئات</strong>
+      <button class="mini-btn" onclick="openCategoryManager()">⚙️ إدارة الفئات</button>
+    </div>
+    <div id="budgetCategoryRows"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal('budgetModalOverlay')">إلغاء</button>
+      <button class="primary-btn" onclick="saveAllBudgets()">حفظ الميزانية</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Category manager modal ============ -->
+<div class="modal-overlay hidden" id="categoryManagerOverlay">
+  <div class="modal-sheet">
+    <h2>🏷️ إدارة الفئات</h2>
+    <div class="category-add-row">
+      <input id="newCategoryName" type="text" placeholder="اسم فئة جديدة">
+      <button class="primary-btn" style="max-width:120px;" onclick="addNewCategory()">إضافة</button>
+    </div>
+    <div class="category-list" id="categoryManagerList"></div>
+    <div class="modal-actions">
+      <button class="primary-btn" onclick="closeModal('categoryManagerOverlay'); populateCategoryOptions(); renderBudgetPanel(currentMonthTransactions());">تم</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Report modal ============ -->
+<div class="modal-overlay hidden" id="reportModalOverlay">
+  <div class="modal-sheet">
+    <h2>التقرير الشهري</h2>
+    <div class="field">
+      <label>الشهر</label>
+      <select id="reportMonth">
+        <option value="">كل الشهور</option>
+        <option value="01">يناير</option><option value="02">فبراير</option>
+        <option value="03">مارس</option><option value="04">أبريل</option>
+        <option value="05">مايو</option><option value="06">يونيو</option>
+        <option value="07">يوليو</option><option value="08">أغسطس</option>
+        <option value="09">سبتمبر</option><option value="10">أكتوبر</option>
+        <option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>السنة</label>
+      <input type="number" id="reportYear" placeholder="2026">
+    </div>
+    <button class="primary-btn" style="margin-bottom:16px;" onclick="generateReport()">عرض التقرير</button>
+    <div id="reportResults"></div>
+    <div class="chart-wrap" id="reportChartWrap" style="display:none;margin-top:14px;height:200px;">
+      <canvas id="reportChart"></canvas>
+    </div>
+    <button class="secondary-btn hidden" id="exportPdfBtn" style="width:100%;margin-top:14px;" onclick="exportReportPdf()">📄 تصدير كـ PDF</button>
+  </div>
+</div>
+
+<div id="printArea"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= إعدادات وحالة عامة ================= */
+const STORAGE_KEY = 'masarifi_api_url';
+const RATE_SYP_KEY = 'masarifi_syp_per_usd';
+const RATE_TRY_KEY = 'masarifi_try_per_usd';
+const CUR_LABEL = { USD: 'دولار ($)', SYP: 'ليرة سورية (ل.س)', TRY: 'ليرة تركية (₺)' };
+const CUR_SYMBOL = { USD: '$', SYP: 'ل.س', TRY: '₺' };
+const CAT_COLORS = ['#1F6E52','#A8452C','#B8860B','#6A4CA0','#2E6F8E','#8C7A3F','#C2694A','#4B8B6F','#9A6B9E','#5A7D9A'];
+
+let apiUrl = localStorage.getItem(STORAGE_KEY) || '';
+let rateSyp = parseFloat(localStorage.getItem(RATE_SYP_KEY)) || 0;
+let rateTry = parseFloat(localStorage.getItem(RATE_TRY_KEY)) || 0;
+let allTransactions = [];
+let currentFilters = { type: '', currency: '', category: '', from: '', to: '' };
+let selectedTxType = 'مصروف';
+let donutChartInstance = null;
+let reportChartInstance = null;
+let lastReportData = null;
+let editingTxId = null;
+let chartLibPromise = null;
+let syncInFlight = false;
+let pendingMutationCount = 0;
+let managedCategories = [];
+let budgetData = [];
+let budgetMonth = currentMonthPrefixSafe_();
+const CACHE_KEY = 'masarifi_transactions_cache_v21';
+const CACHE_TIME_KEY = 'masarifi_transactions_cache_time_v21';
+
+function saveTransactionsCache() {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(allTransactions));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+  } catch (e) {}
+}
+
+function loadTransactionsCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return false;
+    allTransactions = parsed;
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function ensureChartJs() {
+  if (window.Chart) return Promise.resolve();
+  if (chartLibPromise) return chartLibPromise;
+  chartLibPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => { chartLibPromise = null; reject(new Error('Chart.js load failed')); };
+    document.head.appendChild(script);
+  });
+  return chartLibPromise;
+}
+
+function replaceTransactionId(tempId, realId) {
+  const t = allTransactions.find(x => String(x.id) === String(tempId));
+  if (t) t.id = realId;
+  saveTransactionsCache();
+  populateCategoryOptions();
+  applyFiltersAndRender();
+}
+
+function upsertLocalTransaction(tx) {
+  const idx = allTransactions.findIndex(x => String(x.id) === String(tx.id));
+  if (idx >= 0) allTransactions[idx] = tx;
+  else allTransactions.push(tx);
+  saveTransactionsCache();
+  populateCategoryOptions();
+  applyFiltersAndRender();
+}
+
+function removeLocalTransaction(id) {
+  allTransactions = allTransactions.filter(x => String(x.id) !== String(id));
+  saveTransactionsCache();
+  populateCategoryOptions();
+  applyFiltersAndRender();
+}
+
+function makeTempId() {
+  return 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+}
+
+/* ================= الإقلاع ================= */
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('txDate').value = todayStr();
+  document.getElementById('searchInput').addEventListener('input', () => applyFiltersAndRender());
+  if (apiUrl) {
+    showApp();
+    const hadCache = loadTransactionsCache();
+    refreshData({ silent: hadCache });
+  }
+});
+
+// مزامنة خفيفة بالخلفية فقط، حتى لا يبقى التطبيق عالقاً بانتظار السيرفر.
+setInterval(() => {
+  if (apiUrl && document.visibilityState === 'visible' && pendingMutationCount === 0) {
+    refreshData({ silent: true });
+  }
+}, 60000);
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+function showApp() {
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+}
+
+function saveApiUrl() {
+  const val = document.getElementById('apiUrlInput').value.trim();
+  const err = document.getElementById('setupError');
+  if (!val.startsWith('https://script.google.com/')) {
+    err.textContent = 'الرابط لازم يبدأ بـ https://script.google.com/ — تأكد إنك نسخت رابط الـ Web App الصحيح.';
+    return;
+  }
+  err.textContent = '';
+  apiUrl = val;
+  rateSyp = parseFloat(document.getElementById('rateSypInput').value) || 0;
+  rateTry = parseFloat(document.getElementById('rateTryInput').value) || 0;
+  localStorage.setItem(STORAGE_KEY, apiUrl);
+  localStorage.setItem(RATE_SYP_KEY, rateSyp);
+  localStorage.setItem(RATE_TRY_KEY, rateTry);
+  showApp();
+  refreshData();
+}
+
+function openSettings() {
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('setupScreen').classList.remove('hidden');
+  document.getElementById('apiUrlInput').value = apiUrl;
+  document.getElementById('rateSypInput').value = rateSyp || '';
+  document.getElementById('rateTryInput').value = rateTry || '';
+}
+
+/* ================= الاتصال بالـ API ================= */
+async function refreshData(options = {}) {
+  if (!apiUrl || syncInFlight) return false;
+  syncInFlight = true;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(apiUrl + '?action=list&t=' + Date.now(), { cache: 'no-store', signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    allTransactions = Array.isArray(data.transactions) ? data.transactions : [];
+    saveTransactionsCache();
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    if (!options.silent) showToast('تم تحديث البيانات ✅');
+    return true;
+  } catch (e) {
+    if (!options.silent && !allTransactions.length) {
+      showToast(e.name === 'AbortError' ? 'الاتصال تأخر. حاول مرة ثانية.' : 'تعذّر الاتصال بالشيت.');
+    }
+    return false;
+  } finally {
+    syncInFlight = false;
+  }
+}
+
+async function submitAdd() {
+  let category = document.getElementById('txCategory').value.trim();
+  const amount = parseFloat(document.getElementById('txAmount').value);
+  const currency = document.getElementById('txCurrency').value;
+  const date = document.getElementById('txDate').value;
+  const isTransfer = selectedTxType === 'تحويل';
+
+  if (!date) { showToast('اختر التاريخ'); return; }
+  if (isTransfer && !category) category = 'تحويل عملة';
+  if (!category) { showToast('اكتب الفئة أو البيان'); return; }
+  if (!Number.isFinite(amount) || amount <= 0) { showToast('اكتب مبلغ صحيح'); return; }
+
+  const payload = { action: editingTxId ? 'update' : 'add', date, category, type: selectedTxType, amount, currency };
+  if (editingTxId) payload.id = editingTxId;
+  if (isTransfer) {
+    payload.toCurrency = document.getElementById('txToCurrency').value;
+    const toAmountVal = parseFloat(document.getElementById('txToAmount').value);
+    if (!Number.isFinite(toAmountVal) || toAmountVal <= 0) {
+      showToast('اكتب المبلغ المستلم بعد التحويل');
+      return;
+    }
+    if (payload.toCurrency === currency) {
+      showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');
+      return;
+    }
+    payload.toAmount = toAmountVal;
+  }
+
+  const wasEditing = Boolean(editingTxId);
+  const previous = wasEditing ? allTransactions.find(t => String(t.id) === String(editingTxId)) : null;
+  const tempId = wasEditing ? editingTxId : makeTempId();
+  const optimisticTx = {
+    id: tempId, date, category, type: selectedTxType, amount, currency,
+    owner: previous ? previous.owner || '' : '',
+    toCurrency: isTransfer ? payload.toCurrency : '',
+    toAmount: isTransfer ? payload.toAmount : null
+  };
+
+  // تحديث محلي فوري: المستخدم لا ينتظر Google Sheets حتى يرى النتيجة.
+  upsertLocalTransaction(optimisticTx);
+  closeModal('addModalOverlay');
+  showToast(wasEditing ? 'تم التعديل فوراً ⚡ جارٍ الحفظ...' : 'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
+  editingTxId = null;
+  document.querySelector('#addModalOverlay h2').textContent = 'إضافة عملية';
+  document.getElementById('txCategory').value = '';
+  document.getElementById('txAmount').value = '';
+  document.getElementById('txToAmount').value = '';
+
+  pendingMutationCount++;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'API error');
+
+    if (wasEditing) {
+      // البيانات المحلية هي نفسها التي أرسلناها، فلا داعي لإعادة تحميل كل الشيت.
+      saveTransactionsCache();
+      showToast('تم الحفظ في الشيت ✅');
+    } else {
+      replaceTransactionId(tempId, data.id);
+      showToast('تم الحفظ في الشيت ✅');
+    }
+  } catch (e) {
+    if (wasEditing && previous) upsertLocalTransaction(previous);
+    else removeLocalTransaction(tempId);
+    showToast(e.name === 'AbortError' ? 'الحفظ تأخر؛ لم يتم تأكيد العملية.' : 'فشل الحفظ؛ تم التراجع عن العملية.');
+  } finally {
+    pendingMutationCount = Math.max(0, pendingMutationCount - 1);
+  }
+}
+
+async function deleteTx(id) {
+  if (!confirm('حذف هذه العملية؟')) return;
+  const previous = allTransactions.find(t => String(t.id) === String(id));
+  if (!previous) return;
+
+  // حذف فوري من الواجهة ثم مزامنة الحذف مع السيرفر.
+  removeLocalTransaction(id);
+  showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...');
+  pendingMutationCount++;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'delete', id }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'not found');
+    showToast('تم الحذف من الشيت ✅');
+  } catch (e) {
+    upsertLocalTransaction(previous);
+    showToast(e.name === 'AbortError' ? 'الحذف تأخر؛ تمت استعادة العملية.' : 'فشل الحذف؛ تمت استعادة العملية.');
+  } finally {
+    pendingMutationCount = Math.max(0, pendingMutationCount - 1);
+  }
+}
+
+/* ================= إضافة عملية ================= */
+function openAddModal(prefill) {
+  editingTxId = prefill && prefill.id ? prefill.id : null;
+  document.querySelector('#addModalOverlay h2').textContent = editingTxId ? 'تعديل العملية' : 'إضافة عملية';
+  document.getElementById('txDate').value = (prefill && prefill.date) || todayStr();
+
+  if (prefill) {
+    setTxType(prefill.type || 'مصروف');
+    document.getElementById('txCategory').value = prefill.category || '';
+    document.getElementById('txAmount').value = prefill.amount || '';
+    document.getElementById('txCurrency').value = prefill.currency || 'USD';
+    document.getElementById('txToCurrency').value = prefill.toCurrency || 'SYP';
+    document.getElementById('txToAmount').value = prefill.toAmount || '';
+  } else {
+    setTxType('مصروف');
+    document.getElementById('txCategory').value = '';
+    document.getElementById('txAmount').value = '';
+    document.getElementById('txToCurrency').value = 'SYP';
+    document.getElementById('txToAmount').value = '';
+  }
+  document.getElementById('addModalOverlay').classList.remove('hidden');
+}
+
+function setTxType(type) {
+  selectedTxType = type;
+  document.getElementById('typeIncomeBtn').classList.toggle('on', type === 'دخل');
+  document.getElementById('typeExpenseBtn').classList.toggle('on', type === 'مصروف');
+  document.getElementById('typeTransferBtn').classList.toggle('on', type === 'تحويل');
+  const isTransfer = type === 'تحويل';
+  document.getElementById('transferFields').classList.toggle('hidden', !isTransfer);
+  document.getElementById('txAmountLabel').textContent = isTransfer ? 'المبلغ اللي حوّلته' : 'المبلغ';
+  document.getElementById('txCurrencyLabel').textContent = isTransfer ? 'من عملة' : 'العملة';
+}
+
+/* ================= فلترة ================= */
+function openFilterModal() {
+  document.getElementById('filterType').value = currentFilters.type;
+  document.getElementById('filterCurrency').value = currentFilters.currency;
+  document.getElementById('filterCategory').value = currentFilters.category;
+  document.getElementById('filterFrom').value = currentFilters.from;
+  document.getElementById('filterTo').value = currentFilters.to;
+  document.getElementById('filterModalOverlay').classList.remove('hidden');
+}
+function applyFilters() {
+  currentFilters = {
+    type: document.getElementById('filterType').value,
+    currency: document.getElementById('filterCurrency').value,
+    category: document.getElementById('filterCategory').value,
+    from: document.getElementById('filterFrom').value,
+    to: document.getElementById('filterTo').value
+  };
+  closeModal('filterModalOverlay');
+  applyFiltersAndRender();
+}
+function clearFilters() {
+  currentFilters = { type: '', currency: '', category: '', from: '', to: '' };
+  applyFiltersAndRender();
+}
+function populateCategoryOptions() {
+  const cats = Array.from(new Set(allTransactions.map(t => t.category).filter(Boolean))).sort();
+  const dl = document.getElementById('categoryList');
+  dl.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
+  const sel = document.getElementById('filterCategory');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">الكل</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  sel.value = currentVal;
+}
+
+/* ================= العرض ================= */
+function currentMonthPrefix() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+}
+function currentMonthTransactions() {
+  const prefix = currentMonthPrefix();
+  return allTransactions.filter(t => t.date && t.date.slice(0, 7) === prefix);
+}
+
+function applyFiltersAndRender() {
+  let list = allTransactions.slice();
+  if (currentFilters.type) list = list.filter(t => t.type === currentFilters.type);
+  if (currentFilters.currency) list = list.filter(t => t.currency === currentFilters.currency || (t.type === 'تحويل' && t.toCurrency === currentFilters.currency));
+  if (currentFilters.category) list = list.filter(t => t.category === currentFilters.category);
+  if (currentFilters.from) list = list.filter(t => t.date >= currentFilters.from);
+  if (currentFilters.to) list = list.filter(t => t.date <= currentFilters.to);
+  const search = document.getElementById('searchInput').value.trim().toLocaleLowerCase('ar');
+  if (search) {
+    list = list.filter(t => [t.category, t.type, t.currency, t.toCurrency].filter(Boolean).some(v => String(v).toLocaleLowerCase('ar').includes(search)));
+  }
+
+  const filterActive = Object.values(currentFilters).some(Boolean);
+  document.getElementById('filterChip').classList.toggle('active', filterActive);
+  document.getElementById('clearFiltersBtn').style.display = filterActive ? 'block' : 'none';
+
+  // الرصيد دايمًا بيعكس الشهر الحالي بس، بغض النظر عن فلترة القائمة تحته
+  const nowD = new Date();
+  document.getElementById('balanceLabel').textContent = '💼 رصيد ' + ARABIC_MONTHS_SHORT[nowD.getMonth()] + ' ' + nowD.getFullYear();
+  const monthList = currentMonthTransactions();
+  renderSummary(monthList);
+  renderDashboard(monthList);
+  renderList(list);
+  renderDonutChart(list);
+}
+
+function renderDashboard(list) {
+  const income = list.filter(t => t.type === 'دخل').length;
+  const expense = list.filter(t => t.type === 'مصروف').length;
+  const transfer = list.filter(t => t.type === 'تحويل').length;
+  const latest = list.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)))[0];
+  const cats = new Set(list.map(t => t.category).filter(Boolean)).size;
+  const strip = document.getElementById('dashboardStrip');
+  strip.innerHTML = `
+    <div class="dash-card"><span class="dash-icon">🧾</span><span class="dash-value">${list.length}</span><span class="dash-label">عملية هذا الشهر</span></div>
+    <div class="dash-card"><span class="dash-icon">🏷️</span><span class="dash-value">${cats}</span><span class="dash-label">فئات مستخدمة</span></div>
+    <div class="dash-card"><span class="dash-icon">📅</span><span class="dash-value">${latest ? formatDisplayDate(latest.date) : '—'}</span><span class="dash-label">آخر عملية</span></div>`;
+}
+
+function renderSummary(list) {
+  const byCur = {};
+
+  const ensureCur = (cur) => {
+    if (!cur) return null;
+    if (!byCur[cur]) {
+      byCur[cur] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    }
+    return byCur[cur];
+  };
+
+  list.forEach(t => {
+    const amount = Number(t.amount) || 0;
+    const cur = t.currency;
+    if (!cur) return;
+
+    if (t.type === 'دخل') {
+      ensureCur(cur).income += amount;
+      return;
+    }
+
+    if (t.type === 'مصروف') {
+      ensureCur(cur).expense += amount;
+      return;
+    }
+
+    if (t.type === 'تحويل') {
+      // العملة المصدر: تنقص
+      ensureCur(cur).transferOut += amount;
+
+      // العملة المستلمة: تزيد
+      const toCur = String(t.toCurrency || '').trim();
+      const toAmount = Number(t.toAmount);
+      if (toCur && Number.isFinite(toAmount) && toAmount > 0) {
+        ensureCur(toCur).transferIn += toAmount;
+      }
+    }
+  });
+
+  const wrap = document.getElementById('summaryCards');
+  const currencies = Object.keys(byCur);
+
+  if (currencies.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const balanceOf = d => d.income - d.expense + d.transferIn - d.transferOut;
+
+  let html = currencies.map(cur => {
+    const d = byCur[cur];
+    const balance = balanceOf(d);
+    const sym = CUR_SYMBOL[cur] || cur;
+
+    return `<div class="cur-card">
+      <div class="cur-name">${CUR_LABEL[cur] || cur}</div>
+      <div class="cur-row income"><span class="lbl">الدخل</span><span class="val">${fmt(d.income)} ${sym}</span></div>
+      <div class="cur-row expense"><span class="lbl">المصروف</span><span class="val">${fmt(d.expense)} ${sym}</span></div>
+      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="val">${fmt(balance)} ${sym}</span></div>
+    </div>`;
+  }).join('');
+
+  // الإجمالي التقريبي بالدولار يحسب الرصيد الفعلي لكل عملة،
+  // بما فيه مبالغ التحويل الداخلة والخارجة.
+  if (rateSyp > 0 || rateTry > 0) {
+    const usd = byCur.USD || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    const syp = byCur.SYP || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    const try_ = byCur.TRY || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+
+    const totalBalance =
+      balanceOf(usd) +
+      (rateSyp > 0 ? balanceOf(syp) / rateSyp : 0) +
+      (rateTry > 0 ? balanceOf(try_) / rateTry : 0);
+
+    html = `<div class="total-approx-card">
+      <div class="cur-name">🌐 الإجمالي التقريبي ($)</div>
+      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="big-val">${fmt(totalBalance)} $</span></div>
+    </div>` + html;
+  }
+
+  wrap.innerHTML = html;
+}
+
+function renderDonutChart(list) {
+  const section = document.getElementById('donutSection');
+  const expenses = list.filter(t => t.type === 'مصروف');
+
+  if (expenses.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  let targetCur = currentFilters.currency;
+  if (!targetCur) {
+    const totals = {};
+    expenses.forEach(t => {
+      const amount = Number(t.amount) || 0;
+      totals[t.currency] = (totals[t.currency] || 0) + amount;
+    });
+    targetCur = Object.keys(totals).sort((a, b) => totals[b] - totals[a])[0];
+  }
+
+  const filtered = expenses.filter(t => t.currency === targetCur);
+  if (filtered.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  const byCategory = {};
+  filtered.forEach(t => {
+    const category = t.category || 'بدون فئة';
+    byCategory[category] = (byCategory[category] || 0) + (Number(t.amount) || 0);
+  });
+
+  const labels = Object.keys(byCategory).sort((a, b) => byCategory[b] - byCategory[a]);
+  const values = labels.map(l => byCategory[l]);
+  const colors = labels.map((_, i) => CAT_COLORS[i % CAT_COLORS.length]);
+  const total = values.reduce((a, b) => a + b, 0);
+
+  if (!total) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  section.querySelector('.chart-title').textContent =
+    '🍩 توزيع المصاريف حسب الفئة (' + (CUR_LABEL[targetCur] || targetCur) + ')';
+
+  // CSS donut: لا يعتمد على Canvas أو Chart.js، لذلك يعمل بثبات داخل APK/WebView.
+  let cursor = 0;
+  const stops = values.map((value, i) => {
+    const startPct = (cursor / total) * 100;
+    cursor += value;
+    const endPct = (cursor / total) * 100;
+    return `${colors[i]} ${startPct}% ${endPct}%`;
+  }).join(', ');
+
+  const chart = document.getElementById('donutChart');
+  chart.style.background = `conic-gradient(${stops})`;
+  chart.innerHTML = `
+    <div class="donut-center">
+      ${fmt(total)}
+      <small>${CUR_SYMBOL[targetCur] || targetCur}</small>
+    </div>`;
+
+  const legend = document.getElementById('donutLegend');
+  legend.innerHTML = labels.map((l, i) => {
+    const pct = total > 0 ? Math.round(values[i] / total * 100) : 0;
+    return `<div class="leg-item"><span class="dot" style="background:${colors[i]}"></span>${escapeHtml(l)} ${pct}%</div>`;
+  }).join('');
+}
+const ARABIC_MONTHS_SHORT = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function formatDisplayDate(dateStr) {
+  if (!dateStr || dateStr.length < 10) return dateStr || '';
+  const parts = dateStr.substring(0, 10).split('-');
+  if (parts.length !== 3) return dateStr;
+  const y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+  if (!m || m < 1 || m > 12) return dateStr;
+  const now = new Date();
+  const suffix = (y !== now.getFullYear()) ? ' ' + y : '';
+  return d + ' ' + ARABIC_MONTHS_SHORT[m - 1] + suffix;
+}
+
+let txDataById = {};
+function renderList(list) {
+  const ul = document.getElementById('transactionList');
+  const empty = document.getElementById('emptyState');
+  txDataById = {};
+  list.forEach(t => { txDataById[t.id] = t; });
+  if (list.length === 0) {
+    ul.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  ul.innerHTML = list.map(t => {
+    let cls, amountText, badgeCls;
+    if (t.type === 'تحويل') {
+      cls = 'transfer';
+      badgeCls = '';
+      const toSym = CUR_SYMBOL[t.toCurrency] || t.toCurrency || '';
+      amountText = '💱 ' + fmt(t.amount) + ' ' + (CUR_SYMBOL[t.currency] || t.currency) +
+        (t.toCurrency ? ' ← ' + (Number(t.toAmount) > 0 ? fmt(t.toAmount) + ' ' : '') + toSym : '');
+    } else {
+      const isIncome = t.type === 'دخل';
+      cls = isIncome ? 'income' : 'expense';
+      badgeCls = cls;
+      const sym = CUR_SYMBOL[t.currency] || t.currency;
+      amountText = (isIncome ? '+' : '-') + fmt(t.amount) + ' ' + sym;
+    }
+    return `<li class="tx-item" data-id="${t.id}">
+      <div class="tx-badge ${badgeCls}" ${t.type === 'تحويل' ? 'style="background:#6A4CA0"' : ''}></div>
+      <div class="tx-mid">
+        <div class="tx-cat">${escapeHtml(t.category)}</div>
+        <div class="tx-date">${formatDisplayDate(t.date)}</div>
+      </div>
+      <div class="tx-amount ${cls}">${amountText}</div>
+      <button class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${t.id}'])">✎</button>
+      <button class="tx-del" onclick="event.stopPropagation(); deleteTx('${t.id}')">✕</button>
+    </li>`;
+  }).join('');
+  document.querySelectorAll('.tx-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.tx-del') || e.target.closest('.tx-edit')) return;
+      openAddModal(txDataById[item.dataset.id]);
+    });
+  });
+  attachLongPress();
+}
+
+/* ================= تكرار عملية (ضغط مطوّل) ================= */
+function attachLongPress() {
+  const items = document.querySelectorAll('.tx-item');
+  items.forEach(item => {
+    let timer = null;
+    const start = () => { timer = setTimeout(() => { onLongPress(item.dataset.id); }, 550); };
+    const cancel = () => { if (timer) clearTimeout(timer); };
+    item.addEventListener('touchstart', start, { passive: true });
+    item.addEventListener('touchend', cancel);
+    item.addEventListener('touchmove', cancel);
+    item.addEventListener('mousedown', start);
+    item.addEventListener('mouseup', cancel);
+    item.addEventListener('mouseleave', cancel);
+  });
+}
+function onLongPress(id) {
+  const t = txDataById[id];
+  if (!t || t.type === 'تحويل') return;
+  if (navigator.vibrate) navigator.vibrate(30);
+  openAddModal({ type: t.type, category: t.category, amount: t.amount, currency: t.currency });
+  showToast('اضغط مطوّل: تكرار العملية — عدّل وحفظ 🔁');
+}
+
+/* ================= التقارير ================= */
+function openReportModal() {
+  const now = new Date();
+  document.getElementById('reportYear').value = now.getFullYear();
+  document.getElementById('reportMonth').value = pad(now.getMonth() + 1);
+  document.getElementById('reportResults').innerHTML = '';
+  document.getElementById('reportModalOverlay').classList.remove('hidden');
+}
+function currencyTotalsFor(list) {
+  const out = {};
+
+  const ensure = (cur) => {
+    if (!cur) return null;
+    if (!out[cur]) out[cur] = { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
+    return out[cur];
+  };
+
+  list.forEach(t => {
+    const amount = Number(t.amount) || 0;
+    if (!t.currency) return;
+
+    if (t.type === 'دخل') {
+      ensure(t.currency).income += amount;
+    } else if (t.type === 'مصروف') {
+      ensure(t.currency).expense += amount;
+    } else if (t.type === 'تحويل') {
+      ensure(t.currency).transferOut += amount;
+
+      const toCur = String(t.toCurrency || '').trim();
+      const toAmount = Number(t.toAmount);
+      if (toCur && Number.isFinite(toAmount) && toAmount > 0) {
+        ensure(toCur).transferIn += toAmount;
+      }
+    }
+  });
+
+  return out;
+}
+
+function pctChange(curr, prev) {
+  if (prev === 0) return curr === 0 ? null : 100;
+  return ((curr - prev) / Math.abs(prev)) * 100;
+}
+function compareBadge(curr, prev, goodWhenUp) {
+  const change = pctChange(curr, prev);
+  if (change === null) return '';
+  const up = change >= 0;
+  const good = up ? goodWhenUp : !goodWhenUp;
+  const cls = good ? (up ? 'up-good' : 'down-good') : (up ? 'up-bad' : 'down-bad');
+  const arrow = up ? '▲' : '▼';
+  return `<span class="compare-badge ${cls}">${arrow} ${Math.abs(Math.round(change))}%</span>`;
+}
+
+async function generateReport() {
+  const month = document.getElementById('reportMonth').value;
+  const year = document.getElementById('reportYear').value.trim();
+
+  let list = allTransactions.slice();
+  if (year) list = list.filter(t => t.date.slice(0, 4) === year);
+  if (month) list = list.filter(t => t.date.slice(5, 7) === month);
+
+  const byCur = currencyTotalsFor(list);
+  const box = document.getElementById('reportResults');
+  const currencies = Object.keys(byCur);
+  const exportBtn = document.getElementById('exportPdfBtn');
+  const chartWrap = document.getElementById('reportChartWrap');
+
+  if (currencies.length === 0) {
+    box.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px 0;">لا توجد بيانات لهذه الفترة</div>';
+    chartWrap.style.display = 'none';
+    exportBtn.classList.add('hidden');
+    lastReportData = null;
+    return;
+  }
+
+  // بيانات الشهر السابق للمقارنة (فقط لو محدد شهر وسنة معينين)
+  let prevByCur = {};
+  let periodLabel = 'كل الفترة';
+  if (month && year) {
+    let pm = parseInt(month, 10) - 1, py = parseInt(year, 10);
+    if (pm === 0) { pm = 12; py -= 1; }
+    const pmStr = pad(pm);
+    const prevList = allTransactions.filter(t => t.date.slice(0, 4) === String(py) && t.date.slice(5, 7) === pmStr);
+    prevByCur = currencyTotalsFor(prevList);
+    periodLabel = ARABIC_MONTHS_SHORT[parseInt(month, 10) - 1] + ' ' + year;
+  } else if (month) {
+    periodLabel = ARABIC_MONTHS_SHORT[parseInt(month, 10) - 1] + ' (كل السنوات)';
+  } else if (year) {
+    periodLabel = 'سنة ' + year;
+  }
+
+  box.innerHTML = currencies.map(cur => {
+    const d = byCur[cur];
+    const net = d.income - d.expense + d.transferIn - d.transferOut;
+    const max = Math.max(d.income, d.expense, 1);
+    const sym = CUR_SYMBOL[cur] || cur;
+    const p = prevByCur[cur] || { income: 0, expense: 0 };
+    const hasPrev = month && year;
+    return `<div class="report-card">
+      <div class="cur-name">${CUR_LABEL[cur] || cur}</div>
+      <div class="bar-row">
+        <div class="bar-label"><span>الدخل ${hasPrev ? compareBadge(d.income, p.income, true) : ''}</span><span>${fmt(d.income)} ${sym}</span></div>
+        <div class="bar-track"><div class="bar-fill income" style="width:${(d.income/max*100)}%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>المصروف ${hasPrev ? compareBadge(d.expense, p.expense, false) : ''}</span><span>${fmt(d.expense)} ${sym}</span></div>
+        <div class="bar-track"><div class="bar-fill expense" style="width:${(d.expense/max*100)}%"></div></div>
+      </div>
+      <div class="cur-row net" style="margin-top:2px;"><span class="lbl">الصافي ${hasPrev ? compareBadge(net, (p.income - p.expense + p.transferIn - p.transferOut), true) : ''}</span><span class="val">${fmt(net)} ${sym}</span></div>
+    </div>`;
+  }).join('');
+
+  // Chart.js يُحمّل عند طلب التقرير فقط، وليس عند فتح التطبيق.
+  try {
+    await ensureChartJs();
+  } catch (e) {
+    chartWrap.style.display = 'none';
+    return;
+  }
+
+  // رسم بياني (أعمدة دخل/مصروف لكل عملة)
+  chartWrap.style.display = 'block';
+  const ctx = document.getElementById('reportChart').getContext('2d');
+  if (reportChartInstance) reportChartInstance.destroy();
+  reportChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: currencies.map(c => CUR_LABEL[c] || c),
+      datasets: [
+        { label: 'الدخل', data: currencies.map(c => byCur[c].income), backgroundColor: '#1F6E52', borderRadius: 6 },
+        { label: 'المصروف', data: currencies.map(c => byCur[c].expense), backgroundColor: '#A8452C', borderRadius: 6 }
+      ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Tajawal' } } } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+  lastReportData = { periodLabel, byCur, prevByCur, hasPrev: !!(month && year) };
+  exportBtn.classList.remove('hidden');
+}
+
+/* ================= تصدير PDF ================= */
+function exportReportPdf() {
+  if (!lastReportData) return;
+  const { periodLabel, byCur, prevByCur, hasPrev } = lastReportData;
+  const rows = Object.keys(byCur).map(cur => {
+    const d = byCur[cur];
+    const net = d.income - d.expense + d.transferIn - d.transferOut;
+    const sym = CUR_SYMBOL[cur] || cur;
+    return `<tr>
+      <td>${CUR_LABEL[cur] || cur}</td>
+      <td>${fmt(d.income)} ${sym}</td>
+      <td>${fmt(d.expense)} ${sym}</td>
+      <td>${fmt(net)} ${sym}</td>
+    </tr>`;
+  }).join('');
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = `
+    <div style="font-family:Tajawal,sans-serif;direction:rtl;">
+      <h1 style="font-size:20px;">📊 تقرير مصاريفي — ${escapeHtml(periodLabel)}</h1>
+      <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+        <thead>
+          <tr style="background:#1F6E52;color:#fff;">
+            <th style="padding:8px;border:1px solid #ccc;">العملة</th>
+            <th style="padding:8px;border:1px solid #ccc;">الدخل</th>
+            <th style="padding:8px;border:1px solid #ccc;">المصروف</th>
+            <th style="padding:8px;border:1px solid #ccc;">الصافي</th>
+          </tr>
+        </thead>
+        <tbody>${rows.replace(/<td>/g, '<td style="padding:8px;border:1px solid #ccc;text-align:center;">')}</tbody>
+      </table>
+      <p style="margin-top:16px;color:#666;font-size:12px;">تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}</p>
+    </div>`;
+  window.print();
+}
+
+/* ================= أدوات مساعدة ================= */
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function fmt(n) { return (Math.round(n * 100) / 100).toLocaleString('en-US'); }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* إغلاق المودال بالضغط على الخلفية */
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.add('hidden'); });
+});
+
+
+function renderList(list){
+  const ul=document.getElementById('transactionList'),empty=document.getElementById('emptyState');txDataById={};list.forEach(t=>{txDataById[t.id]=t;});
+  if(!list.length){ul.innerHTML='';empty.classList.remove('hidden');return;}empty.classList.add('hidden');
+  ul.innerHTML=list.map(t=>{let cls,amountText,badgeCls;if(t.type==='تحويل'){cls='transfer';badgeCls='';const toSym=CUR_SYMBOL[t.toCurrency]||t.toCurrency||'';amountText='💱 '+fmt(t.amount)+' '+(CUR_SYMBOL[t.currency]||t.currency)+(t.toCurrency?' ← '+(Number(t.toAmount)>0?fmt(t.toAmount)+' ':'')+toSym:'');}else{const isIncome=t.type==='دخل';cls=isIncome?'income':'expense';badgeCls=cls;const sym=CUR_SYMBOL[t.currency]||t.currency;amountText=(isIncome?'+':'-')+fmt(t.amount)+' '+sym;}return `<li class="tx-item" data-id="${t.id}"><div class="tx-badge ${badgeCls}" ${t.type==='تحويل'?'style="background:#6A4CA0"':''}></div><div class="tx-mid"><div class="tx-cat">${escapeHtml(t.category)}</div>${t.statement?`<div class="tx-statement">${escapeHtml(t.statement)}</div>`:''}<div class="tx-date">${formatDisplayDate(t.date)}</div></div><div class="tx-amount ${cls}">${amountText}</div><button class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${t.id}'])">✎</button><button class="tx-del" onclick="event.stopPropagation(); deleteTx('${t.id}')">✕</button></li>`;}).join('');
+  document.querySelectorAll('.tx-item').forEach(item=>item.addEventListener('click',e=>{if(e.target.closest('.tx-del')||e.target.closest('.tx-edit'))return;openAddModal(txDataById[item.dataset.id]);}));attachLongPress();
+}
+function onLongPress(id){const t=txDataById[id];if(!t||t.type==='تحويل')return;if(navigator.vibrate)navigator.vibrate(30);openAddModal({type:t.type,category:t.category,statement:t.statement,amount:t.amount,currency:t.currency});showToast('اضغط مطوّل: تكرار العملية — عدّل وحفظ 🔁');}
+
+/* ================= V2.2 ================= */
+function currentMonthPrefixSafe_(){
+  const d=new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1);
+}
+function budgetMonthToLabel_(month){
+  const parts=String(month||'').split('-');
+  const m=parseInt(parts[1],10);
+  const y=parts[0];
+  return m&&ARABIC_MONTHS_SHORT[m-1] ? ARABIC_MONTHS_SHORT[m-1]+' '+y : month;
+}
+function categoryNames_(){
+  const fromManaged=managedCategories.map(c=>c.name).filter(Boolean);
+  const managedSet=new Set(fromManaged);
+  const legacy=allTransactions.map(t=>t.category).filter(Boolean).filter(c=>!managedCategories.some(m=>m.name===c));
+  return Array.from(new Set(fromManaged.concat(legacy))).sort((a,b)=>a.localeCompare(b,'ar'));
+}
+function populateCategoryOptions(){
+  const cats=categoryNames_();
+  const sel=document.getElementById('txCategory');
+  const current=sel.value;
+  sel.innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  if(current && cats.includes(current)) sel.value=current;
+  else if(cats.includes('أكل')) sel.value='أكل';
+  else if(cats[0]) sel.value=cats[0];
+
+  const filter=document.getElementById('filterCategory');
+  if(filter){
+    const f=filter.value;
+    filter.innerHTML='<option value="">الكل</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if(cats.includes(f)) filter.value=f;
+  }
+}
+async function fetchJson_(url,options={}){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),15000);
+  try{
+    const res=await fetch(url,{...options,signal:controller.signal,cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data && data.success===false) throw new Error(data.error||'API error');
+    return data;
+  }finally{clearTimeout(timer);}
+}
+async function refreshCategories_(silent=true){
+  if(!apiUrl)return false;
+  try{
+    const data=await fetchJson_(apiUrl+'?action=categories&t='+Date.now());
+    managedCategories=Array.isArray(data.categories)?data.categories:[];
+    try{localStorage.setItem('masarifi_categories_v22',JSON.stringify(managedCategories));}catch(e){}
+    populateCategoryOptions();
+    renderCategoryManager();
+    return true;
+  }catch(e){
+    if(!managedCategories.length){
+      try{managedCategories=JSON.parse(localStorage.getItem('masarifi_categories_v22')||'[]');}catch(x){managedCategories=[];}
+      populateCategoryOptions();
+    }
+    if(!silent)showToast('تعذر تحميل الفئات');
+    return false;
+  }
+}
+async function refreshBudgets_(month=budgetMonth,silent=true){
+  if(!apiUrl)return false;
+  budgetMonth=month||currentMonthPrefixSafe_();
+  try{
+    const data=await fetchJson_(apiUrl+'?action=budgets&month='+encodeURIComponent(budgetMonth)+'&t='+Date.now());
+    budgetData=Array.isArray(data.budgets)?data.budgets:[];
+    try{localStorage.setItem('masarifi_budgets_'+budgetMonth,JSON.stringify(budgetData));}catch(e){}
+    renderBudgetPanel(currentMonthTransactions());
+    return true;
+  }catch(e){
+    try{budgetData=JSON.parse(localStorage.getItem('masarifi_budgets_'+budgetMonth)||'[]');}catch(x){budgetData=[];}
+    renderBudgetPanel(currentMonthTransactions());
+    if(!silent)showToast('تعذر تحميل الميزانية');
+    return false;
+  }
+}
+async function refreshData(options={}){
+  if(!apiUrl || syncInFlight)return false;
+  syncInFlight=true;
+  try{
+    const data=await fetchJson_(apiUrl+'?action=list&t='+Date.now());
+    allTransactions=Array.isArray(data.transactions)?data.transactions:[];
+    saveTransactionsCache();
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    await Promise.all([refreshCategories_(true),refreshBudgets_(currentMonthPrefixSafe_(),true)]);
+    if(!options.silent)showToast('تم تحديث البيانات ✅');
+    return true;
+  }catch(e){
+    if(!options.silent&&!allTransactions.length)showToast(e.name==='AbortError'?'الاتصال تأخر. حاول مرة ثانية.':'تعذر الاتصال بالشيت.');
+    return false;
+  }finally{syncInFlight=false;}
+}
+function openAddModal(prefill){
+  editingTxId=prefill&&prefill.id?prefill.id:null;
+  document.querySelector('#addModalOverlay h2').textContent=editingTxId?'تعديل العملية':'إضافة عملية';
+  document.getElementById('txDate').value=(prefill&&prefill.date)||todayStr();
+  populateCategoryOptions();
+  if(prefill){
+    setTxType(prefill.type||'مصروف');
+    const cats=categoryNames_();
+    const cat=prefill.category||cats[0]||'مصاريف عامة';
+    if(!cats.includes(cat)){const o=document.createElement('option');o.value=cat;o.textContent=cat;document.getElementById('txCategory').appendChild(o);}
+    document.getElementById('txCategory').value=cat;
+    document.getElementById('txStatement').value=prefill.statement||'';
+    document.getElementById('txAmount').value=prefill.amount||'';
+    document.getElementById('txCurrency').value=prefill.currency||'USD';
+    document.getElementById('txToCurrency').value=prefill.toCurrency||'SYP';
+    document.getElementById('txToAmount').value=prefill.toAmount||'';
+  }else{
+    setTxType('مصروف');
+    document.getElementById('txStatement').value='';
+    document.getElementById('txAmount').value='';
+    document.getElementById('txToCurrency').value='SYP';
+    document.getElementById('txToAmount').value='';
+  }
+  document.getElementById('addModalOverlay').classList.remove('hidden');
+}
+function setTxType(type){
+  selectedTxType=type;
+  document.getElementById('typeIncomeBtn').classList.toggle('on',type==='دخل');
+  document.getElementById('typeExpenseBtn').classList.toggle('on',type==='مصروف');
+  document.getElementById('typeTransferBtn').classList.toggle('on',type==='تحويل');
+  const isTransfer=type==='تحويل';
+  document.getElementById('transferFields').classList.toggle('hidden',!isTransfer);
+  document.getElementById('txAmountLabel').textContent=isTransfer?'المبلغ اللي حوّلته':'المبلغ';
+  document.getElementById('txCurrencyLabel').textContent=isTransfer?'من عملة':'العملة';
+  const cat=document.getElementById('txCategory');
+  const statement=document.getElementById('txStatement');
+  cat.disabled=isTransfer;
+  statement.disabled=isTransfer;
+  if(isTransfer){
+    if(!categoryNames_().includes('تحويل عملة')){const o=document.createElement('option');o.value='تحويل عملة';o.textContent='تحويل عملة';cat.appendChild(o);}
+    cat.value='تحويل عملة'; statement.value='تحويل عملة';
+  }
+}
+async function submitAdd(){
+  let category=document.getElementById('txCategory').value.trim();
+  let statement=document.getElementById('txStatement').value.trim();
+  const amount=parseFloat(document.getElementById('txAmount').value);
+  const currency=document.getElementById('txCurrency').value;
+  const date=document.getElementById('txDate').value;
+  const isTransfer=selectedTxType==='تحويل';
+  if(!date){showToast('اختر التاريخ');return;}
+  if(isTransfer){category='تحويل عملة';statement='تحويل عملة';}
+  if(!category){showToast('اختر الفئة');return;}
+  if(!Number.isFinite(amount)||amount<=0){showToast('اكتب مبلغ صحيح');return;}
+  const payload={action:editingTxId?'update':'add',date,category,statement,type:selectedTxType,amount,currency};
+  if(editingTxId)payload.id=editingTxId;
+  if(isTransfer){
+    payload.toCurrency=document.getElementById('txToCurrency').value;
+    const toAmountVal=parseFloat(document.getElementById('txToAmount').value);
+    if(!Number.isFinite(toAmountVal)||toAmountVal<=0){showToast('اكتب المبلغ المستلم بعد التحويل');return;}
+    if(payload.toCurrency===currency){showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');return;}
+    payload.toAmount=toAmountVal;
+  }
+  const wasEditing=Boolean(editingTxId);
+  const editingId=editingTxId;
+  const previous=wasEditing?allTransactions.find(t=>String(t.id)===String(editingId)):null;
+  const tempId=wasEditing?editingId:makeTempId();
+  const optimisticTx={id:tempId,date,category,statement,type:selectedTxType,amount,currency,owner:previous?previous.owner||'':'',toCurrency:isTransfer?payload.toCurrency:'',toAmount:isTransfer?payload.toAmount:null};
+  upsertLocalTransaction(optimisticTx);
+  closeModal('addModalOverlay');
+  showToast(wasEditing?'تم التعديل فوراً ⚡ جارٍ الحفظ...':'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
+  editingTxId=null;
+  document.querySelector('#addModalOverlay h2').textContent='إضافة عملية';
+  document.getElementById('txStatement').value='';document.getElementById('txAmount').value='';document.getElementById('txToAmount').value='';
+  pendingMutationCount++;
+  try{
+    const data=await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+    if(wasEditing){saveTransactionsCache();}else{replaceTransactionId(tempId,data.id);}
+    showToast('تم الحفظ في الشيت ✅');
+  }catch(e){
+    if(wasEditing&&previous)upsertLocalTransaction(previous);else removeLocalTransaction(tempId);
+    showToast(e.name==='AbortError'?'الحفظ تأخر؛ تم التراجع.':'فشل الحفظ؛ تم التراجع عن العملية.');
+  }finally{pendingMutationCount=Math.max(0,pendingMutationCount-1);}
+}
+function applyFiltersAndRender(){
+  let list=allTransactions.slice();
+  if(currentFilters.type)list=list.filter(t=>t.type===currentFilters.type);
+  if(currentFilters.currency)list=list.filter(t=>t.currency===currentFilters.currency||(t.type==='تحويل'&&t.toCurrency===currentFilters.currency));
+  if(currentFilters.category)list=list.filter(t=>t.category===currentFilters.category);
+  if(currentFilters.from)list=list.filter(t=>t.date>=currentFilters.from);
+  if(currentFilters.to)list=list.filter(t=>t.date<=currentFilters.to);
+  const search=document.getElementById('searchInput').value.trim().toLocaleLowerCase('ar');
+  if(search)list=list.filter(t=>[t.category,t.statement,t.type,t.currency,t.toCurrency].filter(Boolean).some(v=>String(v).toLocaleLowerCase('ar').includes(search)));
+  const filterActive=Object.values(currentFilters).some(Boolean);
+  document.getElementById('filterChip').classList.toggle('active',filterActive);
+  document.getElementById('clearFiltersBtn').style.display=filterActive?'block':'none';
+  const nowD=new Date();
+  document.getElementById('balanceLabel').textContent='💼 رصيد '+ARABIC_MONTHS_SHORT[nowD.getMonth()]+' '+nowD.getFullYear();
+  const monthList=currentMonthTransactions();
+  renderSummary(monthList);renderDashboard(monthList);renderBudgetPanel(monthList);renderList(list);renderDonutChart(list);
+}
+function budgetRate_(cur){
+  if(cur==='USD')return 1;
+  if(cur==='SYP')return rateSyp>0?1/rateSyp:0;
+  if(cur==='TRY')return rateTry>0?1/rateTry:0;
+  return 0;
+}
+function toBudgetCurrency_(amount,fromCur,toCur){
+  if(fromCur===toCur)return amount;
+  const usd=budgetRate_(fromCur), target=budgetRate_(toCur);
+  if(!usd||!target)return 0;
+  return amount*usd/target;
+}
+function expenseForMonthCategory_(list,category,currency){
+  return list.filter(t=>t.type==='مصروف'&&t.category===category).reduce((sum,t)=>sum+toBudgetCurrency_(Number(t.amount)||0,t.currency,currency),0);
+}
+function totalExpenseBudgetBase_(list,budget){
+  return list.filter(t=>t.type==='مصروف').reduce((sum,t)=>sum+toBudgetCurrency_(Number(t.amount)||0,t.currency,budget.currency),0);
+}
+function renderDashboard(list){
+  const latest=list.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
+  const cats=new Set(list.map(t=>t.category).filter(Boolean)).size;
+  const total=budgetData.find(b=>!b.category);
+  let budgetText='—';
+  if(total){const spent=totalExpenseBudgetBase_(list,total);const pct=total.amount>0?Math.round(spent/total.amount*100):0;budgetText=pct+'%';}
+  document.getElementById('dashboardStrip').innerHTML=`
+    <div class="dash-card"><span class="dash-icon">🧾</span><span class="dash-value">${list.length}</span><span class="dash-label">عملية هذا الشهر</span></div>
+    <div class="dash-card"><span class="dash-icon">🏷️</span><span class="dash-value">${cats}</span><span class="dash-label">فئات مستخدمة</span></div>
+    <div class="dash-card"><span class="dash-icon">💰</span><span class="dash-value">${budgetText}</span><span class="dash-label">استخدام الميزانية</span></div>
+    <div class="dash-card"><span class="dash-icon">📅</span><span class="dash-value">${latest?formatDisplayDate(latest.date):'—'}</span><span class="dash-label">آخر عملية</span></div>`;
+}
+function renderBudgetPanel(list){
+  const el=document.getElementById('budgetSection');if(!el)return;
+  const total=budgetData.find(b=>!b.category);
+  const cats=budgetData.filter(b=>b.category&&b.amount>0);
+  if(!total&&!cats.length){el.innerHTML='';return;}
+  let html='<div class="budget-card"><div class="budget-head"><div><div class="budget-title">💰 ميزانية '+budgetMonthToLabel_(currentMonthPrefixSafe_())+'</div><div class="budget-sub">المصروف يُحسب حسب الفئة فقط، والبيان يبقى للتفاصيل.</div></div><button class="mini-btn" onclick="openBudgetModal()">تعديل</button></div>';
+  if(total){
+    const spent=totalExpenseBudgetBase_(list,total), pct=total.amount>0?Math.round(spent/total.amount*100):0, remaining=total.amount-spent;
+    html+=`<div class="budget-progress"><div class="budget-progress-fill ${pct>100?'over':''}" style="width:${Math.min(100,Math.max(0,pct))}%"></div></div><div class="budget-meta"><span>مصروف ${fmt(spent)} ${CUR_SYMBOL[total.currency]||total.currency}</span><span>${remaining>=0?'متبقي '+fmt(remaining):'تجاوز '+fmt(Math.abs(remaining))} ${CUR_SYMBOL[total.currency]||total.currency}</span></div>`;
+  }
+  if(cats.length){html+='<div class="budget-cats">';cats.forEach(b=>{const spent=expenseForMonthCategory_(list,b.category,b.currency),pct=b.amount>0?Math.round(spent/b.amount*100):0;html+=`<div class="budget-cat-row"><div><div class="budget-cat-name">${escapeHtml(b.category)}</div><div class="budget-cat-bar"><div class="budget-cat-fill ${pct>100?'over':''}" style="width:${Math.min(100,Math.max(0,pct))}%"></div></div></div><div class="budget-cat-amount">${fmt(spent)} / ${fmt(b.amount)} ${CUR_SYMBOL[b.currency]||b.currency}</div></div>`;});html+='</div>';}
+  html+='</div>';el.innerHTML=html;
+}
+function openBudgetModal(){
+  budgetMonth=currentMonthPrefixSafe_();
+  document.getElementById('budgetMonth').value=budgetMonth;
+  const total=budgetData.find(b=>!b.category);
+  document.getElementById('totalBudgetAmount').value=total?total.amount:'';
+  document.getElementById('totalBudgetCurrency').value=total?total.currency:'USD';
+  renderBudgetManagerRows();
+  document.getElementById('budgetModalOverlay').classList.remove('hidden');
+}
+function renderBudgetManagerRows(){
+  const wrap=document.getElementById('budgetCategoryRows');
+  const cats=categoryNames_().filter(c=>c!=='تحويل عملة');
+  const byCat={};budgetData.forEach(b=>{if(b.category)byCat[b.category]=b;});
+  wrap.innerHTML=cats.map(c=>{const b=byCat[c];return `<div class="field" style="margin-bottom:9px;"><label>${escapeHtml(c)}</label><div style="display:flex;gap:8px;"><input class="budget-cat-input" data-category="${escapeHtml(c)}" type="number" inputmode="decimal" placeholder="بدون ميزانية" value="${b?b.amount:''}" style="flex:1;"><select class="budget-cat-currency" data-category="${escapeHtml(c)}" style="width:105px;"><option value="USD" ${!b||b.currency==='USD'?'selected':''}>$ USD</option><option value="SYP" ${b&&b.currency==='SYP'?'selected':''}>ل.س</option><option value="TRY" ${b&&b.currency==='TRY'?'selected':''}>₺ TRY</option></select></div></div>`;}).join('');
+}
+async function loadBudgetMonth(month){
+  if(!month)return;
+  await refreshBudgets_(month,false);
+  renderBudgetManagerRows();
+}
+async function saveAllBudgets(){
+  const month=document.getElementById('budgetMonth').value||currentMonthPrefixSafe_();
+  const totalAmount=parseFloat(document.getElementById('totalBudgetAmount').value);
+  const totalCurrency=document.getElementById('totalBudgetCurrency').value;
+  const ops=[];
+  if(Number.isFinite(totalAmount)&&totalAmount>=0)ops.push({month,category:'',amount:totalAmount,currency:totalCurrency});
+  else {const old=budgetData.find(b=>!b.category);if(old)ops.push({deleteId:old.id});}
+  document.querySelectorAll('.budget-cat-input').forEach((input,index)=>{
+    const amount=parseFloat(input.value);const cat=input.dataset.category;const currency=document.querySelectorAll('.budget-cat-currency')[index].value;const old=budgetData.find(b=>b.category===cat);
+    if(Number.isFinite(amount)&&amount>=0)ops.push({month,category:cat,amount,currency}); else if(old)ops.push({deleteId:old.id});
+  });
+  if(!ops.length){closeModal('budgetModalOverlay');return;}
+  try{
+    for(const op of ops){if(op.deleteId){await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'budgetDelete',id:op.deleteId})});}else{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'budgetSave',...op})});}}
+    await refreshBudgets_(month,false);closeModal('budgetModalOverlay');showToast('تم حفظ الميزانية ✅');
+  }catch(e){showToast('فشل حفظ الميزانية');}
+}
+function openCategoryManager(){renderCategoryManager();document.getElementById('categoryManagerOverlay').classList.remove('hidden');}
+function renderCategoryManager(){
+  const wrap=document.getElementById('categoryManagerList');if(!wrap)return;
+  if(!managedCategories.length){wrap.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">لا توجد فئات بعد.</div>';return;}
+  wrap.innerHTML=managedCategories.map(c=>`<div class="category-row"><span class="name">${escapeHtml(c.name)}</span><button onclick="editCategory('${c.id}')" title="تعديل">✎</button><button onclick="deleteCategoryUi('${c.id}')" title="حذف">✕</button></div>`).join('');
+}
+async function addNewCategory(){
+  const input=document.getElementById('newCategoryName'),name=input.value.trim();if(!name){showToast('اكتب اسم الفئة');return;}
+  try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryAdd',name})});input.value='';await refreshCategories_(false);showToast('تمت إضافة الفئة ✅');}catch(e){showToast(e.message||'فشل إضافة الفئة');}
+}
+async function editCategory(id){
+  const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
+  const name=prompt('اسم الفئة الجديد:',c.name);if(name===null)return;const trimmed=name.trim();if(!trimmed||trimmed===c.name)return;
+  try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryUpdate',id,name:trimmed})});await refreshCategories_(false);await refreshData({silent:true});showToast('تم تعديل الفئة وتحديث العمليات ✅');}catch(e){showToast(e.message||'فشل تعديل الفئة');}
+}
+async function deleteCategoryUi(id){
+  const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
+  if(!confirm('إخفاء فئة "'+c.name+'" من القائمة؟ العمليات القديمة ستبقى محفوظة.'))return;
+  try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryDelete',id})});await refreshCategories_(false);showToast('تم إخفاء الفئة ✅');}catch(e){showToast('فشل حذف الفئة');}
+}
+// بعد تحميل الصفحة: تحميل الكاش ثم تحديث المعاملات والفئات والميزانية في الخلفية.
+window.addEventListener('DOMContentLoaded',()=>{
+  try{managedCategories=JSON.parse(localStorage.getItem('masarifi_categories_v22')||'[]');}catch(e){managedCategories=[];}
+  populateCategoryOptions();
+  if(apiUrl){refreshData({silent:true});}
+});
+
+</script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+<script>
+/* ================= Masarifi Firebase V1 bridge ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCoHH4ipeK6PKeXOXuFiH8UHY0w50PxSQk",
+  authDomain: "masarifi-6d0c4.firebaseapp.com",
+  projectId: "masarifi-6d0c4",
+  storageBucket: "masarifi-6d0c4.firebasestorage.app",
+  messagingSenderId: "571444804347",
+  appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
+};
+
+const firebaseApp = firebase.initializeApp(firebaseConfig);
+const firebaseAuth = firebase.auth();
+const firebaseDb = firebase.firestore();
+let firebaseUser = null;
+let firebaseAuthReady = false;
+let firebaseMutationCount = 0;
+
+const FB_USERS = 'users';
+function userRef_(){
+  if(!firebaseUser) throw new Error('يجب تسجيل الدخول أولاً');
+  return firebaseDb.collection(FB_USERS).doc(firebaseUser.uid);
+}
+function txCol_(){ return userRef_().collection('transactions'); }
+function catCol_(){ return userRef_().collection('categories'); }
+function budgetCol_(){ return userRef_().collection('budgets'); }
+function firebaseCacheKey_(){ return 'masarifi_firebase_transactions_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
+function firebaseCatCacheKey_(){ return 'masarifi_firebase_categories_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
+
+function setAuthScreen_(mode, message=''){
+  const setup = document.getElementById('setupScreen');
+  if(!setup) return;
+  setup.innerHTML = `
+    <div class="mark">مصاريفي</div>
+    <p id="authSubtitle">${mode === 'login' ? 'سجّل الدخول للوصول إلى مصاريفك من أي جهاز.' : 'أنشئ حسابك الخاص وابدأ بإدارة مصاريفك.'}</p>
+    <input id="authEmail" type="email" autocomplete="email" placeholder="البريد الإلكتروني">
+    <input id="authPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:ltr;text-align:left;">
+    <div class="setup-error" id="setupError">${escapeHtml(message || '')}</div>
+    <button class="primary-btn" id="authSubmitBtn" onclick="handleAuthSubmit_()">${mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}</button>
+    <button class="secondary-btn" id="authToggleBtn" onclick="toggleAuthMode_()" style="max-width:340px;width:100%;">${mode === 'login' ? 'إنشاء حساب جديد' : 'لدي حساب — تسجيل الدخول'}</button>
+  `;
+  setup.dataset.authMode = mode;
+}
+let authMode_ = 'login';
+function toggleAuthMode_(){ authMode_ = authMode_ === 'login' ? 'signup' : 'login'; setAuthScreen_(authMode_); }
+async function handleAuthSubmit_(){
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const err = document.getElementById('setupError');
+  const btn = document.getElementById('authSubmitBtn');
+  if(!email || !email.includes('@')){ err.textContent='اكتب بريد إلكتروني صحيح.'; return; }
+  if(password.length < 6){ err.textContent='كلمة المرور يجب أن تكون 6 أحرف على الأقل.'; return; }
+  btn.disabled = true; btn.textContent = 'جارٍ التنفيذ...'; err.textContent='';
+  try{
+    if(authMode_ === 'login') await firebaseAuth.signInWithEmailAndPassword(email,password);
+    else await firebaseAuth.createUserWithEmailAndPassword(email,password);
+  }catch(e){
+    const map = {
+      'auth/invalid-credential':'البريد أو كلمة المرور غير صحيحة.',
+      'auth/user-not-found':'لا يوجد حساب بهذا البريد.',
+      'auth/wrong-password':'كلمة المرور غير صحيحة.',
+      'auth/email-already-in-use':'هذا البريد مستخدم مسبقاً.',
+      'auth/invalid-email':'البريد الإلكتروني غير صحيح.',
+      'auth/weak-password':'كلمة المرور ضعيفة. استخدم 6 أحرف أو أكثر.'
+    };
+    err.textContent = map[e.code] || e.message || 'حدث خطأ. حاول مرة ثانية.';
+    btn.disabled = false; btn.textContent = authMode_ === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب';
+  }
+}
+
+function ensureUserMenu_(){
+  const header = document.querySelector('header.top');
+  if(!header || document.getElementById('firebaseUserMenuBtn')) return;
+  const b = document.createElement('button');
+  b.id='firebaseUserMenuBtn'; b.className='icon-btn'; b.title='الحساب'; b.textContent='👤';
+  b.onclick=()=>{
+    const email = firebaseUser ? firebaseUser.email : '';
+    if(confirm('الحساب الحالي:\n'+email+'\n\nهل تريد تسجيل الخروج؟')) firebaseAuth.signOut();
+  };
+  header.appendChild(b);
+}
+
+function showFirebaseApp_(){
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  ensureUserMenu_();
+}
+function showFirebaseLogin_(){
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('setupScreen').classList.remove('hidden');
+  setAuthScreen_(authMode_);
+}
+
+function loadFirebaseCache_(){
+  try{
+    const raw=localStorage.getItem(firebaseCacheKey_());
+    if(!raw) return false;
+    const parsed=JSON.parse(raw);
+    if(!Array.isArray(parsed)) return false;
+    allTransactions=parsed;
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    return true;
+  }catch(e){ return false; }
+}
+function saveFirebaseCache_(){
+  try{ localStorage.setItem(firebaseCacheKey_(),JSON.stringify(allTransactions)); }catch(e){}
+}
+function normalizeFirebaseTx_(id,d){
+  const x=d||{};
+  return {
+    id,
+    date:x.date||todayStr(),
+    category:x.category||'مصاريف عامة',
+    statement:x.statement||'',
+    type:x.type||'مصروف',
+    amount:Number(x.amount)||0,
+    currency:x.currency||'USD',
+    owner:firebaseUser ? firebaseUser.uid : '',
+    toCurrency:x.toCurrency||'',
+    toAmount:(x.toAmount===null||x.toAmount===undefined||x.toAmount==='')?null:Number(x.toAmount)||0
+  };
+}
+
+/* Firebase replaces the old Apps Script data layer. */
+async function refreshData(options={}){
+  if(!firebaseUser || syncInFlight) return false;
+  syncInFlight=true;
+  try{
+    const snap=await txCol_().get();
+    const rows=[];
+    snap.forEach(doc=>rows.push(normalizeFirebaseTx_(doc.id,doc.data())));
+    rows.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    allTransactions=rows;
+    saveFirebaseCache_();
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    await refreshCategories_(true);
+    if(!options.silent) showToast('تم تحديث البيانات من Firebase ✅');
+    return true;
+  }catch(e){
+    if(!options.silent && !allTransactions.length) showToast('تعذر الاتصال بـ Firebase.');
+    return false;
+  }finally{ syncInFlight=false; }
+}
+
+async function submitAdd(){
+  if(!firebaseUser){ showToast('سجّل الدخول أولاً'); return; }
+  let category=document.getElementById('txCategory').value.trim();
+  let statement=document.getElementById('txStatement').value.trim();
+  const amount=parseFloat(document.getElementById('txAmount').value);
+  const currency=document.getElementById('txCurrency').value;
+  const date=document.getElementById('txDate').value;
+  const isTransfer=selectedTxType==='تحويل';
+  if(!date){showToast('اختر التاريخ');return;}
+  if(isTransfer){category='تحويل عملة';statement='تحويل عملة';}
+  if(!category){showToast('اختر الفئة');return;}
+  if(!Number.isFinite(amount)||amount<=0){showToast('اكتب مبلغ صحيح');return;}
+  const payload={date,category,statement,type:selectedTxType,amount,currency,owner:firebaseUser.uid};
+  if(isTransfer){
+    payload.toCurrency=document.getElementById('txToCurrency').value;
+    payload.toAmount=parseFloat(document.getElementById('txToAmount').value);
+    if(!Number.isFinite(payload.toAmount)||payload.toAmount<=0){showToast('اكتب المبلغ المستلم بعد التحويل');return;}
+    if(payload.toCurrency===currency){showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');return;}
+  }else{payload.toCurrency='';payload.toAmount=null;}
+
+  const wasEditing=Boolean(editingTxId);
+  const editingId=editingTxId;
+  const previous=wasEditing?allTransactions.find(t=>String(t.id)===String(editingId)):null;
+  const tempId=wasEditing?editingId:makeTempId();
+  const optimisticTx={id:tempId,...payload};
+  upsertLocalTransaction(optimisticTx);
+  closeModal('addModalOverlay');
+  showToast(wasEditing?'تم التعديل فوراً ⚡ جارٍ الحفظ...':'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
+  editingTxId=null;
+  document.querySelector('#addModalOverlay h2').textContent='إضافة عملية';
+  document.getElementById('txCategory').value='';
+  document.getElementById('txStatement').value='';
+  document.getElementById('txAmount').value='';
+  document.getElementById('txToAmount').value='';
+  firebaseMutationCount++;
+  try{
+    if(wasEditing){
+      await txCol_().doc(String(editingId)).set(payload,{merge:true});
+      saveFirebaseCache_();
+      showToast('تم الحفظ في Firebase ✅');
+    }else{
+      const ref=await txCol_().add({...payload,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      replaceTransactionId(tempId,ref.id);
+      showToast('تم الحفظ في Firebase ✅');
+    }
+  }catch(e){
+    if(wasEditing&&previous) upsertLocalTransaction(previous); else removeLocalTransaction(tempId);
+    showToast('فشل الحفظ؛ تم التراجع عن العملية.');
+  }finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
+}
+
+async function deleteTx(id){
+  if(!firebaseUser) return;
+  if(!confirm('حذف هذه العملية؟')) return;
+  const previous=allTransactions.find(t=>String(t.id)===String(id));
+  if(!previous)return;
+  removeLocalTransaction(id); showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...'); firebaseMutationCount++;
+  try{ await txCol_().doc(String(id)).delete(); showToast('تم الحذف من Firebase ✅'); }
+  catch(e){ upsertLocalTransaction(previous); showToast('فشل الحذف؛ تمت استعادة العملية.'); }
+  finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
+}
+
+async function refreshCategories_(silent=true){
+  if(!firebaseUser)return false;
+  try{
+    const snap=await catCol_().get();
+    managedCategories=[]; snap.forEach(doc=>{const d=doc.data();if(d.active!==false)managedCategories.push({id:doc.id,name:d.name||''});});
+    managedCategories.sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+    try{localStorage.setItem(firebaseCatCacheKey_(),JSON.stringify(managedCategories));}catch(e){}
+    populateCategoryOptions(); renderCategoryManager(); return true;
+  }catch(e){
+    try{managedCategories=JSON.parse(localStorage.getItem(firebaseCatCacheKey_())||'[]');}catch(x){managedCategories=[];}
+    populateCategoryOptions(); renderCategoryManager();
+    if(!silent)showToast('تعذر تحميل الفئات'); return false;
+  }
+}
+async function addCategory(){
+  const input=document.getElementById('newCategoryInput'); if(!input)return;
+  const name=input.value.trim(); if(!name){showToast('اكتب اسم الفئة');return;}
+  if(managedCategories.some(c=>c.name===name)){showToast('الفئة موجودة مسبقاً');return;}
+  try{await catCol_().add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value='';await refreshCategories_(true);showToast('تمت إضافة الفئة ✅');}
+  catch(e){showToast('فشل إضافة الفئة');}
+}
+async function editCategory(id){
+  const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
+  const name=prompt('اسم الفئة الجديد:',c.name); if(name===null)return; const trimmed=name.trim();
+  if(!trimmed||trimmed===c.name)return;
+  try{await catCol_().doc(String(id)).set({name:trimmed,active:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await refreshCategories_(true);showToast('تم تعديل الفئة ✅');}
+  catch(e){showToast('فشل تعديل الفئة');}
+}
+async function deleteCategoryUi(id){
+  const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
+  if(!confirm('إخفاء الفئة «'+c.name+'»؟ العمليات القديمة لن تُحذف.'))return;
+  try{await catCol_().doc(String(id)).set({active:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await refreshCategories_(true);showToast('تم إخفاء الفئة ✅');}
+  catch(e){showToast('فشل حذف الفئة');}
+}
+
+/* Budgets are intentionally left for the next phase. */
+async function refreshBudgets_(){ return false; }
+
+function populateCategoryOptions(){
+  const txCats=allTransactions.map(t=>t.category).filter(Boolean);
+  const managed=(managedCategories||[]).map(c=>c.name).filter(Boolean);
+  const cats=Array.from(new Set([...managed,...txCats])).sort((a,b)=>String(a).localeCompare(String(b),'ar'));
+  const dl=document.getElementById('categoryList');
+  if(dl) dl.innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+  const sel=document.getElementById('filterCategory');
+  if(sel){const currentVal=sel.value;sel.innerHTML='<option value="">الكل</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');sel.value=currentVal;}
+}
+
+function openSettings(){
+  if(firebaseUser && confirm('الحساب الحالي: '+(firebaseUser.email||'')+'\n\nهل تريد تسجيل الخروج؟')) firebaseAuth.signOut();
+}
+function saveApiUrl(){ /* compatibility: Firebase no longer uses an API URL */ }
+
+/* Stop the old Google Apps Script background sync. */
+try{apiUrl='';}catch(e){}
+
+firebaseAuth.onAuthStateChanged(async user=>{
+  firebaseUser=user; firebaseAuthReady=true;
+  if(!user){
+    allTransactions=[]; managedCategories=[];
+    showFirebaseLogin_();
+    return;
+  }
+  showFirebaseApp_();
+  const hadCache=loadFirebaseCache_();
+  await refreshData({silent:hadCache});
+});
+
+/* Override the old startup timer's dependency on Apps Script. */
+</script>
+
+</body>
+</html>
