@@ -1412,44 +1412,49 @@ async function generateReport() {
 
 /* ================= تصدير PDF ================= */
 function exportReportPdf() {
-  if (!lastReportData) return;
-  const { periodLabel, byCur, prevByCur, hasPrev } = lastReportData;
+  if (!lastReportData) { showToast('ولّد التقرير أولاً'); return; }
+  const { periodLabel, byCur } = lastReportData;
   const rows = Object.keys(byCur).map(cur => {
     const d = byCur[cur];
     const net = d.income - d.expense + d.transferIn - d.transferOut;
     const sym = CUR_SYMBOL[cur] || cur;
     return `<tr>
-      <td>${CUR_LABEL[cur] || cur}</td>
-      <td>${fmt(d.income)} ${sym}</td>
-      <td>${fmt(d.expense)} ${sym}</td>
-      <td>${fmt(net)} ${sym}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${escapeHtml(CUR_LABEL[cur] || cur)}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${fmt(d.income)} ${sym}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${fmt(d.expense)} ${sym}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:center;">${fmt(net)} ${sym}</td>
     </tr>`;
   }).join('');
   const printArea = document.getElementById('printArea');
-  printArea.innerHTML = `
-    <div style="font-family:Tajawal,sans-serif;direction:rtl;">
-      <h1 style="font-size:20px;">📊 تقرير مصاريفي — ${escapeHtml(periodLabel)}</h1>
-      <table style="width:100%;border-collapse:collapse;margin-top:16px;">
-        <thead>
-          <tr style="background:#1F6E52;color:#fff;">
-            <th style="padding:8px;border:1px solid #ccc;">العملة</th>
-            <th style="padding:8px;border:1px solid #ccc;">الدخل</th>
-            <th style="padding:8px;border:1px solid #ccc;">المصروف</th>
-            <th style="padding:8px;border:1px solid #ccc;">الصافي</th>
-          </tr>
-        </thead>
-        <tbody>${rows.replace(/<td>/g, '<td style="padding:8px;border:1px solid #ccc;text-align:center;">')}</tbody>
-      </table>
-      <p style="margin-top:16px;color:#666;font-size:12px;">تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}</p>
-    </div>`;
-  printArea.style.display = 'block';
-  const cleanupPrint = () => { printArea.style.display = 'none'; window.removeEventListener('afterprint', cleanupPrint); };
-  window.addEventListener('afterprint', cleanupPrint);
-  setTimeout(() => { try { window.print(); } catch (e) { cleanupPrint(); showToast('تعذر فتح الطباعة'); } }, 80);
+  printArea.innerHTML = `<div style="font-family:Tajawal,Arial,sans-serif;direction:rtl;background:#fff;color:#20261f;padding:24px;width:100%;">
+    <h1 style="font-size:20px;margin:0 0 18px;">📊 تقرير مصاريفي — ${escapeHtml(periodLabel)}</h1>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="background:#1F6E52;color:#fff;">
+        <th style="padding:8px;border:1px solid #ccc;">العملة</th><th style="padding:8px;border:1px solid #ccc;">الدخل</th><th style="padding:8px;border:1px solid #ccc;">المصروف</th><th style="padding:8px;border:1px solid #ccc;">الصافي</th>
+      </tr></thead><tbody>${rows}</tbody>
+    </table>
+    <p style="margin-top:16px;color:#666;font-size:11px;">تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}</p>
+  </div>`;
+  printArea.style.display='block';
+  const options={margin:8,filename:`masarifi-report-${todayStr()}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+  if(typeof html2pdf !== 'function'){
+    printArea.style.display='none';
+    showToast('مكتبة PDF لم تُحمّل، أعد المحاولة');
+    return;
+  }
+  html2pdf().set(options).from(printArea).save().then(()=>{
+    printArea.style.display='none';
+    showToast('تم إنشاء ملف PDF ✅');
+  }).catch(e=>{
+    printArea.style.display='none';
+    console.error('PDF error',e);
+    showToast('تعذر إنشاء ملف PDF');
+  });
 }
 
 /* ================= أدوات مساعدة ================= */
 let modalHistoryBusy_ = false;
+let categoryOpenedFromSettings_ = false;
 function showModal_(id){
   const el=document.getElementById(id);
   if(!el)return;
@@ -1479,6 +1484,11 @@ function closeTopModalFromBack_(){
     const el=document.getElementById(id);
     if(el && !el.classList.contains('hidden')){
       el.classList.add('hidden');
+      if(id==='categoryManagerOverlay' && categoryOpenedFromSettings_){
+        categoryOpenedFromSettings_=false;
+        const settings=document.getElementById('firebaseSettingsOverlay');
+        if(settings) settings.classList.remove('hidden');
+      }
       return true;
     }
   }
@@ -1488,7 +1498,11 @@ try{
   if(!history.state || !history.state.masarifiBase) history.replaceState({masarifiBase:true},'',location.href);
   window.addEventListener('popstate',()=>{
     if(modalHistoryBusy_){modalHistoryBusy_=false;return;}
-    closeTopModalFromBack_();
+    if(closeTopModalFromBack_()){
+      history.pushState({masarifiBase:true},'',location.href);
+    } else {
+      history.pushState({masarifiBase:true},'',location.href);
+    }
   });
 }catch(e){}
 function fmt(n) { return (Math.round(n * 100) / 100).toLocaleString('en-US'); }
@@ -1794,6 +1808,9 @@ async function saveAllBudgets(){
 }
 function openCategoryManager(){
   renderCategoryManager();
+  const settings=document.getElementById('firebaseSettingsOverlay');
+  categoryOpenedFromSettings_=!!(settings && !settings.classList.contains('hidden'));
+  if(settings) settings.classList.add('hidden');
   showModal_('categoryManagerOverlay');
 }
 function renderCategoryManager(){
@@ -1827,6 +1844,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 </script>
 <!-- Firebase SDK -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
@@ -2065,6 +2083,9 @@ async function addCategory(){
   try{await catCol_().add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value='';await refreshCategories_(true);showToast('تمت إضافة الفئة ✅');}
   catch(e){console.error('Firebase addCategory error',e);showToast(e && e.message ? 'فشل إضافة الفئة: '+e.message : 'فشل إضافة الفئة');}
 }
+// The category modal is legacy UI; force its add button to use Firebase directly.
+window.addNewCategory = async function(){ return addCategory(); };
+
 async function editCategory(id){
   const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
   const name=prompt('اسم الفئة الجديد:',c.name); if(name===null)return; const trimmed=name.trim();
