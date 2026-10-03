@@ -228,6 +228,9 @@
     z-index:50;
   }
   .modal-overlay.hidden{display:none;}
+  #firebaseSettingsOverlay{z-index:50;}
+  #categoryManagerOverlay{z-index:70;}
+  #budgetModalOverlay{z-index:60;}
   .modal-sheet{
     background:var(--paper);
     width:100%;max-width:520px;
@@ -354,6 +357,7 @@
   /* طباعة/تصدير PDF */
   @media print{
     body *{visibility:hidden;}
+    #printArea{display:block !important;visibility:visible;}
     #printArea, #printArea *{visibility:visible;}
     #printArea{position:absolute;top:0;right:0;left:0;padding:16px;}
   }
@@ -930,7 +934,7 @@ function openAddModal(prefill) {
     document.getElementById('txToCurrency').value = 'SYP';
     document.getElementById('txToAmount').value = '';
   }
-  document.getElementById('addModalOverlay').classList.remove('hidden');
+  showModal_('addModalOverlay');
 }
 
 function setTxType(type) {
@@ -951,7 +955,7 @@ function openFilterModal() {
   document.getElementById('filterCategory').value = currentFilters.category;
   document.getElementById('filterFrom').value = currentFilters.from;
   document.getElementById('filterTo').value = currentFilters.to;
-  document.getElementById('filterModalOverlay').classList.remove('hidden');
+  showModal_('filterModalOverlay');
 }
 function applyFilters() {
   currentFilters = {
@@ -1266,7 +1270,7 @@ function openReportModal() {
   document.getElementById('reportYear').value = now.getFullYear();
   document.getElementById('reportMonth').value = pad(now.getMonth() + 1);
   document.getElementById('reportResults').innerHTML = '';
-  document.getElementById('reportModalOverlay').classList.remove('hidden');
+  showModal_('reportModalOverlay');
 }
 function currencyTotalsFor(list) {
   const out = {};
@@ -1438,11 +1442,55 @@ function exportReportPdf() {
       </table>
       <p style="margin-top:16px;color:#666;font-size:12px;">تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}</p>
     </div>`;
-  window.print();
+  printArea.style.display = 'block';
+  const cleanupPrint = () => { printArea.style.display = 'none'; window.removeEventListener('afterprint', cleanupPrint); };
+  window.addEventListener('afterprint', cleanupPrint);
+  setTimeout(() => { try { window.print(); } catch (e) { cleanupPrint(); showToast('تعذر فتح الطباعة'); } }, 80);
 }
 
 /* ================= أدوات مساعدة ================= */
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+let modalHistoryBusy_ = false;
+function showModal_(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.classList.remove('hidden');
+  try{
+    if(!modalHistoryBusy_){
+      history.pushState({masarifiModal:id},'',location.href);
+    }
+  }catch(e){}
+}
+function closeModal(id, fromBack=false){
+  const el=document.getElementById(id);
+  if(el) el.classList.add('hidden');
+  if(!fromBack){
+    try{
+      if(history.state && history.state.masarifiModal===id){
+        modalHistoryBusy_=true;
+        history.back();
+        setTimeout(()=>{modalHistoryBusy_=false;},120);
+      }
+    }catch(e){}
+  }
+}
+function closeTopModalFromBack_(){
+  const ids=['categoryManagerOverlay','firebaseSettingsOverlay','budgetModalOverlay','reportModalOverlay','filterModalOverlay','addModalOverlay'];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(el && !el.classList.contains('hidden')){
+      el.classList.add('hidden');
+      return true;
+    }
+  }
+  return false;
+}
+try{
+  if(!history.state || !history.state.masarifiBase) history.replaceState({masarifiBase:true},'',location.href);
+  window.addEventListener('popstate',()=>{
+    if(modalHistoryBusy_){modalHistoryBusy_=false;return;}
+    closeTopModalFromBack_();
+  });
+}catch(e){}
 function fmt(n) { return (Math.round(n * 100) / 100).toLocaleString('en-US'); }
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -1586,7 +1634,7 @@ function openAddModal(prefill){
     document.getElementById('txToCurrency').value='SYP';
     document.getElementById('txToAmount').value='';
   }
-  document.getElementById('addModalOverlay').classList.remove('hidden');
+  showModal_('addModalOverlay');
 }
 function setTxType(type){
   selectedTxType=type;
@@ -1714,7 +1762,7 @@ function openBudgetModal(){
   document.getElementById('totalBudgetAmount').value=total?total.amount:'';
   document.getElementById('totalBudgetCurrency').value=total?total.currency:'USD';
   renderBudgetManagerRows();
-  document.getElementById('budgetModalOverlay').classList.remove('hidden');
+  showModal_('budgetModalOverlay');
 }
 function renderBudgetManagerRows(){
   const wrap=document.getElementById('budgetCategoryRows');
@@ -1744,7 +1792,10 @@ async function saveAllBudgets(){
     await refreshBudgets_(month,false);closeModal('budgetModalOverlay');showToast('تم حفظ الميزانية ✅');
   }catch(e){showToast('فشل حفظ الميزانية');}
 }
-function openCategoryManager(){renderCategoryManager();document.getElementById('categoryManagerOverlay').classList.remove('hidden');}
+function openCategoryManager(){
+  renderCategoryManager();
+  showModal_('categoryManagerOverlay');
+}
 function renderCategoryManager(){
   const wrap=document.getElementById('categoryManagerList');if(!wrap)return;
   if(!managedCategories.length){wrap.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">لا توجد فئات بعد.</div>';return;}
@@ -1754,6 +1805,9 @@ async function addNewCategory(){
   const input=document.getElementById('newCategoryName'),name=input.value.trim();if(!name){showToast('اكتب اسم الفئة');return;}
   try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryAdd',name})});input.value='';await refreshCategories_(false);showToast('تمت إضافة الفئة ✅');}catch(e){showToast(e.message||'فشل إضافة الفئة');}
 }
+// The legacy category button calls addNewCategory(); route it to the Firebase implementation.
+async function addNewCategory(){ return addCategory(); }
+
 async function editCategory(id){
   const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
   const name=prompt('اسم الفئة الجديد:',c.name);if(name===null)return;const trimmed=name.trim();if(!trimmed||trimmed===c.name)return;
@@ -2009,7 +2063,7 @@ async function addCategory(){
   const name=input.value.trim(); if(!name){showToast('اكتب اسم الفئة');return;}
   if(managedCategories.some(c=>c.name===name)){showToast('الفئة موجودة مسبقاً');return;}
   try{await catCol_().add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value='';await refreshCategories_(true);showToast('تمت إضافة الفئة ✅');}
-  catch(e){showToast('فشل إضافة الفئة');}
+  catch(e){console.error('Firebase addCategory error',e);showToast(e && e.message ? 'فشل إضافة الفئة: '+e.message : 'فشل إضافة الفئة');}
 }
 async function editCategory(id){
   const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
@@ -2152,7 +2206,7 @@ function openSettings(){
   ensureSettingsModal_();
   document.getElementById('settingsRateSyp').value=rateSyp||'';
   document.getElementById('settingsRateTry').value=rateTry||'';
-  document.getElementById('firebaseSettingsOverlay').classList.remove('hidden');
+  showModal_('firebaseSettingsOverlay');
 }
 function saveApiUrl(){ /* compatibility: Firebase no longer uses an API URL */ }
 
