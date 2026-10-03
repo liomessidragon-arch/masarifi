@@ -42,10 +42,26 @@
     flex-direction:column;
     justify-content:center;
     align-items:center;
-    padding:32px 24px;
+    padding:24px 16px;
     text-align:center;
-    gap:18px;
   }
+  .auth-card{
+    width:100%;
+    max-width:380px;
+    background:var(--paper-2);
+    border:1.5px solid var(--line);
+    border-radius:18px;
+    padding:24px 20px;
+    box-shadow:0 8px 28px rgba(32,38,31,.07);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .auth-card .mark{margin-bottom:2px;}
+  .auth-card .auth-subtitle{margin:0 0 2px !important;font-size:14px !important;}
+  .auth-card .primary-btn,
+  .auth-card .secondary-btn{max-width:none;width:100%;}
   #setupScreen .mark{
     font-size:40px;
     font-weight:900;
@@ -378,7 +394,10 @@
 <div id="app" class="hidden">
   <header class="top">
     <h1>مصاريفي</h1>
-    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button class="icon-btn" id="firebaseUserMenuBtn" title="الحساب" onclick="openAccountMenu_()">👤</button>
+      <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    </div>
   </header>
 
   <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
@@ -432,7 +451,7 @@
     </div>
     <div class="field">
       <label>الفئة</label>
-      <select id="txCategory"></select>
+      <select id="txCategory" required></select>
     </div>
     <div class="field">
       <label>البيان</label>
@@ -1773,13 +1792,15 @@ function setAuthScreen_(mode, message=''){
   const setup = document.getElementById('setupScreen');
   if(!setup) return;
   setup.innerHTML = `
-    <div class="mark">مصاريفي</div>
-    <p id="authSubtitle">${mode === 'login' ? 'سجّل الدخول للوصول إلى مصاريفك من أي جهاز.' : 'أنشئ حسابك الخاص وابدأ بإدارة مصاريفك.'}</p>
-    <input id="authEmail" type="email" autocomplete="email" placeholder="البريد الإلكتروني">
-    <input id="authPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:ltr;text-align:left;">
-    <div class="setup-error" id="setupError">${escapeHtml(message || '')}</div>
-    <button class="primary-btn" id="authSubmitBtn" onclick="handleAuthSubmit_()">${mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}</button>
-    <button class="secondary-btn" id="authToggleBtn" onclick="toggleAuthMode_()" style="max-width:340px;width:100%;">${mode === 'login' ? 'إنشاء حساب جديد' : 'لدي حساب — تسجيل الدخول'}</button>
+    <div class="auth-card">
+      <div class="mark">مصاريفي</div>
+      <p id="authSubtitle" class="auth-subtitle">${mode === 'login' ? 'سجّل الدخول للوصول إلى مصاريفك من أي جهاز.' : 'أنشئ حسابك الخاص وابدأ بإدارة مصاريفك.'}</p>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="البريد الإلكتروني">
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:ltr;text-align:left;">
+      <div class="setup-error" id="setupError">${escapeHtml(message || '')}</div>
+      <button class="primary-btn" id="authSubmitBtn" onclick="handleAuthSubmit_()">${mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}</button>
+      <button class="secondary-btn" id="authToggleBtn" onclick="toggleAuthMode_()">${mode === 'login' ? 'إنشاء حساب جديد' : 'لدي حساب — تسجيل الدخول'}</button>
+    </div>
   `;
   setup.dataset.authMode = mode;
 }
@@ -1811,17 +1832,17 @@ async function handleAuthSubmit_(){
 }
 
 function ensureUserMenu_(){
-  const header = document.querySelector('header.top');
-  if(!header || document.getElementById('firebaseUserMenuBtn')) return;
-  const b = document.createElement('button');
-  b.id='firebaseUserMenuBtn'; b.className='icon-btn'; b.title='الحساب'; b.textContent='👤';
-  b.onclick=()=>{
-    const email = firebaseUser ? firebaseUser.email : '';
-    if(confirm('الحساب الحالي:\n'+email+'\n\nهل تريد تسجيل الخروج؟')) firebaseAuth.signOut();
-  };
-  header.appendChild(b);
+  const b=document.getElementById('firebaseUserMenuBtn');
+  if(!b)return;
+  b.onclick=()=>openAccountMenu_();
 }
-
+function openAccountMenu_(){
+  if(!firebaseUser)return;
+  const email=firebaseUser.email||'';
+  if(confirm('الحساب الحالي:\n'+email+'\n\nاضغط موافق لتسجيل الخروج وتسجيل الدخول بحساب آخر.')){
+    firebaseAuth.signOut();
+  }
+}
 function showFirebaseApp_(){
   document.getElementById('setupScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
@@ -1986,23 +2007,102 @@ async function deleteCategoryUi(id){
 /* Budgets are intentionally left for the next phase. */
 async function refreshBudgets_(){ return false; }
 
+const DEFAULT_CATEGORIES_ = ['راتب','عمل حر','طعام','مواصلات','فواتير','تسوق','صحة','ترفيه','منزل','أخرى'];
 function populateCategoryOptions(){
   const txCats=allTransactions.map(t=>t.category).filter(Boolean);
   const managed=(managedCategories||[]).map(c=>c.name).filter(Boolean);
   const cats=Array.from(new Set([...managed,...txCats])).sort((a,b)=>String(a).localeCompare(String(b),'ar'));
+  const sel=document.getElementById('txCategory');
+  if(sel){
+    const currentVal=sel.value;
+    sel.innerHTML='<option value="">اختر الفئة</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if(currentVal && cats.includes(currentVal)) sel.value=currentVal;
+  }
   const dl=document.getElementById('categoryList');
   if(dl) dl.innerHTML=cats.map(c=>`<option value="${escapeHtml(c)}">`).join('');
-  const sel=document.getElementById('filterCategory');
-  if(sel){const currentVal=sel.value;sel.innerHTML='<option value="">الكل</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');sel.value=currentVal;}
+  const filter=document.getElementById('filterCategory');
+  if(filter){
+    const currentFilter=filter.value;
+    filter.innerHTML='<option value="">الكل</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    filter.value=currentFilter;
+  }
 }
 
+function ensureSettingsModal_(){
+  if(document.getElementById('firebaseSettingsOverlay'))return;
+  const div=document.createElement('div');
+  div.id='firebaseSettingsOverlay';
+  div.className='modal-overlay hidden';
+  div.innerHTML=`
+    <div class="modal-card">
+      <div class="modal-head"><h2>⚙️ الإعدادات</h2><button class="icon-btn" onclick="closeModal('firebaseSettingsOverlay')">✕</button></div>
+      <div class="field">
+        <label>سعر صرف الليرة السورية مقابل الدولار</label>
+        <input id="settingsRateSyp" type="number" step="any" inputmode="decimal" placeholder="مثال: 13000">
+      </div>
+      <div class="field">
+        <label>سعر صرف الليرة التركية مقابل الدولار</label>
+        <input id="settingsRateTry" type="number" step="any" inputmode="decimal" placeholder="مثال: 34">
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px;">
+        <strong style="font-size:14px;">الفئات</strong>
+        <button class="mini-btn" onclick="openCategoryManager()">إدارة الفئات</button>
+      </div>
+      <div style="color:var(--muted);font-size:12px;line-height:1.7;margin-bottom:10px;">أضف أو عدّل الفئات من هنا. الفئة تستخدم للتقارير والميزانيات، والبيان يبقى لتفاصيل العملية.</div>
+      <div class="modal-actions">
+        <button class="secondary-btn" onclick="closeModal('firebaseSettingsOverlay')">إلغاء</button>
+        <button class="primary-btn" onclick="saveFirebaseSettings_()">حفظ الإعدادات</button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+}
+async function loadFirebaseSettings_(){
+  if(!firebaseUser)return;
+  try{
+    const snap=await userRef_().collection('settings').doc('preferences').get();
+    const d=snap.exists?snap.data():{};
+    rateSyp=Number(d.rateSyp)||Number(localStorage.getItem(RATE_SYP_KEY))||0;
+    rateTry=Number(d.rateTry)||Number(localStorage.getItem(RATE_TRY_KEY))||0;
+    localStorage.setItem(RATE_SYP_KEY,String(rateSyp||0));
+    localStorage.setItem(RATE_TRY_KEY,String(rateTry||0));
+  }catch(e){}
+}
+async function saveFirebaseSettings_(){
+  if(!firebaseUser)return;
+  const syp=parseFloat(document.getElementById('settingsRateSyp').value)||0;
+  const tr=parseFloat(document.getElementById('settingsRateTry').value)||0;
+  rateSyp=syp; rateTry=tr;
+  localStorage.setItem(RATE_SYP_KEY,String(syp)); localStorage.setItem(RATE_TRY_KEY,String(tr));
+  try{
+    await userRef_().collection('settings').doc('preferences').set({rateSyp:syp,rateTry:tr,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    applyFiltersAndRender();
+    closeModal('firebaseSettingsOverlay'); showToast('تم حفظ الإعدادات ✅');
+  }catch(e){showToast('تعذر حفظ الإعدادات');}
+}
 function openSettings(){
-  if(firebaseUser && confirm('الحساب الحالي: '+(firebaseUser.email||'')+'\n\nهل تريد تسجيل الخروج؟')) firebaseAuth.signOut();
+  if(!firebaseUser)return;
+  ensureSettingsModal_();
+  document.getElementById('settingsRateSyp').value=rateSyp||'';
+  document.getElementById('settingsRateTry').value=rateTry||'';
+  document.getElementById('firebaseSettingsOverlay').classList.remove('hidden');
 }
 function saveApiUrl(){ /* compatibility: Firebase no longer uses an API URL */ }
 
 /* Stop the old Google Apps Script background sync. */
 try{apiUrl='';}catch(e){}
+
+async function ensureDefaultCategories_(){
+  if(!firebaseUser)return;
+  try{
+    const snap=await catCol_().limit(1).get();
+    if(!snap.empty)return;
+    const batch=firebaseDb.batch();
+    DEFAULT_CATEGORIES_.forEach(name=>{
+      batch.set(catCol_().doc(),{name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    await batch.commit();
+  }catch(e){}
+}
 
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true;
@@ -2012,6 +2112,8 @@ firebaseAuth.onAuthStateChanged(async user=>{
     return;
   }
   showFirebaseApp_();
+  await ensureDefaultCategories_();
+  await loadFirebaseSettings_();
   const hadCache=loadFirebaseCache_();
   await refreshData({silent:hadCache});
 });
