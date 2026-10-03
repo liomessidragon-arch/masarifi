@@ -6,7 +6,6 @@
 <title>مصاريفي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root{
     --ink:#20261f;
@@ -531,6 +530,75 @@ let donutChartInstance = null;
 let reportChartInstance = null;
 let lastReportData = null;
 let editingTxId = null;
+let chartLibPromise = null;
+let syncInFlight = false;
+let pendingMutationCount = 0;
+const CACHE_KEY = 'masarifi_transactions_cache_v21';
+const CACHE_TIME_KEY = 'masarifi_transactions_cache_time_v21';
+
+function saveTransactionsCache() {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(allTransactions));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+  } catch (e) {}
+}
+
+function loadTransactionsCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return false;
+    allTransactions = parsed;
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function ensureChartJs() {
+  if (window.Chart) return Promise.resolve();
+  if (chartLibPromise) return chartLibPromise;
+  chartLibPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => { chartLibPromise = null; reject(new Error('Chart.js load failed')); };
+    document.head.appendChild(script);
+  });
+  return chartLibPromise;
+}
+
+function replaceTransactionId(tempId, realId) {
+  const t = allTransactions.find(x => String(x.id) === String(tempId));
+  if (t) t.id = realId;
+  saveTransactionsCache();
+  populateCategoryOptions();
+  applyFiltersAndRender();
+}
+
+function upsertLocalTransaction(tx) {
+  const idx = allTransactions.findIndex(x => String(x.id) === String(tx.id));
+  if (idx >= 0) allTransactions[idx] = tx;
+  else allTransactions.push(tx);
+  saveTransactionsCache();
+  populateCategoryOptions();
+  applyFiltersAndRender();
+}
+
+function removeLocalTransaction(id) {
+  allTransactions = allTransactions.filter(x => String(x.id) !== String(id));
+  saveTransactionsCache();
+  populateCategoryOptions();
+  applyFiltersAndRender();
+}
+
+function makeTempId() {
+  return 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+}
 
 /* ================= الإقلاع ================= */
 window.addEventListener('DOMContentLoaded', () => {
@@ -538,9 +606,17 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('searchInput').addEventListener('input', () => applyFiltersAndRender());
   if (apiUrl) {
     showApp();
-    refreshData();
+    const hadCache = loadTransactionsCache();
+    refreshData({ silent: hadCache });
   }
 });
+
+// مزامنة خفيفة بالخلفية فقط، حتى لا يبقى التطبيق عالقاً بانتظار السيرفر.
+setInterval(() => {
+  if (apiUrl && document.visibilityState === 'visible' && pendingMutationCount === 0) {
+    refreshData({ silent: true });
+  }
+}, 60000);
 
 function todayStr() {
   const d = new Date();
@@ -580,16 +656,30 @@ function openSettings() {
 }
 
 /* ================= الاتصال بالـ API ================= */
-async function refreshData() {
+async function refreshData(options = {}) {
+  if (!apiUrl || syncInFlight) return false;
+  syncInFlight = true;
   try {
-    const res = await fetch(apiUrl + '?action=list');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(apiUrl + '?action=list&t=' + Date.now(), { cache: 'no-store', signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.error) { showToast('خطأ: ' + data.error); return; }
-    allTransactions = data.transactions || [];
+    if (data.error) throw new Error(data.error);
+    allTransactions = Array.isArray(data.transactions) ? data.transactions : [];
+    saveTransactionsCache();
     populateCategoryOptions();
     applyFiltersAndRender();
+    if (!options.silent) showToast('تم تحديث البيانات ✅');
+    return true;
   } catch (e) {
-    showToast('تعذّر الاتصال بالشيت. تأكد من الرابط والاتصال بالإنترنت.');
+    if (!options.silent && !allTransactions.length) {
+      showToast(e.name === 'AbortError' ? 'الاتصال تأخر. حاول مرة ثانية.' : 'تعذّر الاتصال بالشيت.');
+    }
+    return false;
+  } finally {
+    syncInFlight = false;
   }
 }
 
@@ -622,41 +712,85 @@ async function submitAdd() {
   }
 
   const wasEditing = Boolean(editingTxId);
+  const previous = wasEditing ? allTransactions.find(t => String(t.id) === String(editingTxId)) : null;
+  const tempId = wasEditing ? editingTxId : makeTempId();
+  const optimisticTx = {
+    id: tempId, date, category, type: selectedTxType, amount, currency,
+    owner: previous ? previous.owner || '' : '',
+    toCurrency: isTransfer ? payload.toCurrency : '',
+    toAmount: isTransfer ? payload.toAmount : null
+  };
+
+  // تحديث محلي فوري: المستخدم لا ينتظر Google Sheets حتى يرى النتيجة.
+  upsertLocalTransaction(optimisticTx);
+  closeModal('addModalOverlay');
+  showToast(wasEditing ? 'تم التعديل فوراً ⚡ جارٍ الحفظ...' : 'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
+  editingTxId = null;
+  document.querySelector('#addModalOverlay h2').textContent = 'إضافة عملية';
+  document.getElementById('txCategory').value = '';
+  document.getElementById('txAmount').value = '';
+  document.getElementById('txToAmount').value = '';
+
+  pendingMutationCount++;
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'API error');
 
-    closeModal('addModalOverlay');
-    showToast(wasEditing ? 'تم تعديل العملية ✅' : 'تمت الإضافة ✅');
-    editingTxId = null;
-    document.getElementById('txCategory').value = '';
-    document.getElementById('txAmount').value = '';
-    document.getElementById('txToAmount').value = '';
-    await refreshData();
+    if (wasEditing) {
+      // البيانات المحلية هي نفسها التي أرسلناها، فلا داعي لإعادة تحميل كل الشيت.
+      saveTransactionsCache();
+      showToast('تم الحفظ في الشيت ✅');
+    } else {
+      replaceTransactionId(tempId, data.id);
+      showToast('تم الحفظ في الشيت ✅');
+    }
   } catch (e) {
-    showToast((wasEditing ? 'تعذّر تعديل العملية: ' : 'تعذّرت الإضافة: ') + (e.message || 'حاول مرة ثانية'));
+    if (wasEditing && previous) upsertLocalTransaction(previous);
+    else removeLocalTransaction(tempId);
+    showToast(e.name === 'AbortError' ? 'الحفظ تأخر؛ لم يتم تأكيد العملية.' : 'فشل الحفظ؛ تم التراجع عن العملية.');
+  } finally {
+    pendingMutationCount = Math.max(0, pendingMutationCount - 1);
   }
 }
 
 async function deleteTx(id) {
   if (!confirm('حذف هذه العملية؟')) return;
+  const previous = allTransactions.find(t => String(t.id) === String(id));
+  if (!previous) return;
+
+  // حذف فوري من الواجهة ثم مزامنة الحذف مع السيرفر.
+  removeLocalTransaction(id);
+  showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...');
+  pendingMutationCount++;
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'delete', id })
+      body: JSON.stringify({ action: 'delete', id }),
+      signal: controller.signal
     });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'not found');
-    showToast('تم الحذف');
-    await refreshData();
+    showToast('تم الحذف من الشيت ✅');
   } catch (e) {
-    showToast('تعذّر الحذف: ' + (e.message || 'حاول مرة ثانية'));
+    upsertLocalTransaction(previous);
+    showToast(e.name === 'AbortError' ? 'الحذف تأخر؛ تمت استعادة العملية.' : 'فشل الحذف؛ تمت استعادة العملية.');
+  } finally {
+    pendingMutationCount = Math.max(0, pendingMutationCount - 1);
   }
 }
 
@@ -1063,7 +1197,7 @@ function compareBadge(curr, prev, goodWhenUp) {
   return `<span class="compare-badge ${cls}">${arrow} ${Math.abs(Math.round(change))}%</span>`;
 }
 
-function generateReport() {
+async function generateReport() {
   const month = document.getElementById('reportMonth').value;
   const year = document.getElementById('reportYear').value.trim();
 
@@ -1121,6 +1255,14 @@ function generateReport() {
       <div class="cur-row net" style="margin-top:2px;"><span class="lbl">الصافي ${hasPrev ? compareBadge(net, (p.income - p.expense + p.transferIn - p.transferOut), true) : ''}</span><span class="val">${fmt(net)} ${sym}</span></div>
     </div>`;
   }).join('');
+
+  // Chart.js يُحمّل عند طلب التقرير فقط، وليس عند فتح التطبيق.
+  try {
+    await ensureChartJs();
+  } catch (e) {
+    chartWrap.style.display = 'none';
+    return;
+  }
 
   // رسم بياني (أعمدة دخل/مصروف لكل عملة)
   chartWrap.style.display = 'block';
