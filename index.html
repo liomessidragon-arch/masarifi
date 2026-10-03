@@ -347,14 +347,14 @@
   <input id="authPassword" type="password" placeholder="كلمة المرور (6 أحرف أو أكثر)">
   
   <div style="width:100%;max-width:340px;display:flex;gap:10px;">
-    <button class="primary-btn" id="loginBtn" onclick="handleAuth('login')">تسجيل الدخول</button>
-    <button class="secondary-btn" id="registerBtn" onclick="handleAuth('register')">حساب جديد</button>
+    <button class="primary-btn" id="loginBtn" onclick="window.handleAuth('login')">تسجيل الدخول</button>
+    <button class="secondary-btn" id="registerBtn" onclick="window.handleAuth('register')">حساب جديد</button>
   </div>
 
   <p style="margin-top:10px;font-size:12px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار</p>
   <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية = 1 دولار؟" style="text-align:right;direction:rtl;">
   <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية = 1 دولار؟" style="text-align:right;direction:rtl;">
-  <button class="secondary-btn" style="max-width:340px;padding:10px;" onclick="saveExchangeRates()">حفظ أسعار الصرف فقط</button>
+  <button class="secondary-btn" style="max-width:340px;padding:10px;" onclick="window.saveExchangeRates()">حفظ أسعار الصرف فقط</button>
   
   <div class="setup-error" id="setupError"></div>
 </div>
@@ -366,7 +366,7 @@
       <h1>مصاريفي</h1>
       <span id="userBadge" style="font-size:11px;color:var(--muted);font-weight:700;"></span>
     </div>
-    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    <button class="icon-btn" onclick="window.openSettings()">⚙️</button>
   </header>
 
   <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
@@ -387,11 +387,11 @@
   </div>
 
   <div class="toolbar">
-    <button class="chip-btn" id="filterChip" onclick="openFilterModal()">🔍 فلترة</button>
-    <button class="chip-btn" onclick="openBudgetModal()">💰 الميزانية</button>
-    <button class="chip-btn" onclick="openReportModal()">📊 التقارير</button>
+    <button class="chip-btn" id="filterChip" onclick="window.openFilterModal()">🔍 فلترة</button>
+    <button class="chip-btn" onclick="window.openBudgetModal()">💰 الميزانية</button>
+    <button class="chip-btn" onclick="window.openReportModal()">📊 التقارير</button>
   </div>
-  <button id="clearFiltersBtn" onclick="clearFilters()">مسح الفلاتر</button>
+  <button id="clearFiltersBtn" onclick="window.clearFilters()">مسح الفلاتر</button>
 
   <ul id="transactionList"></ul>
   <div id="emptyState" class="hidden">
@@ -399,7 +399,7 @@
     لا يوجد أي مصاريف أو دخل مسجّل بعد.<br>اضغط + لإضافة أول عملية.
   </div>
 
-  <button class="fab" onclick="openAddModal()">+</button>
+  <button class="fab" onclick="window.openAddModal()">+</button>
 </div>
 
 <!-- ============ Add modal ============ -->
@@ -409,9 +409,9 @@
     <div class="field">
       <label>النوع</label>
       <div class="seg seg3">
-        <button type="button" class="sel-income" id="typeIncomeBtn" onclick="setTxType('دخل')">⬆️ دخل</button>
-        <button type="button" class="sel-expense" id="typeExpenseBtn" onclick="setTxType('مصروف')">⬇️ مصروف</button>
-        <button type="button" class="sel-transfer" id="typeTransferBtn" onclick="setTxType('تحويل')">💱 تحويل</button>
+        <button type="button" class="sel-income" id="typeIncomeBtn" onclick="window.setTxType('دخل')">⬆️ دخل</button>
+        <button type="button" class="sel-expense" id="typeExpenseBtn" onclick="window.setTxType('مصروف')">⬇️ مصروف</button>
+        <button type="button" class="sel-transfer" id="typeTransferBtn" onclick="window.setTxType('تحويل')">💱 تحويل</button>
       </div>
     </div>
     <div class="field">
@@ -453,8 +453,8 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModal('addModalOverlay')">إلغاء</button>
-      <button class="primary-btn" onclick="submitAdd()">حفظ</button>
+      <button class="secondary-btn" onclick="window.closeModal('addModalOverlay')">إلغاء</button>
+      <button class="primary-btn" onclick="window.submitAdd()">حفظ</button>
     </div>
   </div>
 </div>
@@ -479,8 +479,4 @@
         <option value="USD">دولار ($)</option>
         <option value="SYP">ليرة سورية (ل.س)</option>
         <option value="TRY">ليرة تركية (₺)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>الفئة</label>
-      <select id="filterCateg
+      </s
