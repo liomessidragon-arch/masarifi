@@ -718,6 +718,7 @@ function openAddModal(prefill) {
   if (prefill) {
     setTxType(prefill.type || 'مصروف');
     document.getElementById('txCategory').value = prefill.category || '';
+    document.getElementById('txStatement').value = prefill.statement || '';
     document.getElementById('txAmount').value = prefill.amount || '';
     document.getElementById('txCurrency').value = prefill.currency || 'USD';
     document.getElementById('txToCurrency').value = prefill.toCurrency || 'SYP';
@@ -787,7 +788,7 @@ function applyFiltersAndRender() {
   if (currentFilters.to) list = list.filter(t => t.date <= currentFilters.to);
   const search = document.getElementById('searchInput').value.trim().toLocaleLowerCase('ar');
   if (search) {
-    list = list.filter(t => [t.category, t.type, t.currency, t.toCurrency].filter(Boolean).some(v => String(v).toLocaleLowerCase('ar').includes(search)));
+    list = list.filter(t => [t.category, t.statement, t.type, t.currency, t.toCurrency].filter(Boolean).some(v => String(v).toLocaleLowerCase('ar').includes(search)));
   }
 
   const filterActive = Object.values(currentFilters).some(Boolean);
@@ -1011,6 +1012,7 @@ function renderList(list) {
       <div class="tx-badge ${badgeCls}" ${t.type === 'تحويل' ? 'style="background:#6A4CA0"' : ''}></div>
       <div class="tx-mid">
         <div class="tx-cat">${escapeHtml(t.category)}</div>
+        ${t.statement ? `<div class="tx-statement">${escapeHtml(t.statement)}</div>` : ''}
         <div class="tx-date">${formatDisplayDate(t.date)}</div>
       </div>
       <div class="tx-amount ${cls}">${amountText}</div>
@@ -1046,7 +1048,7 @@ function onLongPress(id) {
   const t = txDataById[id];
   if (!t || t.type === 'تحويل') return;
   if (navigator.vibrate) navigator.vibrate(30);
-  openAddModal({ type: t.type, category: t.category, amount: t.amount, currency: t.currency });
+  openAddModal({ type: t.type, category: t.category, statement: t.statement || '', amount: t.amount, currency: t.currency });
   showToast('اضغط مطوّل: تكرار العملية — عدّل وحفظ 🔁');
 }
 
@@ -1820,9 +1822,10 @@ async function syncQueueNow_(){
       try{
         if(op.action==='add'){
           const ref=await txCol_().add({...op.payload,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-          replaceTransactionId(op.id,ref.id); allTransactions=allTransactions.filter(t=>String(t.id)!==String(op.id));
-          const fresh=normalizeFirebaseTx_(ref.id,{...op.payload,createdAt:Date.now()}); allTransactions.unshift(fresh);
-          // Remap any queued operations that referenced the temporary id.
+          // Keep the optimistic row and replace only its temporary ID.
+          // Do NOT add a second row here; the previous implementation did that
+          // and caused an offline-created transaction to appear twice after sync.
+          replaceTransactionId(op.id,ref.id);
           syncQueue_.forEach(q=>{if(String(q.id)===String(op.id))q.id=ref.id;});
           removeQueuedOp_(syncQueue_.find(q=>q===op) || op);
         }else if(op.action==='set'){
