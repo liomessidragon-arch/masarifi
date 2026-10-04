@@ -400,6 +400,19 @@
   @media(max-width:380px){.dashboard-strip{grid-template-columns:repeat(2,1fr);}}
 
 .sync-status.error{background:var(--brick-light,#FBE9E6);color:var(--brick,#B94A3A);}
+
+  /* V3.5 recurring transactions + smart alerts */
+  .recurring-list{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
+  .recurring-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);}
+  .recurring-main{min-width:0;}
+  .recurring-title{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .recurring-sub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5;}
+  .recurring-actions{display:flex;gap:5px;}
+  .recurring-actions button{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:6px 8px;cursor:pointer;}
+  .alert-box{padding:11px 12px;border-radius:12px;background:var(--gold-light,#FBF3DC);border:1px solid var(--gold,#B8860B);color:var(--ink);font-size:12px;line-height:1.6;margin-bottom:10px;}
+  .alert-box.danger{background:var(--brick-light,#FBE9E6);border-color:var(--brick,#B94A3A);}
+  .notification-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);font-size:12px;}
+
 </style>
 </head>
 <body>
@@ -439,6 +452,7 @@
   <div class="toolbar">
     <button class="chip-btn" id="filterChip" onclick="openFilterModal()">🔍 فلترة</button>
     <button class="chip-btn" onclick="openBudgetModal()">💰 الميزانية</button>
+    <button class="chip-btn" onclick="openRecurringModal_()">🔄 متكررة</button>
     <button class="chip-btn" onclick="openReportModal()">📊 التقارير</button>
   </div>
   <button id="clearFiltersBtn" onclick="clearFilters()">مسح الفلاتر</button>
@@ -596,6 +610,35 @@
   </div>
 </div>
 
+<!-- ============ Recurring modal V3.5 ============ -->
+<div class="modal-overlay hidden" id="recurringModalOverlay">
+  <div class="modal-sheet">
+    <h2>🔄 العمليات المتكررة</h2>
+    <div id="recurringAlertArea"></div>
+    <div class="notification-row" style="margin-bottom:12px;">
+      <span>🔔 تنبيهات الميزانية</span>
+      <button class="mini-btn" onclick="enableNotifications_()">تفعيل التنبيهات</button>
+    </div>
+    <div class="field">
+      <label>النوع</label>
+      <select id="recType"><option value="مصروف">مصروف</option><option value="دخل">دخل</option></select>
+    </div>
+    <div class="field"><label>الفئة</label><select id="recCategory"></select></div>
+    <div class="field"><label>البيان</label><input id="recStatement" type="text" placeholder="مثال: اشتراك الإنترنت"></div>
+    <div class="field"><label>المبلغ</label><input id="recAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>العملة</label><select id="recCurrency"><option value="USD">دولار ($)</option><option value="SYP">ليرة سورية (ل.س)</option><option value="TRY">ليرة تركية (₺)</option></select></div>
+    <div class="field"><label>التكرار</label><select id="recFrequency" onchange="renderRecurringScheduleFields_()"><option value="monthly">شهري</option><option value="weekly">أسبوعي</option><option value="daily">يومي</option></select></div>
+    <div class="field" id="recDayField"><label id="recDayLabel">يوم الشهر</label><input id="recDay" type="number" min="1" max="31" inputmode="numeric" value="1"></div>
+    <div class="field"><label>تاريخ البداية</label><input id="recStartDate" type="date"></div>
+    <div class="field"><label>تاريخ النهاية (اختياري)</label><input id="recEndDate" type="date"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal('recurringModalOverlay')">إلغاء</button>
+      <button class="primary-btn" onclick="saveRecurring_()">حفظ العملية المتكررة</button>
+    </div>
+    <div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px;"><strong style="font-size:14px;">المجدولة حالياً</strong><div id="recurringList" class="recurring-list"></div></div>
+  </div>
+</div>
+
 <!-- ============ Report modal ============ -->
 <div class="modal-overlay hidden" id="reportModalOverlay">
   <div class="modal-sheet">
@@ -650,6 +693,9 @@ let syncInFlight = false;
 let managedCategories = [];
 let budgetData = [];
 let budgetMonth = currentMonthPrefixSafe_();
+let recurringData_ = [];
+let recurringLoaded_ = false;
+let recurringEditingId_ = null;
 
 
 
@@ -1523,6 +1569,7 @@ function renderBudgetPanel(list){
   html+='</div>';el.innerHTML=html;
 }
 function openBudgetModal(){
+  sendBudgetNotifications_();
   budgetMonth=currentMonthPrefixSafe_();
   document.getElementById('budgetMonth').value=budgetMonth;
   const total=budgetData.find(b=>!b.category);
@@ -1580,7 +1627,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.2-foundation';
+const MASARIFI_VERSION = '3.5-recurring-alerts';
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 const firebaseAuth = firebase.auth();
 const firebaseDb = firebase.firestore();
@@ -1879,6 +1926,8 @@ async function refreshData(options={}){
     if(!options.silent)showToast('تم تحديث البيانات من Firebase ✅');
     startTransactionListener_();
     await syncQueueNow_();
+    await refreshRecurring_(true);
+    sendBudgetNotifications_();
     return true;
   }catch(e){
     setSyncStatus_(navigator.onLine?'online':'offline',navigator.onLine?'متصل':'');
@@ -1982,6 +2031,92 @@ async function deleteCategoryUi(id){
   if(!confirm('إخفاء الفئة «'+c.name+'»؟ العمليات القديمة لن تُحذف.'))return;
   try{await catCol_().doc(String(id)).set({active:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await refreshCategories_(true);showToast('تم إخفاء الفئة ✅');}
   catch(e){showToast('فشل حذف الفئة');}
+}
+
+/* ================= V3.5: العمليات المتكررة والتنبيهات ================= */
+const recurringColName_ = 'recurring';
+function recurringCol_(){ return userRef_().collection(recurringColName_); }
+function recurringCacheKey_(){ return 'masarifi_recurring_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
+function saveRecurringCache_(){ try{localStorage.setItem(recurringCacheKey_(),JSON.stringify(recurringData_));}catch(e){} }
+function loadRecurringCache_(){
+  try{const raw=localStorage.getItem(recurringCacheKey_()); if(!raw)return false; const arr=JSON.parse(raw); if(!Array.isArray(arr))return false; recurringData_=arr; return true;}catch(e){return false;}
+}
+function todayDateObj_(){const d=new Date();d.setHours(12,0,0,0);return d;}
+function dateToStr_(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function clampDay_(year,month,day){return Math.min(Math.max(1,Number(day)||1),new Date(year,month+1,0).getDate());}
+function recurringDueDates_(r,untilDate){
+  const out=[]; const start=new Date((r.startDate||todayStr())+'T12:00:00'); if(Number.isNaN(start.getTime()))return out;
+  const endLimit=new Date(untilDate.getTime()); endLimit.setHours(12,0,0,0);
+  const end=new Date(r.endDate? r.endDate+'T12:00:00' : endLimit); if(end>endLimit)end.setTime(endLimit.getTime());
+  if(start>end)return out;
+  const freq=r.frequency||'monthly';
+  if(freq==='daily'){
+    for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1))out.push(dateToStr_(d));
+  }else if(freq==='weekly'){
+    const target=(Number(r.day)||0)%7; const d=new Date(start); const delta=(target-d.getDay()+7)%7; d.setDate(d.getDate()+delta);
+    for(;d<=end;d.setDate(d.getDate()+7))out.push(dateToStr_(d));
+  }else{
+    const cursor=new Date(start.getFullYear(),start.getMonth(),1,12); const wanted=Number(r.day)||1;
+    while(cursor<=end){const day=clampDay_(cursor.getFullYear(),cursor.getMonth(),wanted);const d=new Date(cursor.getFullYear(),cursor.getMonth(),day,12);if(d>=start&&d<=end)out.push(dateToStr_(d));cursor.setMonth(cursor.getMonth()+1);}
+  }
+  return out;
+}
+function recurringKey_(id,date){return 'recurring-'+String(id)+'-'+String(date);}
+function recurringLabel_(r){const f=r.frequency==='daily'?'يومي':r.frequency==='weekly'?'أسبوعي':'شهري';return f+' • '+(r.day||1);}
+function recurringCategoryOptions_(){
+  const cats=categoryNames_().filter(c=>c!=='تحويل عملة');
+  const sel=document.getElementById('recCategory'); if(!sel)return;
+  const cur=sel.value; sel.innerHTML='<option value="">اختر الفئة</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join(''); if(cats.includes(cur))sel.value=cur;
+}
+function renderRecurringScheduleFields_(){
+  const f=document.getElementById('recFrequency').value; const label=document.getElementById('recDayLabel'); const input=document.getElementById('recDay');
+  if(f==='daily'){document.getElementById('recDayField').style.display='none';return;}
+  document.getElementById('recDayField').style.display='block'; label.textContent=f==='weekly'?'يوم الأسبوع (0 الأحد - 6 السبت)':'يوم الشهر'; input.min=f==='weekly'?0:1; input.max=f==='weekly'?6:31;
+}
+function resetRecurringForm_(){
+  recurringEditingId_=null; document.getElementById('recType').value='مصروف'; document.getElementById('recStatement').value=''; document.getElementById('recAmount').value=''; document.getElementById('recCurrency').value='USD'; document.getElementById('recFrequency').value='monthly'; document.getElementById('recDay').value='1'; document.getElementById('recStartDate').value=todayStr(); document.getElementById('recEndDate').value=''; recurringCategoryOptions_(); document.getElementById('recCategory').value=''; renderRecurringScheduleFields_();
+}
+function openRecurringModal_(){
+  if(!firebaseUser){showToast('سجّل الدخول أولاً');return;} loadRecurringCache_(); recurringCategoryOptions_(); resetRecurringForm_(); renderRecurringList_(); renderRecurringAlerts_(); showModal_('recurringModalOverlay'); refreshRecurring_(true);
+}
+async function refreshRecurring_(silent=true){
+  if(!firebaseUser)return false;
+  try{const snap=await recurringCol_().where('active','==',true).get(); recurringData_=[]; snap.forEach(doc=>recurringData_.push({id:doc.id,...doc.data()})); recurringData_.sort((a,b)=>String(a.statement||a.category||'').localeCompare(String(b.statement||b.category||''),'ar')); saveRecurringCache_(); renderRecurringList_(); renderRecurringAlerts_(); await processDueRecurring_(); return true;}catch(e){renderRecurringList_();renderRecurringAlerts_();if(!silent)showToast('تعذر تحميل العمليات المتكررة');return false;}
+}
+function renderRecurringList_(){
+  const wrap=document.getElementById('recurringList'); if(!wrap)return; if(!recurringData_.length){wrap.innerHTML='<div style="color:var(--muted);font-size:12px;padding:10px 0;text-align:center;">لا توجد عمليات متكررة.</div>';return;}
+  wrap.innerHTML=recurringData_.map(r=>`<div class="recurring-row"><div class="recurring-main"><div class="recurring-title">${escapeHtml(r.statement||r.category||'عملية متكررة')} — ${fmt(Number(r.amount)||0)} ${CUR_SYMBOL[r.currency]||r.currency}</div><div class="recurring-sub">${escapeHtml(r.category||'')} • ${escapeHtml(recurringLabel_(r))} • من ${escapeHtml(r.startDate||'')}</div></div><div class="recurring-actions"><button onclick="editRecurring_('${r.id}')">✎</button><button onclick="deleteRecurring_('${r.id}')">✕</button></div></div>`).join('');
+}
+function editRecurring_(id){const r=recurringData_.find(x=>String(x.id)===String(id));if(!r)return; recurringEditingId_=id; document.getElementById('recType').value=r.type||'مصروف'; recurringCategoryOptions_(); document.getElementById('recCategory').value=r.category||''; document.getElementById('recStatement').value=r.statement||''; document.getElementById('recAmount').value=r.amount||''; document.getElementById('recCurrency').value=r.currency||'USD'; document.getElementById('recFrequency').value=r.frequency||'monthly'; document.getElementById('recDay').value=r.day==null?1:r.day; document.getElementById('recStartDate').value=r.startDate||todayStr(); document.getElementById('recEndDate').value=r.endDate||''; renderRecurringScheduleFields_();}
+async function saveRecurring_(){
+  if(!firebaseUser){showToast('سجّل الدخول أولاً');return;}
+  const type=document.getElementById('recType').value, category=document.getElementById('recCategory').value.trim(), statement=document.getElementById('recStatement').value.trim(), amount=parseFloat(document.getElementById('recAmount').value), currency=document.getElementById('recCurrency').value, frequency=document.getElementById('recFrequency').value, day=Number(document.getElementById('recDay').value), startDate=document.getElementById('recStartDate').value, endDate=document.getElementById('recEndDate').value;
+  if(!category){showToast('اختر الفئة');return;} if(!Number.isFinite(amount)||amount<=0){showToast('اكتب مبلغ صحيح');return;} if(!startDate){showToast('اختر تاريخ البداية');return;} if(endDate&&endDate<startDate){showToast('تاريخ النهاية يجب أن يكون بعد البداية');return;} if(frequency==='monthly'&&(day<1||day>31)){showToast('يوم الشهر يجب أن يكون بين 1 و31');return;} if(frequency==='weekly'&&(day<0||day>6)){showToast('يوم الأسبوع يجب أن يكون بين 0 و6');return;}
+  const selected=findManagedCategoryByName_(category); const payload={type,category,categoryId:selected?selected.id:'',statement,amount,currency,frequency,day:frequency==='daily'?0:day,startDate,endDate:endDate||'',active:true,owner:firebaseUser.uid};
+  try{const ref=recurringEditingId_?recurringCol_().doc(String(recurringEditingId_)):recurringCol_().doc(); await ref.set({...payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:recurringEditingId_?firebase.firestore.FieldValue.serverTimestamp():firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); showToast(recurringEditingId_?'تم تعديل العملية المتكررة ✅':'تمت إضافة العملية المتكررة ✅'); resetRecurringForm_(); await refreshRecurring_(true);}catch(e){console.error(e);showToast('فشل حفظ العملية المتكررة');}
+}
+async function deleteRecurring_(id){const r=recurringData_.find(x=>String(x.id)===String(id));if(!r)return;if(!confirm('حذف العملية المتكررة «'+(r.statement||r.category)+'»؟'))return;try{await recurringCol_().doc(String(id)).set({active:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await refreshRecurring_(true);showToast('تم حذف العملية المتكررة ✅');}catch(e){showToast('فشل حذف العملية المتكررة');}}
+async function processDueRecurring_(){
+  if(!firebaseUser||!recurringData_.length)return;
+  const today=todayDateObj_(); const pending=[];
+  for(const r of recurringData_){const due=recurringDueDates_(r,today); for(const date of due){const key=recurringKey_(r.id,date); if(!allTransactions.some(t=>String(t.id)===key)){pending.push({id:key,r,date});}}}
+  for(const p of pending){const r=p.r; const selected=findManagedCategoryByName_(r.category); const payload={date:p.date,category:r.category,categoryId:selected?selected.id:(r.categoryId||''),statement:r.statement||'',type:r.type||'مصروف',amount:Number(r.amount)||0,currency:r.currency||'USD',owner:firebaseUser.uid,recurringId:r.id,recurringDate:p.date}; upsertLocalTransaction({id:p.id,...payload,createdAt:Date.now()}); if(navigator.onLine){try{await txCol_().doc(p.id).set({...payload,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){enqueueMutation_({action:'add',id:p.id,payload,createdAt:Date.now()});}}else enqueueMutation_({action:'add',id:p.id,payload,createdAt:Date.now()});}
+  if(pending.length){showToast('تمت إضافة '+pending.length+' عملية متكررة تلقائياً 🔄');updateSyncStatusFromQueue_();}
+}
+function budgetAlertKey_(){return 'masarifi_budget_alerts_'+(firebaseUser?firebaseUser.uid:'guest')+'_'+todayStr();}
+function renderRecurringAlerts_(){
+  const wrap=document.getElementById('recurringAlertArea');if(!wrap)return; const alerts=getBudgetAlerts_(); wrap.innerHTML=alerts.map(a=>`<div class="alert-box ${a.danger?'danger':''}">${a.text}</div>`).join('');
+}
+function getBudgetAlerts_(){
+  const alerts=[]; const list=currentMonthTransactions(); const total=budgetData.find(b=>!b.category); if(total&&total.amount>0){const spent=totalExpenseBudgetBase_(list,total);const pct=spent/total.amount*100;if(pct>=100)alerts.push({danger:true,text:'🔴 تجاوزت الميزانية الشهرية العامة بنسبة '+Math.round(pct)+'%'});else if(pct>=80)alerts.push({danger:false,text:'⚠️ وصلت إلى '+Math.round(pct)+'% من الميزانية الشهرية العامة'});}
+  budgetData.filter(b=>b.category&&b.amount>0).forEach(b=>{const spent=expenseForMonthCategory_(list,b.category,b.currency);const pct=spent/b.amount*100;if(pct>=100)alerts.push({danger:true,text:'🔴 فئة '+escapeHtml(b.category)+' تجاوزت ميزانيتها ('+Math.round(pct)+'%)'});else if(pct>=80)alerts.push({danger:false,text:'⚠️ فئة '+escapeHtml(b.category)+' وصلت إلى '+Math.round(pct)+'% من ميزانيتها'});}); return alerts;
+}
+function sendBudgetNotifications_(){
+  const alerts=getBudgetAlerts_(); if(!alerts.length)return; const key=budgetAlertKey_(); let sent=[];try{sent=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}; const fresh=alerts.filter(a=>!sent.includes(a.text)); if(!fresh.length)return; try{localStorage.setItem(key,JSON.stringify([...sent,...fresh.map(a=>a.text)]));}catch(e){}
+  fresh.forEach(a=>{showToast(a.text); if('Notification' in window&&Notification.permission==='granted'){try{new Notification('مصاريفي',{body:a.text});}catch(e){}}});
+}
+async function enableNotifications_(){
+  if(!('Notification' in window)){showToast('التنبيهات غير مدعومة على هذا الجهاز');return;} try{const p=await Notification.requestPermission();showToast(p==='granted'?'تم تفعيل التنبيهات 🔔':'لم يتم تفعيل التنبيهات'); if(p==='granted')sendBudgetNotifications_();}catch(e){showToast('تعذر تفعيل التنبيهات');}
 }
 
 /* Firebase budget data layer */
@@ -2132,7 +2267,7 @@ firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true;
   if(!user){
     stopTransactionListener_(); clearTimeout(syncRetryTimer_); syncQueue_=[];
-    allTransactions=[]; managedCategories=[];
+    allTransactions=[]; managedCategories=[]; recurringData_=[]; recurringLoaded_=false;
     showFirebaseLogin_();
     return;
   }
@@ -2145,6 +2280,7 @@ firebaseAuth.onAuthStateChanged(async user=>{
   if(navigator.onLine) await ensureDefaultCategories_();
   await loadFirebaseSettings_();
   await refreshBudgets_(currentMonthPrefixSafe_(), true);
+  loadRecurringCache_();
   const hadCache=loadFirebaseCache_();
   if(!navigator.onLine){
     populateCategoryOptions();
