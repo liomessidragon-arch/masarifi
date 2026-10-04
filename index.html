@@ -1413,108 +1413,116 @@ async function generateReport() {
 /* ================= تصدير PDF ================= */
 async function exportReportPdf() {
   if (!lastReportData) { showToast('ولّد التقرير أولاً'); return; }
-  if (typeof html2pdf !== 'function') {
+  if (typeof jspdf === 'undefined' || !jspdf.jsPDF) {
     showToast('مكتبة PDF لم تُحمّل، أعد المحاولة');
     return;
   }
 
   const { periodLabel, byCur } = lastReportData;
-  const rows = Object.keys(byCur).map(cur => {
-    const d = byCur[cur];
-    const net = d.income - d.expense + d.transferIn - d.transferOut;
-    const sym = CUR_SYMBOL[cur] || cur;
-    return `<tr>
-      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${escapeHtml(CUR_LABEL[cur] || cur)}</td>
-      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${fmt(d.income)} ${sym}</td>
-      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${fmt(d.expense)} ${sym}</td>
-      <td style="padding:10px;border:1px solid #ccc;text-align:center;">${fmt(net)} ${sym}</td>
-    </tr>`;
-  }).join('');
-
-  // ننشئ حاوية مستقلة خاصة بالتصدير حتى لا تتأثر بقواعد #printArea
-  // أو بعناصر الواجهة المخفية داخل WebView.
-  const pdfArea = document.createElement('div');
-  pdfArea.id = 'pdfRenderArea';
-  pdfArea.dir = 'rtl';
-  pdfArea.style.cssText = [
-    'position:fixed',
-    'top:0',
-    'left:0',
-    'width:794px',
-    'min-height:1123px',
-    'box-sizing:border-box',
-    'padding:32px',
-    'background:#ffffff',
-    'color:#20261f',
-    'font-family:Tajawal,Arial,sans-serif',
-    'font-size:14px',
-    'line-height:1.6',
-    'direction:rtl',
-    'z-index:2147483647',
-    'display:block'
-  ].join(';');
-
-  pdfArea.innerHTML = `
-    <div style="width:100%;box-sizing:border-box;background:#fff;">
-      <h1 style="font-family:Tajawal,Arial,sans-serif;font-size:24px;margin:0 0 24px;text-align:right;color:#20261f;">📊 تقرير مصاريفي</h1>
-      <div style="font-size:16px;margin-bottom:20px;color:#555;">${escapeHtml(periodLabel)}</div>
-      <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:Tajawal,Arial,sans-serif;font-size:14px;">
-        <thead>
-          <tr style="background:#1F6E52;color:#fff;">
-            <th style="padding:10px;border:1px solid #ccc;text-align:center;">العملة</th>
-            <th style="padding:10px;border:1px solid #ccc;text-align:center;">الدخل</th>
-            <th style="padding:10px;border:1px solid #ccc;text-align:center;">المصروف</th>
-            <th style="padding:10px;border:1px solid #ccc;text-align:center;">الصافي</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div style="margin-top:24px;padding-top:12px;border-top:1px solid #ddd;color:#777;font-size:11px;text-align:right;">
-        تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ${todayStr()}
-      </div>
-    </div>`;
-
-  document.body.appendChild(pdfArea);
+  const currencies = Object.keys(byCur);
 
   try {
-    // نعطي المتصفح وقتاً لرسم النص العربي قبل أخذ لقطة الـ canvas.
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    await new Promise(resolve => setTimeout(resolve, 250));
 
-    const options = {
-      margin: 0,
-      filename: `masarifi-report-${todayStr()}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: 794,
-        windowWidth: 794,
-        scrollX: 0,
-        scrollY: 0
-      },
-      jsPDF: {
-        unit: 'mm',
-        format: 'a4',
-        orientation: 'portrait',
-        compress: true
-      },
-      pagebreak: { mode: ['css', 'legacy'] }
-    };
+    // ننشئ Canvas بشكل مباشر بدلاً من html2canvas/html2pdf.
+    // هذا أكثر ثباتاً داخل WebView على أندرويد، وCanvas الأصلي يتعامل
+    // مع تشكيل النص العربي واتجاه RTL من خلال محرك المتصفح نفسه.
+    const W = 1240;
+    const rowH = 92;
+    const H = Math.max(1754, 430 + currencies.length * rowH);
+    const canvas = document.createElement('canvas');
+    canvas.width = W * 2;
+    canvas.height = H * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.direction = 'rtl';
+    ctx.textBaseline = 'middle';
 
-    await html2pdf().set(options).from(pdfArea).save();
+    const fontFamily = 'Tajawal, Arial, sans-serif';
+    const right = W - 70;
+
+    // العنوان
+    ctx.fillStyle = '#20261f';
+    ctx.font = '700 34px ' + fontFamily;
+    ctx.textAlign = 'right';
+    ctx.fillText('تقرير مصاريفي', right, 72);
+
+    ctx.fillStyle = '#666666';
+    ctx.font = '500 22px ' + fontFamily;
+    ctx.fillText(String(periodLabel), right, 125);
+
+    // عنوان الجدول
+    const tableX = 70, tableY = 190, tableW = W - 140;
+    const cols = [tableX, tableX + tableW*0.25, tableX + tableW*0.50, tableX + tableW*0.75, tableX + tableW];
+    const headerH = 70;
+
+    ctx.fillStyle = '#1F6E52';
+    ctx.fillRect(tableX, tableY, tableW, headerH);
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(tableX, tableY, tableW, headerH);
+
+    const headers = ['العملة', 'الدخل', 'المصروف', 'الصافي'];
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 20px ' + fontFamily;
+    ctx.textAlign = 'center';
+    for (let i = 0; i < 4; i++) {
+      const cx = (cols[i+1] + cols[i+0]) / 2;
+      ctx.fillText(headers[i], cx, tableY + headerH/2);
+    }
+
+    currencies.forEach((cur, idx) => {
+      const d = byCur[cur];
+      const net = d.income - d.expense + d.transferIn - d.transferOut;
+      const sym = CUR_SYMBOL[cur] || cur;
+      const y = tableY + headerH + idx * rowH;
+
+      ctx.fillStyle = idx % 2 === 0 ? '#ffffff' : '#f7f7f7';
+      ctx.fillRect(tableX, y, tableW, rowH);
+      ctx.strokeStyle = '#cccccc';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(tableX, y, tableW, rowH);
+
+      ctx.fillStyle = '#20261f';
+      ctx.font = '600 20px ' + fontFamily;
+      ctx.textAlign = 'center';
+      ctx.fillText(String(CUR_LABEL[cur] || cur), (cols[0]+cols[1])/2, y+rowH/2);
+
+      ctx.font = '500 19px ' + fontFamily;
+      ctx.fillText(fmt(d.income) + ' ' + sym, (cols[1]+cols[2])/2, y+rowH/2);
+      ctx.fillText(fmt(d.expense) + ' ' + sym, (cols[2]+cols[3])/2, y+rowH/2);
+      ctx.fillText(fmt(net) + ' ' + sym, (cols[3]+cols[4])/2, y+rowH/2);
+    });
+
+    const footerY = tableY + headerH + currencies.length * rowH + 65;
+    ctx.strokeStyle = '#dddddd';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tableX, footerY - 28);
+    ctx.lineTo(tableX + tableW, footerY - 28);
+    ctx.stroke();
+    ctx.fillStyle = '#777777';
+    ctx.font = '400 16px ' + fontFamily;
+    ctx.textAlign = 'right';
+    ctx.fillText('تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ ' + todayStr(), right, footerY);
+
+    const img = canvas.toDataURL('image/jpeg', 0.95);
+    const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    const pageW = 210, pageH = 297;
+    const ratio = Math.min(pageW / W, pageH / H);
+    const imgW = W * ratio, imgH = H * ratio;
+    const x = (pageW - imgW) / 2;
+    const y = 0;
+    pdf.addImage(img, 'JPEG', x, y, imgW, imgH, undefined, 'FAST');
+    pdf.save('masarifi-report-' + todayStr() + '.pdf');
     showToast('تم إنشاء ملف PDF ✅');
   } catch (e) {
     console.error('PDF error', e);
     showToast('تعذر إنشاء ملف PDF');
-  } finally {
-    pdfArea.remove();
   }
 }
-
 /* ================= أدوات مساعدة ================= */
 let modalHistoryBusy_ = false;
 let categoryOpenedFromSettings_ = false;
@@ -1908,6 +1916,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 <!-- Firebase SDK -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
