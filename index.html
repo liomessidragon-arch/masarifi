@@ -1681,6 +1681,23 @@ function loadFirebaseCache_(){
 function saveFirebaseCache_(){
   try{ localStorage.setItem(firebaseCacheKey_(),JSON.stringify(allTransactions)); }catch(e){}
 }
+function loadFirebaseCategoryCache_(){
+  try{
+    const raw=localStorage.getItem(firebaseCatCacheKey_());
+    if(!raw) return false;
+    const parsed=JSON.parse(raw);
+    if(!Array.isArray(parsed)) return false;
+    managedCategories=parsed.filter(c=>c && c.name && c.active!==false).map(c=>({
+      id:String(c.id||''),
+      name:String(c.name||''),
+      aliases:Array.isArray(c.aliases)?c.aliases:[]
+    }));
+    managedCategories.sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+    populateCategoryOptions();
+    renderCategoryManager();
+    return managedCategories.length>0;
+  }catch(e){ return false; }
+}
 function findManagedCategoryByName_(name){
   const target=String(name||'').trim();
   if(!target) return null;
@@ -2101,11 +2118,19 @@ firebaseAuth.onAuthStateChanged(async user=>{
   }
   showFirebaseApp_();
   loadSyncQueue_();
+  // Load cached categories immediately so the Add Transaction form works offline.
+  // Firebase is refreshed afterward when connectivity is available.
+  loadFirebaseCategoryCache_();
   setSyncStatus_(navigator.onLine ? 'online' : 'offline');
-  await ensureDefaultCategories_();
+  if(navigator.onLine) await ensureDefaultCategories_();
   await loadFirebaseSettings_();
   await refreshBudgets_(currentMonthPrefixSafe_(), true);
   const hadCache=loadFirebaseCache_();
+  if(!navigator.onLine){
+    populateCategoryOptions();
+    applyFiltersAndRender();
+    return;
+  }
   await refreshData({silent:hadCache});
 });
 
