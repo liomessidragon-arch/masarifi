@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta name="masarifi-version" content="3.2-foundation">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -34,7 +35,7 @@
   }
   button{font-family:inherit;}
   .hidden{display:none !important;}
-  /* أثناء تهيئة Firebase لا نعرض شاشة Apps Script القديمة ولو لثوانٍ */
+  /* أثناء تهيئة Firebase لا نعرض شاشة الدخول قبل جاهزية Firebase */
   body:not(.firebase-ready) #setupScreen{visibility:hidden;}
   .firebase-boot-screen{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:9999;}
   .firebase-boot-screen .boot-mark{font-size:30px;font-weight:900;color:var(--emerald);}
@@ -116,6 +117,11 @@
     color:var(--ink);
   }
   .icon-btn:active{background:var(--line);}
+
+  .sync-status{font-size:10.5px;font-weight:700;padding:5px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;margin-inline-start:auto;margin-inline-end:6px;}
+  .sync-status.online{background:var(--emerald-light);color:var(--emerald);border-color:var(--emerald);}
+  .sync-status.offline{background:var(--brick-light);color:var(--brick);border-color:var(--brick);}
+  .sync-status.syncing{background:var(--gold-light);color:var(--gold);border-color:var(--gold);}
 
   /* summary cards */
   #summaryCards{
@@ -398,21 +404,13 @@
 <div id="firebaseBootScreen" class="firebase-boot-screen"><div class="boot-mark">مصاريفي</div></div>
 
 <!-- ============ Setup screen ============ -->
-<div id="setupScreen">
-  <div class="mark">مصاريفي</div>
-  <p>وصّل التطبيق برابط الويب الخاص بسكربت جوجل شيت (Apps Script Web App URL) اللي نسخته بعد النشر.</p>
-  <input id="apiUrlInput" type="text" placeholder="https://script.google.com/macros/s/xxxxx/exec">
-  <p style="margin-top:6px;">أسعار الصرف (اختياري) لعرض الإجمالي التقريبي بالدولار — كم وحدة = دولار واحد</p>
-  <input id="rateSypInput" type="number" step="any" placeholder="كم ليرة سورية تساوي دولار واحد؟ (مثال 13000)" style="text-align:right;direction:rtl;">
-  <input id="rateTryInput" type="number" step="any" placeholder="كم ليرة تركية تساوي دولار واحد؟ (مثال 34)" style="text-align:right;direction:rtl;">
-  <div class="setup-error" id="setupError"></div>
-  <button class="primary-btn" onclick="saveApiUrl()">حفظ والمتابعة</button>
-</div>
+<div id="setupScreen"></div>
 
 <!-- ============ Main app ============ -->
 <div id="app" class="hidden">
   <header class="top">
     <h1>مصاريفي</h1>
+    <div id="syncStatus" class="sync-status online" title="حالة المزامنة">☁️ متصل</div>
     <div style="display:flex;align-items:center;gap:4px;">
       <button class="icon-btn" id="firebaseUserMenuBtn" title="الحساب" onclick="openAccountMenu_()">👤</button>
       <button class="icon-btn" onclick="openSettings()">⚙️</button>
@@ -630,14 +628,12 @@
 
 <script>
 /* ================= إعدادات وحالة عامة ================= */
-const STORAGE_KEY = 'masarifi_api_url';
 const RATE_SYP_KEY = 'masarifi_syp_per_usd';
 const RATE_TRY_KEY = 'masarifi_try_per_usd';
 const CUR_LABEL = { USD: 'دولار ($)', SYP: 'ليرة سورية (ل.س)', TRY: 'ليرة تركية (₺)' };
 const CUR_SYMBOL = { USD: '$', SYP: 'ل.س', TRY: '₺' };
 const CAT_COLORS = ['#1F6E52','#A8452C','#B8860B','#6A4CA0','#2E6F8E','#8C7A3F','#C2694A','#4B8B6F','#9A6B9E','#5A7D9A'];
 
-let apiUrl = localStorage.getItem(STORAGE_KEY) || '';
 let rateSyp = parseFloat(localStorage.getItem(RATE_SYP_KEY)) || 0;
 let rateTry = parseFloat(localStorage.getItem(RATE_TRY_KEY)) || 0;
 let allTransactions = [];
@@ -649,34 +645,13 @@ let lastReportData = null;
 let editingTxId = null;
 let chartLibPromise = null;
 let syncInFlight = false;
-let pendingMutationCount = 0;
 let managedCategories = [];
 let budgetData = [];
 let budgetMonth = currentMonthPrefixSafe_();
-const CACHE_KEY = 'masarifi_transactions_cache_v21';
-const CACHE_TIME_KEY = 'masarifi_transactions_cache_time_v21';
 
-function saveTransactionsCache() {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(allTransactions));
-    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-  } catch (e) {}
-}
 
-function loadTransactionsCache() {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return false;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return false;
-    allTransactions = parsed;
-    populateCategoryOptions();
-    applyFiltersAndRender();
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
+
+
 
 function ensureChartJs() {
   if (window.Chart) return Promise.resolve();
@@ -695,7 +670,7 @@ function ensureChartJs() {
 function replaceTransactionId(tempId, realId) {
   const t = allTransactions.find(x => String(x.id) === String(tempId));
   if (t) t.id = realId;
-  saveTransactionsCache();
+  saveFirebaseCache_();
   populateCategoryOptions();
   applyFiltersAndRender();
 }
@@ -703,15 +678,15 @@ function replaceTransactionId(tempId, realId) {
 function upsertLocalTransaction(tx) {
   const idx = allTransactions.findIndex(x => String(x.id) === String(tx.id));
   if (idx >= 0) allTransactions[idx] = tx;
-  else allTransactions.push(tx);
-  saveTransactionsCache();
+  else allTransactions.unshift(tx);
+  saveFirebaseCache_();
   populateCategoryOptions();
   applyFiltersAndRender();
 }
 
 function removeLocalTransaction(id) {
   allTransactions = allTransactions.filter(x => String(x.id) !== String(id));
-  saveTransactionsCache();
+  saveFirebaseCache_();
   populateCategoryOptions();
   applyFiltersAndRender();
 }
@@ -720,201 +695,19 @@ function makeTempId() {
   return 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
 }
 
-/* ================= الإقلاع ================= */
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('txDate').value = todayStr();
-  document.getElementById('searchInput').addEventListener('input', () => applyFiltersAndRender());
-  if (apiUrl) {
-    showApp();
-    const hadCache = loadTransactionsCache();
-    refreshData({ silent: hadCache });
-  }
-});
-
-// مزامنة خفيفة بالخلفية فقط، حتى لا يبقى التطبيق عالقاً بانتظار السيرفر.
-setInterval(() => {
-  if (apiUrl && document.visibilityState === 'visible' && pendingMutationCount === 0) {
-    refreshData({ silent: true });
-  }
-}, 60000);
-
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-function showApp() {
-  document.getElementById('setupScreen').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-}
 
-function saveApiUrl() {
-  const val = document.getElementById('apiUrlInput').value.trim();
-  const err = document.getElementById('setupError');
-  if (!val.startsWith('https://script.google.com/')) {
-    err.textContent = 'الرابط لازم يبدأ بـ https://script.google.com/ — تأكد إنك نسخت رابط الـ Web App الصحيح.';
-    return;
-  }
-  err.textContent = '';
-  apiUrl = val;
-  rateSyp = parseFloat(document.getElementById('rateSypInput').value) || 0;
-  rateTry = parseFloat(document.getElementById('rateTryInput').value) || 0;
-  localStorage.setItem(STORAGE_KEY, apiUrl);
-  localStorage.setItem(RATE_SYP_KEY, rateSyp);
-  localStorage.setItem(RATE_TRY_KEY, rateTry);
-  showApp();
-  refreshData();
-}
 
-function openSettings() {
-  document.getElementById('app').classList.add('hidden');
-  document.getElementById('setupScreen').classList.remove('hidden');
-  document.getElementById('apiUrlInput').value = apiUrl;
-  document.getElementById('rateSypInput').value = rateSyp || '';
-  document.getElementById('rateTryInput').value = rateTry || '';
-}
+
+
+
 
 /* ================= الاتصال بالـ API ================= */
-async function refreshData(options = {}) {
-  if (!apiUrl || syncInFlight) return false;
-  syncInFlight = true;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(apiUrl + '?action=list&t=' + Date.now(), { cache: 'no-store', signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    allTransactions = Array.isArray(data.transactions) ? data.transactions : [];
-    saveTransactionsCache();
-    populateCategoryOptions();
-    applyFiltersAndRender();
-    if (!options.silent) showToast('تم تحديث البيانات ✅');
-    return true;
-  } catch (e) {
-    if (!options.silent && !allTransactions.length) {
-      showToast(e.name === 'AbortError' ? 'الاتصال تأخر. حاول مرة ثانية.' : 'تعذّر الاتصال بالشيت.');
-    }
-    return false;
-  } finally {
-    syncInFlight = false;
-  }
-}
-
-async function submitAdd() {
-  let category = document.getElementById('txCategory').value.trim();
-  const amount = parseFloat(document.getElementById('txAmount').value);
-  const currency = document.getElementById('txCurrency').value;
-  const date = document.getElementById('txDate').value;
-  const isTransfer = selectedTxType === 'تحويل';
-
-  if (!date) { showToast('اختر التاريخ'); return; }
-  if (isTransfer && !category) category = 'تحويل عملة';
-  if (!category) { showToast('اكتب الفئة أو البيان'); return; }
-  if (!Number.isFinite(amount) || amount <= 0) { showToast('اكتب مبلغ صحيح'); return; }
-
-  const payload = { action: editingTxId ? 'update' : 'add', date, category, type: selectedTxType, amount, currency };
-  if (editingTxId) payload.id = editingTxId;
-  if (isTransfer) {
-    payload.toCurrency = document.getElementById('txToCurrency').value;
-    const toAmountVal = parseFloat(document.getElementById('txToAmount').value);
-    if (!Number.isFinite(toAmountVal) || toAmountVal <= 0) {
-      showToast('اكتب المبلغ المستلم بعد التحويل');
-      return;
-    }
-    if (payload.toCurrency === currency) {
-      showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');
-      return;
-    }
-    payload.toAmount = toAmountVal;
-  }
-
-  const wasEditing = Boolean(editingTxId);
-  const previous = wasEditing ? allTransactions.find(t => String(t.id) === String(editingTxId)) : null;
-  const tempId = wasEditing ? editingTxId : makeTempId();
-  const optimisticTx = {
-    id: tempId, date, category, type: selectedTxType, amount, currency,
-    owner: previous ? previous.owner || '' : '',
-    toCurrency: isTransfer ? payload.toCurrency : '',
-    toAmount: isTransfer ? payload.toAmount : null
-  };
-
-  // تحديث محلي فوري: المستخدم لا ينتظر Google Sheets حتى يرى النتيجة.
-  upsertLocalTransaction(optimisticTx);
-  closeModal('addModalOverlay');
-  showToast(wasEditing ? 'تم التعديل فوراً ⚡ جارٍ الحفظ...' : 'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
-  editingTxId = null;
-  document.querySelector('#addModalOverlay h2').textContent = 'إضافة عملية';
-  document.getElementById('txCategory').value = '';
-  document.getElementById('txAmount').value = '';
-  document.getElementById('txToAmount').value = '';
-
-  pendingMutationCount++;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'API error');
-
-    if (wasEditing) {
-      // البيانات المحلية هي نفسها التي أرسلناها، فلا داعي لإعادة تحميل كل الشيت.
-      saveTransactionsCache();
-      showToast('تم الحفظ في الشيت ✅');
-    } else {
-      replaceTransactionId(tempId, data.id);
-      showToast('تم الحفظ في الشيت ✅');
-    }
-  } catch (e) {
-    if (wasEditing && previous) upsertLocalTransaction(previous);
-    else removeLocalTransaction(tempId);
-    showToast(e.name === 'AbortError' ? 'الحفظ تأخر؛ لم يتم تأكيد العملية.' : 'فشل الحفظ؛ تم التراجع عن العملية.');
-  } finally {
-    pendingMutationCount = Math.max(0, pendingMutationCount - 1);
-  }
-}
-
-async function deleteTx(id) {
-  if (!confirm('حذف هذه العملية؟')) return;
-  const previous = allTransactions.find(t => String(t.id) === String(id));
-  if (!previous) return;
-
-  // حذف فوري من الواجهة ثم مزامنة الحذف مع السيرفر.
-  removeLocalTransaction(id);
-  showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...');
-  pendingMutationCount++;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'delete', id }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'not found');
-    showToast('تم الحذف من الشيت ✅');
-  } catch (e) {
-    upsertLocalTransaction(previous);
-    showToast(e.name === 'AbortError' ? 'الحذف تأخر؛ تمت استعادة العملية.' : 'فشل الحذف؛ تمت استعادة العملية.');
-  } finally {
-    pendingMutationCount = Math.max(0, pendingMutationCount - 1);
-  }
-}
-
-/* ================= إضافة عملية ================= */
 function openAddModal(prefill) {
   editingTxId = prefill && prefill.id ? prefill.id : null;
   document.querySelector('#addModalOverlay h2').textContent = editingTxId ? 'تعديل العملية' : 'إضافة عملية';
@@ -971,15 +764,6 @@ function applyFilters() {
 function clearFilters() {
   currentFilters = { type: '', currency: '', category: '', from: '', to: '' };
   applyFiltersAndRender();
-}
-function populateCategoryOptions() {
-  const cats = Array.from(new Set(allTransactions.map(t => t.category).filter(Boolean))).sort();
-  const dl = document.getElementById('categoryList');
-  dl.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
-  const sel = document.getElementById('filterCategory');
-  const currentVal = sel.value;
-  sel.innerHTML = '<option value="">الكل</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-  sel.value = currentVal;
 }
 
 /* ================= العرض ================= */
@@ -1593,14 +1377,6 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
 });
 
 
-function renderList(list){
-  const ul=document.getElementById('transactionList'),empty=document.getElementById('emptyState');txDataById={};list.forEach(t=>{txDataById[t.id]=t;});
-  if(!list.length){ul.innerHTML='';empty.classList.remove('hidden');return;}empty.classList.add('hidden');
-  ul.innerHTML=list.map(t=>{let cls,amountText,badgeCls;if(t.type==='تحويل'){cls='transfer';badgeCls='';const toSym=CUR_SYMBOL[t.toCurrency]||t.toCurrency||'';amountText='💱 '+fmt(t.amount)+' '+(CUR_SYMBOL[t.currency]||t.currency)+(t.toCurrency?' ← '+(Number(t.toAmount)>0?fmt(t.toAmount)+' ':'')+toSym:'');}else{const isIncome=t.type==='دخل';cls=isIncome?'income':'expense';badgeCls=cls;const sym=CUR_SYMBOL[t.currency]||t.currency;amountText=(isIncome?'+':'-')+fmt(t.amount)+' '+sym;}return `<li class="tx-item" data-id="${t.id}"><div class="tx-badge ${badgeCls}" ${t.type==='تحويل'?'style="background:#6A4CA0"':''}></div><div class="tx-mid"><div class="tx-cat">${escapeHtml(t.category)}</div>${t.statement?`<div class="tx-statement">${escapeHtml(t.statement)}</div>`:''}<div class="tx-date">${formatDisplayDate(t.date)}</div></div><div class="tx-amount ${cls}">${amountText}</div><button class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${t.id}'])">✎</button><button class="tx-del" onclick="event.stopPropagation(); deleteTx('${t.id}')">✕</button></li>`;}).join('');
-  document.querySelectorAll('.tx-item').forEach(item=>item.addEventListener('click',e=>{if(e.target.closest('.tx-del')||e.target.closest('.tx-edit'))return;openAddModal(txDataById[item.dataset.id]);}));attachLongPress();
-}
-function onLongPress(id){const t=txDataById[id];if(!t||t.type==='تحويل')return;if(navigator.vibrate)navigator.vibrate(30);openAddModal({type:t.type,category:t.category,statement:t.statement,amount:t.amount,currency:t.currency});showToast('اضغط مطوّل: تكرار العملية — عدّل وحفظ 🔁');}
-
 /* ================= V2.2 ================= */
 function currentMonthPrefixSafe_(){
   const d=new Date();
@@ -1634,68 +1410,10 @@ function populateCategoryOptions(){
     if(cats.includes(f)) filter.value=f;
   }
 }
-async function fetchJson_(url,options={}){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),15000);
-  try{
-    const res=await fetch(url,{...options,signal:controller.signal,cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(data && data.success===false) throw new Error(data.error||'API error');
-    return data;
-  }finally{clearTimeout(timer);}
-}
-async function refreshCategories_(silent=true){
-  if(!apiUrl)return false;
-  try{
-    const data=await fetchJson_(apiUrl+'?action=categories&t='+Date.now());
-    managedCategories=Array.isArray(data.categories)?data.categories:[];
-    try{localStorage.setItem('masarifi_categories_v22',JSON.stringify(managedCategories));}catch(e){}
-    populateCategoryOptions();
-    renderCategoryManager();
-    return true;
-  }catch(e){
-    if(!managedCategories.length){
-      try{managedCategories=JSON.parse(localStorage.getItem('masarifi_categories_v22')||'[]');}catch(x){managedCategories=[];}
-      populateCategoryOptions();
-    }
-    if(!silent)showToast('تعذر تحميل الفئات');
-    return false;
-  }
-}
-async function refreshBudgets_(month=budgetMonth,silent=true){
-  if(!apiUrl)return false;
-  budgetMonth=month||currentMonthPrefixSafe_();
-  try{
-    const data=await fetchJson_(apiUrl+'?action=budgets&month='+encodeURIComponent(budgetMonth)+'&t='+Date.now());
-    budgetData=Array.isArray(data.budgets)?data.budgets:[];
-    try{localStorage.setItem('masarifi_budgets_'+budgetMonth,JSON.stringify(budgetData));}catch(e){}
-    renderBudgetPanel(currentMonthTransactions());
-    return true;
-  }catch(e){
-    try{budgetData=JSON.parse(localStorage.getItem('masarifi_budgets_'+budgetMonth)||'[]');}catch(x){budgetData=[];}
-    renderBudgetPanel(currentMonthTransactions());
-    if(!silent)showToast('تعذر تحميل الميزانية');
-    return false;
-  }
-}
-async function refreshData(options={}){
-  if(!apiUrl || syncInFlight)return false;
-  syncInFlight=true;
-  try{
-    const data=await fetchJson_(apiUrl+'?action=list&t='+Date.now());
-    allTransactions=Array.isArray(data.transactions)?data.transactions:[];
-    saveTransactionsCache();
-    populateCategoryOptions();
-    applyFiltersAndRender();
-    await Promise.all([refreshCategories_(true),refreshBudgets_(currentMonthPrefixSafe_(),true)]);
-    if(!options.silent)showToast('تم تحديث البيانات ✅');
-    return true;
-  }catch(e){
-    if(!options.silent&&!allTransactions.length)showToast(e.name==='AbortError'?'الاتصال تأخر. حاول مرة ثانية.':'تعذر الاتصال بالشيت.');
-    return false;
-  }finally{syncInFlight=false;}
-}
+
+
+
+
 function openAddModal(prefill){
   editingTxId=prefill&&prefill.id?prefill.id:null;
   document.querySelector('#addModalOverlay h2').textContent=editingTxId?'تعديل العملية':'إضافة عملية';
@@ -1739,47 +1457,7 @@ function setTxType(type){
     cat.value='تحويل عملة'; statement.value='تحويل عملة';
   }
 }
-async function submitAdd(){
-  let category=document.getElementById('txCategory').value.trim();
-  let statement=document.getElementById('txStatement').value.trim();
-  const amount=parseFloat(document.getElementById('txAmount').value);
-  const currency=document.getElementById('txCurrency').value;
-  const date=document.getElementById('txDate').value;
-  const isTransfer=selectedTxType==='تحويل';
-  if(!date){showToast('اختر التاريخ');return;}
-  if(isTransfer){category='تحويل عملة';statement='تحويل عملة';}
-  if(!category){showToast('اختر الفئة');return;}
-  if(!Number.isFinite(amount)||amount<=0){showToast('اكتب مبلغ صحيح');return;}
-  const payload={action:editingTxId?'update':'add',date,category,statement,type:selectedTxType,amount,currency};
-  if(editingTxId)payload.id=editingTxId;
-  if(isTransfer){
-    payload.toCurrency=document.getElementById('txToCurrency').value;
-    const toAmountVal=parseFloat(document.getElementById('txToAmount').value);
-    if(!Number.isFinite(toAmountVal)||toAmountVal<=0){showToast('اكتب المبلغ المستلم بعد التحويل');return;}
-    if(payload.toCurrency===currency){showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');return;}
-    payload.toAmount=toAmountVal;
-  }
-  const wasEditing=Boolean(editingTxId);
-  const editingId=editingTxId;
-  const previous=wasEditing?allTransactions.find(t=>String(t.id)===String(editingId)):null;
-  const tempId=wasEditing?editingId:makeTempId();
-  const optimisticTx={id:tempId,date,category,statement,type:selectedTxType,amount,currency,owner:previous?previous.owner||'':'',toCurrency:isTransfer?payload.toCurrency:'',toAmount:isTransfer?payload.toAmount:null};
-  upsertLocalTransaction(optimisticTx);
-  closeModal('addModalOverlay');
-  showToast(wasEditing?'تم التعديل فوراً ⚡ جارٍ الحفظ...':'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
-  editingTxId=null;
-  document.querySelector('#addModalOverlay h2').textContent='إضافة عملية';
-  document.getElementById('txStatement').value='';document.getElementById('txAmount').value='';document.getElementById('txToAmount').value='';
-  pendingMutationCount++;
-  try{
-    const data=await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
-    if(wasEditing){saveTransactionsCache();}else{replaceTransactionId(tempId,data.id);}
-    showToast('تم الحفظ في الشيت ✅');
-  }catch(e){
-    if(wasEditing&&previous)upsertLocalTransaction(previous);else removeLocalTransaction(tempId);
-    showToast(e.name==='AbortError'?'الحفظ تأخر؛ تم التراجع.':'فشل الحفظ؛ تم التراجع عن العملية.');
-  }finally{pendingMutationCount=Math.max(0,pendingMutationCount-1);}
-}
+
 function applyFiltersAndRender(){
   let list=allTransactions.slice();
   if(currentFilters.type)list=list.filter(t=>t.type===currentFilters.type);
@@ -1860,23 +1538,7 @@ async function loadBudgetMonth(month){
   await refreshBudgets_(month,false);
   renderBudgetManagerRows();
 }
-async function saveAllBudgets(){
-  const month=document.getElementById('budgetMonth').value||currentMonthPrefixSafe_();
-  const totalAmount=parseFloat(document.getElementById('totalBudgetAmount').value);
-  const totalCurrency=document.getElementById('totalBudgetCurrency').value;
-  const ops=[];
-  if(Number.isFinite(totalAmount)&&totalAmount>=0)ops.push({month,category:'',amount:totalAmount,currency:totalCurrency});
-  else {const old=budgetData.find(b=>!b.category);if(old)ops.push({deleteId:old.id});}
-  document.querySelectorAll('.budget-cat-input').forEach((input,index)=>{
-    const amount=parseFloat(input.value);const cat=input.dataset.category;const currency=document.querySelectorAll('.budget-cat-currency')[index].value;const old=budgetData.find(b=>b.category===cat);
-    if(Number.isFinite(amount)&&amount>=0)ops.push({month,category:cat,amount,currency}); else if(old)ops.push({deleteId:old.id});
-  });
-  if(!ops.length){closeModal('budgetModalOverlay');return;}
-  try{
-    for(const op of ops){if(op.deleteId){await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'budgetDelete',id:op.deleteId})});}else{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'budgetSave',...op})});}}
-    await refreshBudgets_(month,false);closeModal('budgetModalOverlay');showToast('تم حفظ الميزانية ✅');
-  }catch(e){showToast('فشل حفظ الميزانية');}
-}
+
 function openCategoryManager(){
   renderCategoryManager();
   const settings=document.getElementById('firebaseSettingsOverlay');
@@ -1889,32 +1551,15 @@ function renderCategoryManager(){
   if(!managedCategories.length){wrap.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">لا توجد فئات بعد.</div>';return;}
   wrap.innerHTML=managedCategories.map(c=>`<div class="category-row"><span class="name">${escapeHtml(c.name)}</span><button onclick="editCategory('${c.id}')" title="تعديل">✎</button><button onclick="deleteCategoryUi('${c.id}')" title="حذف">✕</button></div>`).join('');
 }
-async function addNewCategory(){
-  const input=document.getElementById('newCategoryName'),name=input.value.trim();if(!name){showToast('اكتب اسم الفئة');return;}
-  try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryAdd',name})});input.value='';await refreshCategories_(false);showToast('تمت إضافة الفئة ✅');}catch(e){showToast(e.message||'فشل إضافة الفئة');}
-}
+
 // The legacy category button calls addNewCategory(); route it to the Firebase implementation.
 async function addNewCategory(){ return addCategory(); }
 
-async function editCategory(id){
-  const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
-  const name=prompt('اسم الفئة الجديد:',c.name);if(name===null)return;const trimmed=name.trim();if(!trimmed||trimmed===c.name)return;
-  try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryUpdate',id,name:trimmed})});await refreshCategories_(false);await refreshData({silent:true});showToast('تم تعديل الفئة وتحديث العمليات ✅');}catch(e){showToast(e.message||'فشل تعديل الفئة');}
-}
-async function deleteCategoryUi(id){
-  const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
-  if(!confirm('إخفاء فئة "'+c.name+'" من القائمة؟ العمليات القديمة ستبقى محفوظة.'))return;
-  try{await fetchJson_(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'categoryDelete',id})});await refreshCategories_(false);showToast('تم إخفاء الفئة ✅');}catch(e){showToast('فشل حذف الفئة');}
-}
-// بعد تحميل الصفحة: تحميل الكاش ثم تحديث المعاملات والفئات والميزانية في الخلفية.
-window.addEventListener('DOMContentLoaded',()=>{
-  try{managedCategories=JSON.parse(localStorage.getItem('masarifi_categories_v22')||'[]');}catch(e){managedCategories=[];}
-  populateCategoryOptions();
-  if(apiUrl){refreshData({silent:true});}
-});
+
+
 
 </script>
-<!-- Firebase SDK -->
+<!-- Firebase SDK / V3.2 data layer -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
@@ -1931,6 +1576,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
+const MASARIFI_VERSION = '3.2-foundation';
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 const firebaseAuth = firebase.auth();
 const firebaseDb = firebase.firestore();
@@ -1945,6 +1591,7 @@ function userRef_(){
 }
 function txCol_(){ return userRef_().collection('transactions'); }
 function catCol_(){ return userRef_().collection('categories'); }
+// V3 foundation: category IDs are stable; aliases keep renamed categories linked to old transactions.
 function budgetCol_(){ return userRef_().collection('budgets'); }
 function firebaseCacheKey_(){ return 'masarifi_firebase_transactions_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
 function firebaseCatCacheKey_(){ return 'masarifi_firebase_categories_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
@@ -2034,46 +1681,183 @@ function loadFirebaseCache_(){
 function saveFirebaseCache_(){
   try{ localStorage.setItem(firebaseCacheKey_(),JSON.stringify(allTransactions)); }catch(e){}
 }
+function findManagedCategoryByName_(name){
+  const target=String(name||'').trim();
+  if(!target) return null;
+  return (managedCategories||[]).find(c=>c.name===target || (Array.isArray(c.aliases) && c.aliases.includes(target))) || null;
+}
+function normalizeCategory_(rawName, rawId){
+  const byId = rawId ? (managedCategories||[]).find(c=>String(c.id)===String(rawId)) : null;
+  const byName = findManagedCategoryByName_(rawName);
+  const cat = byId || byName;
+  return {
+    id: cat ? cat.id : (rawId || ''),
+    name: cat ? cat.name : (rawName || '')
+  };
+}
+
 function normalizeFirebaseTx_(id,d){
   const x=d||{};
+  const cat=normalizeCategory_(x.category,x.categoryId);
   return {
     id,
     date:x.date||todayStr(),
-    category:x.category||'مصاريف عامة',
+    category:cat.name||x.category||'مصاريف عامة',
+    categoryId:cat.id||'',
     statement:x.statement||'',
     type:x.type||'مصروف',
     amount:Number(x.amount)||0,
     currency:x.currency||'USD',
     owner:firebaseUser ? firebaseUser.uid : '',
     toCurrency:x.toCurrency||'',
-    toAmount:(x.toAmount===null||x.toAmount===undefined||x.toAmount==='')?null:Number(x.toAmount)||0
+    toAmount:(x.toAmount===null||x.toAmount===undefined||x.toAmount==='')?null:Number(x.toAmount)||0,
+    createdAt:x.createdAt || 0
   };
 }
 
-/* Firebase replaces the old Apps Script data layer. */
+function transactionCreatedTime_(tx){
+  const v=tx && tx.createdAt;
+  if(v && typeof v.toMillis==='function') return v.toMillis();
+  if(v && typeof v.seconds==='number') return v.seconds*1000;
+  if(typeof v==='number') return v;
+  const parsed=Date.parse(v);
+  return Number.isFinite(parsed)?parsed:0;
+}
+
+function sortTransactionsNewestFirst_(rows){
+  return rows.sort((a,b)=>{
+    const dateCmp=String(b.date||'').localeCompare(String(a.date||''));
+    if(dateCmp!==0) return dateCmp;
+    return transactionCreatedTime_(b)-transactionCreatedTime_(a);
+  });
+}
+
+/* Firebase replaces the old Apps Script data layer. V3.3 sync foundation. */
+let txUnsubscribe_ = null;
+let syncRetryTimer_ = null;
+let syncQueue_ = [];
+let syncQueueRunning_ = false;
+
+function syncQueueKey_(){ return 'masarifi_sync_queue_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
+function loadSyncQueue_(){
+  try{ const raw=localStorage.getItem(syncQueueKey_()); syncQueue_=raw?JSON.parse(raw):[]; if(!Array.isArray(syncQueue_))syncQueue_=[]; }
+  catch(e){ syncQueue_=[]; }
+}
+function saveSyncQueue_(){ try{localStorage.setItem(syncQueueKey_(),JSON.stringify(syncQueue_));}catch(e){} }
+function pendingTxIds_(){ return new Set(syncQueue_.map(q=>String(q.id)).filter(Boolean)); }
+function setSyncStatus_(mode,msg){
+  const el=document.getElementById('syncStatus'); if(!el)return;
+  el.className='sync-status '+mode; el.textContent=mode==='offline'?'📴 غير متصل':mode==='syncing'?'🔄 مزامنة...':'☁️ '+(msg||'متصل');
+}
+function enqueueMutation_(op){
+  // Keep the queue compact: edits on an unsynced add update that add instead of creating extra work.
+  if(op.action==='set'){
+    const add=syncQueue_.find(q=>q.action==='add' && String(q.id)===String(op.id));
+    if(add){ add.payload={...add.payload,...op.payload}; add.at=Date.now(); saveSyncQueue_(); return; }
+    const idx=syncQueue_.findIndex(q=>q.action==='set' && String(q.id)===String(op.id));
+    if(idx>=0){syncQueue_[idx]={...syncQueue_[idx],payload:{...syncQueue_[idx].payload,...op.payload},at:Date.now()};saveSyncQueue_();return;}
+  }
+  if(op.action==='delete'){
+    const addIdx=syncQueue_.findIndex(q=>q.action==='add' && String(q.id)===String(op.id));
+    if(addIdx>=0){syncQueue_.splice(addIdx,1);saveSyncQueue_();return;}
+    syncQueue_=syncQueue_.filter(q=>!(q.action==='set' && String(q.id)===String(op.id)));
+  }
+  syncQueue_.push({...op,at:Date.now()}); saveSyncQueue_();
+}
+function removeQueuedOp_(op){
+  const i=syncQueue_.indexOf(op); if(i>=0){syncQueue_.splice(i,1);saveSyncQueue_();}
+}
+function applyPendingToRows_(rows){
+  const map=new Map(rows.map(t=>[String(t.id),t]));
+  for(const q of syncQueue_){
+    const id=String(q.id);
+    if(q.action==='delete'){map.delete(id);continue;}
+    if(q.action==='add') map.set(id,normalizeFirebaseTx_(id,{...q.payload,createdAt:q.createdAt||Date.now()}));
+    if(q.action==='set' && map.has(id)) map.set(id,{...map.get(id),...q.payload});
+  }
+  return sortTransactionsNewestFirst_(Array.from(map.values()));
+}
+function renderCurrentSync_(){
+  allTransactions=applyPendingToRows_(allTransactions);
+  saveFirebaseCache_(); populateCategoryOptions(); applyFiltersAndRender();
+}
+
+async function syncQueueNow_(){
+  if(!firebaseUser || syncQueueRunning_ || !navigator.onLine || !syncQueue_.length)return;
+  syncQueueRunning_=true; setSyncStatus_('syncing');
+  try{
+    const queue=syncQueue_.slice();
+    for(const op of queue){
+      if(!navigator.onLine)break;
+      try{
+        if(op.action==='add'){
+          const ref=await txCol_().add({...op.payload,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+          replaceTransactionId(op.id,ref.id); allTransactions=allTransactions.filter(t=>String(t.id)!==String(op.id));
+          const fresh=normalizeFirebaseTx_(ref.id,{...op.payload,createdAt:Date.now()}); allTransactions.unshift(fresh);
+          // Remap any queued operations that referenced the temporary id.
+          syncQueue_.forEach(q=>{if(String(q.id)===String(op.id))q.id=ref.id;});
+          removeQueuedOp_(syncQueue_.find(q=>q===op) || op);
+        }else if(op.action==='set'){
+          await txCol_().doc(String(op.id)).set({...op.payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+          removeQueuedOp_(op);
+        }else if(op.action==='delete'){
+          await txCol_().doc(String(op.id)).delete();
+          removeQueuedOp_(op);
+        }
+      }catch(err){
+        // Keep the operation for a later retry. A single transient failure should not block the UI.
+        break;
+      }
+    }
+    saveSyncQueue_();
+    setSyncStatus_(syncQueue_.length?'online':'online',syncQueue_.length?'بانتظار المزامنة':'متصل');
+  }finally{syncQueueRunning_=false;}
+}
+function scheduleSyncRetry_(){
+  clearTimeout(syncRetryTimer_);
+  if(!firebaseUser || !navigator.onLine || !syncQueue_.length)return;
+  syncRetryTimer_=setTimeout(()=>syncQueueNow_(),5000);
+}
+function startTransactionListener_(){
+  if(txUnsubscribe_)txUnsubscribe_();
+  if(!firebaseUser)return;
+  try{
+    txUnsubscribe_=txCol_().onSnapshot(snap=>{
+      const rows=[]; snap.forEach(doc=>rows.push(normalizeFirebaseTx_(doc.id,doc.data())));
+      allTransactions=applyPendingToRows_(rows); saveFirebaseCache_(); populateCategoryOptions(); applyFiltersAndRender();
+      setSyncStatus_(syncQueue_.length?'online':'online',syncQueue_.length?'بانتظار المزامنة':'متصل');
+      syncQueueNow_();
+    },()=>{ if(navigator.onLine)setSyncStatus_('online','متصل'); else setSyncStatus_('offline'); });
+  }catch(e){}
+}
+function stopTransactionListener_(){if(txUnsubscribe_){txUnsubscribe_();txUnsubscribe_=null;}}
+window.addEventListener('online',()=>{setSyncStatus_('syncing');syncQueueNow_();refreshData({silent:true});});
+window.addEventListener('offline',()=>setSyncStatus_('offline'));
+
 async function refreshData(options={}){
-  if(!firebaseUser || syncInFlight) return false;
+  if(!firebaseUser)return false;
+  loadSyncQueue_();
+  if(!navigator.onLine){setSyncStatus_('offline');renderCurrentSync_();return false;}
+  if(syncInFlight)return false;
   syncInFlight=true;
   try{
-    const snap=await txCol_().get();
-    const rows=[];
-    snap.forEach(doc=>rows.push(normalizeFirebaseTx_(doc.id,doc.data())));
-    rows.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-    allTransactions=rows;
-    saveFirebaseCache_();
-    populateCategoryOptions();
-    applyFiltersAndRender();
     await refreshCategories_(true);
-    if(!options.silent) showToast('تم تحديث البيانات من Firebase ✅');
+    const snap=await txCol_().get();
+    const rows=[]; snap.forEach(doc=>rows.push(normalizeFirebaseTx_(doc.id,doc.data())));
+    allTransactions=applyPendingToRows_(rows); saveFirebaseCache_(); populateCategoryOptions(); applyFiltersAndRender();
+    if(!options.silent)showToast('تم تحديث البيانات من Firebase ✅');
+    startTransactionListener_();
+    await syncQueueNow_();
     return true;
   }catch(e){
-    if(!options.silent && !allTransactions.length) showToast('تعذر الاتصال بـ Firebase.');
-    return false;
-  }finally{ syncInFlight=false; }
+    setSyncStatus_(navigator.onLine?'online':'offline',navigator.onLine?'متصل':'');
+    if(!options.silent && !allTransactions.length)showToast('تعذر الاتصال بـ Firebase؛ سيتم إعادة المحاولة.');
+    scheduleSyncRetry_(); return false;
+  }finally{syncInFlight=false;}
 }
 
 async function submitAdd(){
-  if(!firebaseUser){ showToast('سجّل الدخول أولاً'); return; }
+  if(!firebaseUser){showToast('سجّل الدخول أولاً');return;}
   let category=document.getElementById('txCategory').value.trim();
   let statement=document.getElementById('txStatement').value.trim();
   const amount=parseFloat(document.getElementById('txAmount').value);
@@ -2084,61 +1868,52 @@ async function submitAdd(){
   if(isTransfer){category='تحويل عملة';statement='تحويل عملة';}
   if(!category){showToast('اختر الفئة');return;}
   if(!Number.isFinite(amount)||amount<=0){showToast('اكتب مبلغ صحيح');return;}
-  const payload={date,category,statement,type:selectedTxType,amount,currency,owner:firebaseUser.uid};
+  const selectedCategory=findManagedCategoryByName_(category);
+  const payload={date,category,categoryId:selectedCategory?selectedCategory.id:'',statement,type:selectedTxType,amount,currency,owner:firebaseUser.uid};
   if(isTransfer){
     payload.toCurrency=document.getElementById('txToCurrency').value;
     payload.toAmount=parseFloat(document.getElementById('txToAmount').value);
     if(!Number.isFinite(payload.toAmount)||payload.toAmount<=0){showToast('اكتب المبلغ المستلم بعد التحويل');return;}
     if(payload.toCurrency===currency){showToast('عملة المصدر والوجهة يجب أن تكونا مختلفتين');return;}
   }else{payload.toCurrency='';payload.toAmount=null;}
-
-  const wasEditing=Boolean(editingTxId);
-  const editingId=editingTxId;
+  const wasEditing=Boolean(editingTxId), editingId=editingTxId;
   const previous=wasEditing?allTransactions.find(t=>String(t.id)===String(editingId)):null;
   const tempId=wasEditing?editingId:makeTempId();
-  const optimisticTx={id:tempId,...payload};
-  upsertLocalTransaction(optimisticTx);
-  closeModal('addModalOverlay');
+  const optimisticTx={id:tempId,...payload,createdAt:(wasEditing&&previous&&previous.createdAt)?previous.createdAt:Date.now()};
+  upsertLocalTransaction(optimisticTx); closeModal('addModalOverlay');
   showToast(wasEditing?'تم التعديل فوراً ⚡ جارٍ الحفظ...':'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
-  editingTxId=null;
-  document.querySelector('#addModalOverlay h2').textContent='إضافة عملية';
-  document.getElementById('txCategory').value='';
-  document.getElementById('txStatement').value='';
-  document.getElementById('txAmount').value='';
-  document.getElementById('txToAmount').value='';
+  editingTxId=null; document.querySelector('#addModalOverlay h2').textContent='إضافة عملية';
+  document.getElementById('txCategory').value=''; document.getElementById('txStatement').value=''; document.getElementById('txAmount').value=''; document.getElementById('txToAmount').value='';
   firebaseMutationCount++;
   try{
+    if(!navigator.onLine){enqueueMutation_({action:wasEditing?'set':'add',id:tempId,payload,createdAt:optimisticTx.createdAt});setSyncStatus_('offline');showToast('تم الحفظ محلياً؛ سيتم الإرسال عند عودة الإنترنت.');return;}
     if(wasEditing){
-      await txCol_().doc(String(editingId)).set(payload,{merge:true});
-      saveFirebaseCache_();
-      showToast('تم الحفظ في Firebase ✅');
+      try{await txCol_().doc(String(editingId)).set({...payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});showToast('تم الحفظ في Firebase ✅');}
+      catch(e){enqueueMutation_({action:'set',id:editingId,payload});scheduleSyncRetry_();setSyncStatus_('syncing');showToast('تم حفظ التعديل محلياً؛ سيُزامن تلقائياً.');}
     }else{
-      const ref=await txCol_().add({...payload,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-      replaceTransactionId(tempId,ref.id);
-      showToast('تم الحفظ في Firebase ✅');
+      try{const ref=await txCol_().add({...payload,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});replaceTransactionId(tempId,ref.id);showToast('تم الحفظ في Firebase ✅');}
+      catch(e){enqueueMutation_({action:'add',id:tempId,payload,createdAt:optimisticTx.createdAt});scheduleSyncRetry_();setSyncStatus_('syncing');showToast('تمت الإضافة محلياً؛ سيُزامن تلقائياً.');}
     }
-  }catch(e){
-    if(wasEditing&&previous) upsertLocalTransaction(previous); else removeLocalTransaction(tempId);
-    showToast('فشل الحفظ؛ تم التراجع عن العملية.');
   }finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
 }
 
 async function deleteTx(id){
-  if(!firebaseUser) return;
-  if(!confirm('حذف هذه العملية؟')) return;
-  const previous=allTransactions.find(t=>String(t.id)===String(id));
-  if(!previous)return;
+  if(!firebaseUser)return;
+  if(!confirm('حذف هذه العملية؟'))return;
+  const previous=allTransactions.find(t=>String(t.id)===String(id)); if(!previous)return;
   removeLocalTransaction(id); showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...'); firebaseMutationCount++;
-  try{ await txCol_().doc(String(id)).delete(); showToast('تم الحذف من Firebase ✅'); }
-  catch(e){ upsertLocalTransaction(previous); showToast('فشل الحذف؛ تمت استعادة العملية.'); }
-  finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
+  try{
+    if(!navigator.onLine){enqueueMutation_({action:'delete',id});setSyncStatus_('offline');showToast('تم الحذف محلياً؛ سيُزامن عند عودة الإنترنت.');return;}
+    try{await txCol_().doc(String(id)).delete();showToast('تم الحذف من Firebase ✅');}
+    catch(e){enqueueMutation_({action:'delete',id});scheduleSyncRetry_();setSyncStatus_('syncing');showToast('تم الحذف محلياً؛ سيُزامن تلقائياً.');}
+  }finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
 }
 
 async function refreshCategories_(silent=true){
   if(!firebaseUser)return false;
   try{
     const snap=await catCol_().get();
-    managedCategories=[]; snap.forEach(doc=>{const d=doc.data();if(d.active!==false)managedCategories.push({id:doc.id,name:d.name||''});});
+    managedCategories=[]; snap.forEach(doc=>{const d=doc.data();if(d.active!==false)managedCategories.push({id:doc.id,name:d.name||'',aliases:Array.isArray(d.aliases)?d.aliases:[]});});
     managedCategories.sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
     try{localStorage.setItem(firebaseCatCacheKey_(),JSON.stringify(managedCategories));}catch(e){}
     populateCategoryOptions(); renderCategoryManager(); return true;
@@ -2152,7 +1927,7 @@ async function addCategory(){
   const input=document.getElementById('newCategoryName'); if(!input)return;
   const name=input.value.trim(); if(!name){showToast('اكتب اسم الفئة');return;}
   if(managedCategories.some(c=>c.name===name)){showToast('الفئة موجودة مسبقاً');return;}
-  try{await catCol_().add({name,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value='';await refreshCategories_(true);showToast('تمت إضافة الفئة ✅');}
+  try{await catCol_().add({name,aliases:[],active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value='';await refreshCategories_(true);showToast('تمت إضافة الفئة ✅');}
   catch(e){console.error('Firebase addCategory error',e);showToast(e && e.message ? 'فشل إضافة الفئة: '+e.message : 'فشل إضافة الفئة');}
 }
 // The category modal is legacy UI; force its add button to use Firebase directly.
@@ -2162,7 +1937,7 @@ async function editCategory(id){
   const c=managedCategories.find(x=>String(x.id)===String(id));if(!c)return;
   const name=prompt('اسم الفئة الجديد:',c.name); if(name===null)return; const trimmed=name.trim();
   if(!trimmed||trimmed===c.name)return;
-  try{await catCol_().doc(String(id)).set({name:trimmed,active:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await refreshCategories_(true);showToast('تم تعديل الفئة ✅');}
+  try{await catCol_().doc(String(id)).set({name:trimmed,active:true,aliases:firebase.firestore.FieldValue.arrayUnion(c.name),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await refreshCategories_(true);showToast('تم تعديل الفئة ✅');}
   catch(e){showToast('فشل تعديل الفئة');}
 }
 async function deleteCategoryUi(id){
@@ -2301,10 +2076,7 @@ function openSettings(){
   document.getElementById('settingsRateTry').value=rateTry||'';
   showModal_('firebaseSettingsOverlay');
 }
-function saveApiUrl(){ /* compatibility: Firebase no longer uses an API URL */ }
 
-/* Stop the old Google Apps Script background sync. */
-try{apiUrl='';}catch(e){}
 
 async function ensureDefaultCategories_(){
   if(!firebaseUser)return;
@@ -2322,11 +2094,14 @@ async function ensureDefaultCategories_(){
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true;
   if(!user){
+    stopTransactionListener_(); clearTimeout(syncRetryTimer_); syncQueue_=[];
     allTransactions=[]; managedCategories=[];
     showFirebaseLogin_();
     return;
   }
   showFirebaseApp_();
+  loadSyncQueue_();
+  setSyncStatus_(navigator.onLine ? 'online' : 'offline');
   await ensureDefaultCategories_();
   await loadFirebaseSettings_();
   await refreshBudgets_(currentMonthPrefixSafe_(), true);
