@@ -398,6 +398,8 @@
 
   .dashboard-strip{grid-template-columns:repeat(4,1fr);}
   @media(max-width:380px){.dashboard-strip{grid-template-columns:repeat(2,1fr);}}
+
+.sync-status.error{background:var(--brick-light,#FBE9E6);color:var(--brick,#B94A3A);}
 </style>
 </head>
 <body>
@@ -1764,7 +1766,16 @@ function saveSyncQueue_(){ try{localStorage.setItem(syncQueueKey_(),JSON.stringi
 function pendingTxIds_(){ return new Set(syncQueue_.map(q=>String(q.id)).filter(Boolean)); }
 function setSyncStatus_(mode,msg){
   const el=document.getElementById('syncStatus'); if(!el)return;
-  el.className='sync-status '+mode; el.textContent=mode==='offline'?'📴 غير متصل':mode==='syncing'?'🔄 مزامنة...':'☁️ '+(msg||'متصل');
+  el.className='sync-status '+mode;
+  if(mode==='offline') el.textContent='📴 غير متصل';
+  else if(mode==='syncing') el.textContent='🔄 مزامنة...';
+  else if(mode==='error') el.textContent='⚠️ فشل المزامنة';
+  else el.textContent='☁️ '+(msg||'متصل');
+}
+function updateSyncStatusFromQueue_(){
+  if(!navigator.onLine){ setSyncStatus_('offline'); return; }
+  if(syncQueue_.length){ setSyncStatus_('syncing','مزامنة'); return; }
+  setSyncStatus_('online','محفوظ');
 }
 function enqueueMutation_(op){
   // Keep the queue compact: edits on an unsynced add update that add instead of creating extra work.
@@ -1827,7 +1838,7 @@ async function syncQueueNow_(){
       }
     }
     saveSyncQueue_();
-    setSyncStatus_(syncQueue_.length?'online':'online',syncQueue_.length?'بانتظار المزامنة':'متصل');
+    updateSyncStatusFromQueue_();
   }finally{syncQueueRunning_=false;}
 }
 function scheduleSyncRetry_(){
@@ -1842,7 +1853,7 @@ function startTransactionListener_(){
     txUnsubscribe_=txCol_().onSnapshot(snap=>{
       const rows=[]; snap.forEach(doc=>rows.push(normalizeFirebaseTx_(doc.id,doc.data())));
       allTransactions=applyPendingToRows_(rows); saveFirebaseCache_(); populateCategoryOptions(); applyFiltersAndRender();
-      setSyncStatus_(syncQueue_.length?'online':'online',syncQueue_.length?'بانتظار المزامنة':'متصل');
+      updateSyncStatusFromQueue_();
       syncQueueNow_();
     },()=>{ if(navigator.onLine)setSyncStatus_('online','متصل'); else setSyncStatus_('offline'); });
   }catch(e){}
