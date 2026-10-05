@@ -1044,21 +1044,27 @@ function renderSummary(list) {
     </div>`;
   }).join('');
 
-  // الإجمالي التقريبي بالدولار يحسب الرصيد الفعلي لكل عملة،
-  // بما فيه مبالغ التحويل الداخلة والخارجة.
-  if (rateSyp > 0 || rateTry > 0) {
+  // الإجمالي التقريبي بالدولار: نعرض الدخل الإجمالي، المصروف، والرصيد بعد تحويل كل العملات
+  // حسب أسعار الصرف المحددة. التحويلات بين العملات لا تُحسب كدخل أو مصروف لأنها حركة داخلية.
+  {
     const usd = byCur.USD || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
     const syp = byCur.SYP || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
     const try_ = byCur.TRY || { income: 0, expense: 0, transferIn: 0, transferOut: 0 };
-
-    const totalBalance =
-      balanceOf(usd) +
-      (rateSyp > 0 ? balanceOf(syp) / rateSyp : 0) +
-      (rateTry > 0 ? balanceOf(try_) / rateTry : 0);
+    const toUsd = (amount, cur) => {
+      if (cur === 'USD') return Number(amount) || 0;
+      if (cur === 'SYP') return rateSyp > 0 ? (Number(amount) || 0) / rateSyp : 0;
+      if (cur === 'TRY') return rateTry > 0 ? (Number(amount) || 0) / rateTry : 0;
+      return 0;
+    };
+    const totalIncomeUsd = toUsd(usd.income,'USD') + toUsd(syp.income,'SYP') + toUsd(try_.income,'TRY');
+    const totalExpenseUsd = toUsd(usd.expense,'USD') + toUsd(syp.expense,'SYP') + toUsd(try_.expense,'TRY');
+    const totalBalanceUsd = totalIncomeUsd - totalExpenseUsd;
 
     html = `<div class="total-approx-card">
       <div class="cur-name">🌐 الإجمالي التقريبي ($)</div>
-      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="big-val">${fmt(totalBalance)} $</span></div>
+      <div class="cur-row income"><span class="lbl">الإجمالي</span><span class="val">${fmt(totalIncomeUsd)} $</span></div>
+      <div class="cur-row expense"><span class="lbl">المصروف</span><span class="val">${fmt(totalExpenseUsd)} $</span></div>
+      <div class="cur-row net"><span class="lbl">الرصيد</span><span class="big-val">${fmt(totalBalanceUsd)} $</span></div>
     </div>` + html;
   }
 
@@ -1210,10 +1216,16 @@ function attachLongPress() {
   const items = document.querySelectorAll('.tx-item');
   items.forEach(item => {
     let timer = null;
-    const start = () => { timer = setTimeout(() => { onLongPress(item.dataset.id); }, 550); };
-    const cancel = () => { if (timer) clearTimeout(timer); };
+    const start = (e) => {
+      // لا تبدأ الضغط المطوّل إذا بدأ اللمس/النقر فوق أزرار التعديل أو الحذف.
+      // هذا يمنع زر الحذف من التحول بالخطأ إلى أمر "تكرار العملية".
+      if (e && e.target && e.target.closest && e.target.closest('.tx-del,.tx-edit')) return;
+      timer = setTimeout(() => { onLongPress(item.dataset.id); }, 550);
+    };
+    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
     item.addEventListener('touchstart', start, { passive: true });
     item.addEventListener('touchend', cancel);
+    item.addEventListener('touchcancel', cancel);
     item.addEventListener('touchmove', cancel);
     item.addEventListener('mousedown', start);
     item.addEventListener('mouseup', cancel);
@@ -2398,19 +2410,6 @@ function ensureSettingsModal_(){
         <button class="primary-btn" onclick="saveFirebaseSettings_()">حفظ الإعدادات</button>
       </div>
 
-      <div style="margin:20px 0 8px;border-top:1px dashed var(--line);padding-top:14px;">
-        <strong style="font-size:14px;">💾 النسخ الاحتياطي</strong>
-        <div style="color:var(--muted);font-size:12px;line-height:1.7;margin:6px 0 10px;">احتفظ بنسخة من كل بياناتك (عمليات، فئات، ميزانيات، متكررة) على جهازك، أو استرجعها لاحقًا.</div>
-      </div>
-      <div class="modal-actions">
-        <button class="secondary-btn" onclick="exportBackupJson_()">📤 تصدير نسخة كاملة (JSON)</button>
-        <button class="secondary-btn" onclick="exportTransactionsCsv_()">📊 تصدير العمليات (CSV)</button>
-      </div>
-      <div class="modal-actions" style="margin-top:8px;">
-        <button class="secondary-btn" style="flex:1;" onclick="document.getElementById('backupFileInput').click()">📥 استيراد نسخة احتياطية</button>
-      </div>
-      <input type="file" id="backupFileInput" accept="application/json" class="hidden" onchange="handleImportFile_(event)">
-      <div id="backupStatus" style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;"></div>
     </div>`;
   document.body.appendChild(div);
 }
