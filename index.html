@@ -486,7 +486,7 @@
   <div class="budget-section" id="budgetSection"></div>
   <div class="search-wrap">
     <span class="search-icon">🔎</span>
-    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off">
+    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off" oninput="handleSearchInput_(this.value)" onsearch="handleSearchInput_(this.value)" onkeyup="handleSearchInput_(this.value)">
   </div>
 
   <div class="chart-section" id="donutSection" style="display:none;">
@@ -941,32 +941,6 @@ function currentMonthPrefix() {
 function currentMonthTransactions() {
   const prefix = currentMonthPrefix();
   return allTransactions.filter(t => t.date && t.date.slice(0, 7) === prefix);
-}
-
-function applyFiltersAndRender() {
-  let list = allTransactions.slice();
-  if (currentFilters.type) list = list.filter(t => t.type === currentFilters.type);
-  if (currentFilters.currency) list = list.filter(t => t.currency === currentFilters.currency || (t.type === 'تحويل' && t.toCurrency === currentFilters.currency));
-  if (currentFilters.category) list = list.filter(t => t.category === currentFilters.category);
-  if (currentFilters.from) list = list.filter(t => t.date >= currentFilters.from);
-  if (currentFilters.to) list = list.filter(t => t.date <= currentFilters.to);
-  const search = document.getElementById('searchInput').value.trim().toLocaleLowerCase('ar');
-  if (search) {
-    list = list.filter(t => [t.category, t.statement, t.type, t.currency, t.toCurrency].filter(Boolean).some(v => String(v).toLocaleLowerCase('ar').includes(search)));
-  }
-
-  const filterActive = Object.values(currentFilters).some(Boolean);
-  document.getElementById('filterChip').classList.toggle('active', filterActive);
-  document.getElementById('clearFiltersBtn').style.display = filterActive ? 'block' : 'none';
-
-  // الرصيد دايمًا بيعكس الشهر الحالي بس، بغض النظر عن فلترة القائمة تحته
-  const nowD = new Date();
-  document.getElementById('balanceLabel').textContent = '💼 رصيد ' + ARABIC_MONTHS_SHORT[nowD.getMonth()] + ' ' + nowD.getFullYear();
-  const monthList = currentMonthTransactions();
-  renderSummary(monthList);
-  renderDashboard(monthList);
-  renderList(list);
-  renderDonutChart(list);
 }
 
 function renderDashboard(list) {
@@ -1657,7 +1631,8 @@ function applyFiltersAndRender(){
   if(currentFilters.category)list=list.filter(t=>t.category===currentFilters.category);
   if(currentFilters.from)list=list.filter(t=>t.date>=currentFilters.from);
   if(currentFilters.to)list=list.filter(t=>t.date<=currentFilters.to);
-  const search=normalizeSearchText_(document.getElementById('searchInput').value);
+  const inputEl=document.getElementById('searchInput');
+  const search=searchQuery_ || normalizeSearchText_(inputEl ? inputEl.value : '');
   if(search){
     list=list.filter(t=>[t.category,t.statement,t.type,t.currency,t.toCurrency]
       .filter(Boolean)
@@ -2740,10 +2715,20 @@ function renderSavingsGoals_(){
   }).join('');
 }
 
+let searchQuery_ = '';
+function handleSearchInput_(value){
+  searchQuery_ = normalizeSearchText_(value);
+  applyFiltersAndRender();
+}
+
+// ربط إضافي بعد تحميل الصفحة لضمان عمل البحث على WebView وChrome
+// حتى لو تغيّر سلوك حدث input/search على بعض الأجهزة.
 const searchInputEl_ = document.getElementById('searchInput');
 if(searchInputEl_){
-  searchInputEl_.addEventListener('input', applyFiltersAndRender);
-  searchInputEl_.addEventListener('search', applyFiltersAndRender);
+  searchInputEl_.addEventListener('input', function(){ handleSearchInput_(this.value); });
+  searchInputEl_.addEventListener('search', function(){ handleSearchInput_(this.value); });
+  searchInputEl_.addEventListener('change', function(){ handleSearchInput_(this.value); });
+  searchInputEl_.addEventListener('keyup', function(){ handleSearchInput_(this.value); });
 }
 
 firebaseAuth.onAuthStateChanged(async user=>{
