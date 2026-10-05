@@ -486,7 +486,7 @@
   <div class="budget-section" id="budgetSection"></div>
   <div class="search-wrap">
     <span class="search-icon">🔎</span>
-    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off" oninput="handleSearchInput_(this.value)" onsearch="handleSearchInput_(this.value)" onkeyup="handleSearchInput_(this.value)">
+    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off">
   </div>
 
   <div class="chart-section" id="donutSection" style="display:none;">
@@ -1632,7 +1632,7 @@ function applyFiltersAndRender(){
   if(currentFilters.from)list=list.filter(t=>t.date>=currentFilters.from);
   if(currentFilters.to)list=list.filter(t=>t.date<=currentFilters.to);
   const inputEl=document.getElementById('searchInput');
-  const search=searchQuery_ || normalizeSearchText_(inputEl ? inputEl.value : '');
+  const search=normalizeSearchText_(inputEl ? inputEl.value : '');
   if(search){
     list=list.filter(t=>[t.category,t.statement,t.type,t.currency,t.toCurrency]
       .filter(Boolean)
@@ -2715,21 +2715,24 @@ function renderSavingsGoals_(){
   }).join('');
 }
 
-let searchQuery_ = '';
 function handleSearchInput_(value){
-  searchQuery_ = normalizeSearchText_(value);
+  const input=document.getElementById('searchInput');
+  if(input && input.value!==String(value ?? '')) input.value=String(value ?? '');
   applyFiltersAndRender();
 }
 
-// ربط إضافي بعد تحميل الصفحة لضمان عمل البحث على WebView وChrome
-// حتى لو تغيّر سلوك حدث input/search على بعض الأجهزة.
-const searchInputEl_ = document.getElementById('searchInput');
-if(searchInputEl_){
-  searchInputEl_.addEventListener('input', function(){ handleSearchInput_(this.value); });
-  searchInputEl_.addEventListener('search', function(){ handleSearchInput_(this.value); });
-  searchInputEl_.addEventListener('change', function(){ handleSearchInput_(this.value); });
-  searchInputEl_.addEventListener('keyup', function(){ handleSearchInput_(this.value); });
+// البحث يعتمد دائماً على القيمة الحالية داخل الحقل نفسه، وليس على متغير مخزّن،
+// حتى لا يبقى البحث عالقاً بعد إعادة فتح التطبيق أو استعادة الصفحة.
+function bindSearchEvents_(){
+  const input=document.getElementById('searchInput');
+  if(!input || input.dataset.searchBound==='1') return;
+  input.dataset.searchBound='1';
+  ['input','search','change','keyup'].forEach(evt=>{
+    input.addEventListener(evt,()=>applyFiltersAndRender());
+  });
 }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindSearchEvents_);
+else bindSearchEvents_();
 
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true; clearTimeout(firebaseBootTimeout_);
