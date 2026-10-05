@@ -2260,6 +2260,20 @@ function ensureSettingsModal_(){
         <button class="secondary-btn" onclick="closeModal('firebaseSettingsOverlay')">إلغاء</button>
         <button class="primary-btn" onclick="saveFirebaseSettings_()">حفظ الإعدادات</button>
       </div>
+
+      <div style="margin:20px 0 8px;border-top:1px dashed var(--line);padding-top:14px;">
+        <strong style="font-size:14px;">💾 النسخ الاحتياطي</strong>
+        <div style="color:var(--muted);font-size:12px;line-height:1.7;margin:6px 0 10px;">احتفظ بنسخة من كل بياناتك (عمليات، فئات، ميزانيات، متكررة) على جهازك، أو استرجعها لاحقًا.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-btn" onclick="exportBackupJson_()">📤 تصدير نسخة كاملة (JSON)</button>
+        <button class="secondary-btn" onclick="exportTransactionsCsv_()">📊 تصدير العمليات (CSV)</button>
+      </div>
+      <div class="modal-actions" style="margin-top:8px;">
+        <button class="secondary-btn" style="flex:1;" onclick="document.getElementById('backupFileInput').click()">📥 استيراد نسخة احتياطية</button>
+      </div>
+      <input type="file" id="backupFileInput" accept="application/json" class="hidden" onchange="handleImportFile_(event)">
+      <div id="backupStatus" style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;"></div>
     </div>`;
   document.body.appendChild(div);
 }
@@ -2306,6 +2320,138 @@ async function ensureDefaultCategories_(){
     });
     await batch.commit();
   }catch(e){}
+}
+
+/* ================= V3.6 النسخ الاحتياطي (Backup/Export/Import) ================= */
+function triggerDownload_(filename, content, mime){
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function backupStatus_(msg){ const el=document.getElementById('backupStatus'); if(el) el.textContent = msg; }
+
+async function exportBackupJson_(){
+  if(!firebaseUser){ showToast('سجّل الدخول أولاً'); return; }
+  backupStatus_('جارٍ تجهيز النسخة الاحتياطية...');
+  try{
+    const [txSnap, catSnap, budgetSnap, recSnap, settingsSnap] = await Promise.all([
+      txCol_().get(), catCol_().get(), budgetCol_().get(), recurringCol_().get(),
+      userRef_().collection('settings').doc('preferences').get()
+    ]);
+    const stripTimestamps_ = (d) => {
+      const out = {};
+      Object.keys(d).forEach(k => {
+        const v = d[k];
+        out[k] = (v && typeof v.toDate === 'function') ? v.toDate().toISOString() : v;
+      });
+      return out;
+    };
+    const backup = {
+      app: 'مصاريفي', version: (typeof MASARIFI_VERSION !== 'undefined' ? MASARIFI_VERSION : ''),
+      exportedAt: new Date().toISOString(),
+      transactions: txSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
+      categories: catSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
+      budgets: budgetSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
+      recurring: recSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
+      settings: settingsSnap.exists ? stripTimestamps_(settingsSnap.data()) : { rateSyp, rateTry }
+    };
+    const dateTag = todayStr();
+    triggerDownload_('masarifi-backup-' + dateTag + '.json', JSON.stringify(backup, null, 2), 'application/json');
+    backupStatus_('✅ تم تصدير ' + backup.transactions.length + ' عملية بنجاح');
+    showToast('تم تصدير النسخة الاحتياطية ✅');
+  }catch(e){
+    console.error(e);
+    backupStatus_('❌ فشل التصدير، حاول مرة ثانية');
+    showToast('فشل تصدير النسخة الاحتياطية');
+  }
+}
+
+function csvEscape_(v){
+  const s = (v === null || v === undefined) ? '' : String(v);
+  if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function exportTransactionsCsv_(){
+  if(!allTransactions.length){ showToast('لا توجد عمليات لتصديرها'); return; }
+  const headers = ['التاريخ','النوع','الفئة','البيان','المبلغ','العملة','عملة الوجهة','المبلغ الناتج'];
+  const rows = allTransactions.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(t => [
+    t.date || '', t.type || '', t.category || '', t.statement || '',
+    t.amount != null ? t.amount : '', t.currency || '', t.toCurrency || '', t.toAmount != null ? t.toAmount : ''
+  ].map(csvEscape_).join(','));
+  const csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
+  triggerDownload_('masarifi-transactions-' + todayStr() + '.csv', csv, 'text/csv;charset=utf-8');
+  showToast('تم تصدير العمليات CSV ✅');
+}
+
+async function handleImportFile_(event){
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  if(!firebaseUser){ showToast('سجّل الدخول أولاً'); return; }
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data || !Array.isArray(data.transactions)){
+      showToast('ملف غير صالح — لازم يكون نسخة احتياطية من مصاريفي');
+      return;
+    }
+    const counts = {
+      tx: (data.transactions||[]).length,
+      cat: (data.categories||[]).length,
+      bud: (data.budgets||[]).length,
+      rec: (data.recurring||[]).length
+    };
+    const ok = confirm(
+      'رح يتم استيراد:\n' +
+      '• ' + counts.tx + ' عملية\n' +
+      '• ' + counts.cat + ' فئة\n' +
+      '• ' + counts.bud + ' ميزانية\n' +
+      '• ' + counts.rec + ' عملية متكررة\n\n' +
+      'البيانات المستوردة رح تدمج مع بياناتك الحالية (مش رح تمسح شي). متأكد تريد المتابعة؟'
+    );
+    if(!ok) return;
+
+    backupStatus_('جارٍ الاستيراد...');
+    await importCollection_(txCol_(), data.transactions);
+    await importCollection_(catCol_(), data.categories);
+    await importCollection_(budgetCol_(), data.budgets);
+    await importCollection_(recurringCol_(), data.recurring);
+    if(data.settings){
+      await userRef_().collection('settings').doc('preferences').set(
+        { rateSyp: Number(data.settings.rateSyp)||0, rateTry: Number(data.settings.rateTry)||0,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }
+      );
+    }
+    backupStatus_('✅ تم الاستيراد بنجاح');
+    showToast('تم استيراد النسخة الاحتياطية ✅');
+    closeModal('firebaseSettingsOverlay');
+    await loadFirebaseSettings_();
+    await refreshCategories_(true);
+    await refreshBudgets_(currentMonthPrefixSafe_(), true);
+    await refreshData({ silent: false });
+  }catch(e){
+    console.error(e);
+    backupStatus_('❌ فشل الاستيراد — تأكد من صحة الملف');
+    showToast('فشل استيراد النسخة الاحتياطية');
+  }
+}
+
+async function importCollection_(colRef, items){
+  if(!items || !items.length) return;
+  const chunks = [];
+  for(let i=0;i<items.length;i+=400) chunks.push(items.slice(i, i+400));
+  for(const chunk of chunks){
+    const batch = firebaseDb.batch();
+    chunk.forEach(item => {
+      const { id, ...rest } = item;
+      const ref = id ? colRef.doc(String(id)) : colRef.doc();
+      batch.set(ref, { ...rest, importedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    });
+    await batch.commit();
+  }
 }
 
 firebaseAuth.onAuthStateChanged(async user=>{
