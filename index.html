@@ -1186,28 +1186,13 @@ function renderList(list) {
         <div class="tx-date">${formatDisplayDate(t.date)}</div>
       </div>
       <div class="tx-amount ${cls}">${amountText}</div>
-      <button class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${t.id}'])">✎</button>
-      <button type="button" class="tx-del" data-delete-id="${escapeHtml(String(t.id))}" title="حذف">✕</button>
+      <button type="button" class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${escapeHtml(String(t.id))}'])">✎</button>
+      <button type="button" class="tx-del" title="حذف" onclick="event.stopPropagation(); deleteTx('${escapeHtml(String(t.id))}')">✕</button>
     </li>`;
   }).join('');
-  document.querySelectorAll('.tx-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      if (e.target.closest('.tx-del') || e.target.closest('.tx-edit')) return;
-      openAddModal(txDataById[item.dataset.id]);
-    });
-  });
-  document.querySelectorAll('.tx-del').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const id = btn.getAttribute('data-delete-id');
-      if(id) deleteTx(id);
-    });
-    btn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, {passive:false});
-  });
+  // لا يوجد أي click listener على جسم البطاقة.
+  // التعديل يتم فقط من زر القلم، والحذف يتم فقط من زر ✕.
+  // هذا يمنع تضارب النقر العادي مع أزرار البطاقة والضغط المطوّل.
   attachLongPress();
 }
 
@@ -1217,12 +1202,17 @@ function attachLongPress() {
   items.forEach(item => {
     let timer = null;
     const start = (e) => {
-      // لا تبدأ الضغط المطوّل إذا بدأ اللمس/النقر فوق أزرار التعديل أو الحذف.
-      // هذا يمنع زر الحذف من التحول بالخطأ إلى أمر "تكرار العملية".
-      if (e && e.target && e.target.closest && e.target.closest('.tx-del,.tx-edit')) return;
-      timer = setTimeout(() => { onLongPress(item.dataset.id); }, 550);
+      // الأزرار لها أحداثها الخاصة؛ لا تسمح للـ Long Press باعتراضها.
+      if (e && e.target && e.target.closest && e.target.closest('button,.tx-del,.tx-edit')) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        onLongPress(item.dataset.id);
+      }, 550);
     };
-    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    const cancel = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+    };
     item.addEventListener('touchstart', start, { passive: true });
     item.addEventListener('touchend', cancel);
     item.addEventListener('touchcancel', cancel);
