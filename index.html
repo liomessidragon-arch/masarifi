@@ -1640,6 +1640,16 @@ function setTxType(type){
   }
 }
 
+function normalizeSearchText_(value){
+  return String(value || '')
+    .normalize('NFKC')
+    .replace(/[\u064B-\u065F\u0670\u0640]/g,'')
+    .replace(/[أإآٱ]/g,'ا')
+    .replace(/ى/g,'ي')
+    .trim()
+    .toLocaleLowerCase('ar');
+}
+
 function applyFiltersAndRender(){
   let list=allTransactions.slice();
   if(currentFilters.type)list=list.filter(t=>t.type===currentFilters.type);
@@ -1647,8 +1657,12 @@ function applyFiltersAndRender(){
   if(currentFilters.category)list=list.filter(t=>t.category===currentFilters.category);
   if(currentFilters.from)list=list.filter(t=>t.date>=currentFilters.from);
   if(currentFilters.to)list=list.filter(t=>t.date<=currentFilters.to);
-  const search=document.getElementById('searchInput').value.trim().toLocaleLowerCase('ar');
-  if(search)list=list.filter(t=>[t.category,t.statement,t.type,t.currency,t.toCurrency].filter(Boolean).some(v=>String(v).toLocaleLowerCase('ar').includes(search)));
+  const search=normalizeSearchText_(document.getElementById('searchInput').value);
+  if(search){
+    list=list.filter(t=>[t.category,t.statement,t.type,t.currency,t.toCurrency]
+      .filter(Boolean)
+      .some(v=>normalizeSearchText_(v).includes(search)));
+  }
   const filterActive=Object.values(currentFilters).some(Boolean);
   document.getElementById('filterChip').classList.toggle('active',filterActive);
   document.getElementById('clearFiltersBtn').style.display=filterActive?'block':'none';
@@ -2724,6 +2738,12 @@ function renderSavingsGoals_(){
     const done=pct>=100;
     return `<div class="goal-row"><div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span></div><div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div><div class="goal-meta"><span>${fmt(current)} / ${fmt(target)} ${sym}</span><span>${done?'تم تحقيق الهدف':'متبقي '+fmt(remain)+' '+sym}</span></div>${g.targetDate?`<div class="goal-meta" style="margin-top:4px;"><span>📅 الموعد</span><span>${formatDisplayDate(g.targetDate)}</span></div>`:''}<div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button><button onclick="editSavingsGoal_('${g.id}')">✎ تعديل</button><button class="danger" onclick="deleteSavingsGoal_('${g.id}')">حذف</button></div></div>`;
   }).join('');
+}
+
+const searchInputEl_ = document.getElementById('searchInput');
+if(searchInputEl_){
+  searchInputEl_.addEventListener('input', applyFiltersAndRender);
+  searchInputEl_.addEventListener('search', applyFiltersAndRender);
 }
 
 firebaseAuth.onAuthStateChanged(async user=>{
