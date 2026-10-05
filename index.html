@@ -1759,13 +1759,14 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.6-financial-tools';
+const MASARIFI_VERSION = '3.6.1-stability';
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 const firebaseAuth = firebase.auth();
 const firebaseDb = firebase.firestore();
 let firebaseUser = null;
 let firebaseAuthReady = false;
 let firebaseMutationCount = 0;
+armFirebaseBootSafety_();
 
 const FB_USERS = 'users';
 function userRef_(){
@@ -1847,6 +1848,16 @@ function showFirebaseLogin_(){
   document.getElementById('app').classList.add('hidden');
   document.getElementById('setupScreen').classList.remove('hidden');
   setAuthScreen_(authMode_);
+}
+
+let firebaseBootTimeout_=null;
+function armFirebaseBootSafety_(){
+  clearTimeout(firebaseBootTimeout_);
+  firebaseBootTimeout_=setTimeout(()=>{
+    const boot=document.getElementById('firebaseBootScreen');
+    if(!boot || boot.classList.contains('hidden') || firebaseAuthReady) return;
+    boot.innerHTML=`<div style="text-align:center;padding:24px;max-width:340px;"><div class="boot-mark">مصاريفي</div><div style="margin-top:12px;color:var(--muted);font-size:13px;line-height:1.7;">يبدو أن الاتصال بخدمات التطبيق تأخر.</div><button class="primary-btn" style="margin-top:14px;" onclick="location.reload()">إعادة المحاولة</button></div>`;
+  },12000);
 }
 
 function loadFirebaseCache_(){
@@ -2021,6 +2032,7 @@ async function syncQueueNow_(){
     }
     saveSyncQueue_();
     updateSyncStatusFromQueue_();
+    if(syncQueue_.length) scheduleSyncRetry_();
   }finally{syncQueueRunning_=false;}
 }
 function scheduleSyncRetry_(){
@@ -2529,14 +2541,16 @@ async function handleImportFile_(event){
       tx: (data.transactions||[]).length,
       cat: (data.categories||[]).length,
       bud: (data.budgets||[]).length,
-      rec: (data.recurring||[]).length
+      rec: (data.recurring||[]).length,
+      goals: (data.savingsGoals||[]).length
     };
     const ok = confirm(
       'رح يتم استيراد:\n' +
       '• ' + counts.tx + ' عملية\n' +
       '• ' + counts.cat + ' فئة\n' +
       '• ' + counts.bud + ' ميزانية\n' +
-      '• ' + counts.rec + ' عملية متكررة\n\n' +
+      '• ' + counts.rec + ' عملية متكررة\n' +
+      '• ' + counts.goals + ' هدف ادخار\n\n' +
       'البيانات المستوردة رح تدمج مع بياناتك الحالية (مش رح تمسح شي). متأكد تريد المتابعة؟'
     );
     if(!ok) return;
@@ -2584,6 +2598,11 @@ async function importCollection_(colRef, items){
 }
 
 
+/* ================= V3.6.1 Stability Hardening =================
+   - startup safety timeout so a failed/blocked Firebase load cannot leave a permanent splash screen
+   - automatic retry scheduling whenever queued mutations remain after a transient failure
+   - backup import confirmation includes savings goals
+*/
 /* ================= V3.6 مركز الأدوات والتحليل + أهداف الادخار ================= */
 let savingsGoals_ = [];
 let savingsEditingId_ = null;
@@ -2708,7 +2727,7 @@ function renderSavingsGoals_(){
 }
 
 firebaseAuth.onAuthStateChanged(async user=>{
-  firebaseUser=user; firebaseAuthReady=true;
+  firebaseUser=user; firebaseAuthReady=true; clearTimeout(firebaseBootTimeout_);
   if(!user){
     stopTransactionListener_(); clearTimeout(syncRetryTimer_); syncQueue_=[];
     allTransactions=[]; managedCategories=[]; recurringData_=[]; recurringLoaded_=false;
