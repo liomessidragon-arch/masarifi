@@ -1960,7 +1960,12 @@ async function submitAdd(){
   const previous=wasEditing?allTransactions.find(t=>String(t.id)===String(editingId)):null;
   const tempId=wasEditing?editingId:makeTempId();
   const optimisticTx={id:tempId,...payload,createdAt:(wasEditing&&previous&&previous.createdAt)?previous.createdAt:Date.now()};
-  upsertLocalTransaction(optimisticTx); closeModal('addModalOverlay');
+  upsertLocalTransaction(optimisticTx);
+  // افحص الميزانية فوراً بعد الإضافة/التعديل، وليس فقط عند فتح شاشة الميزانية أو تحديث البيانات.
+  if (selectedTxType === 'مصروف') {
+    try { sendBudgetNotifications_(); } catch (e) { console.warn('Budget notification check failed', e); }
+  }
+  closeModal('addModalOverlay');
   showToast(wasEditing?'تم التعديل فوراً ⚡ جارٍ الحفظ...':'تمت الإضافة فوراً ⚡ جارٍ الحفظ...');
   editingTxId=null; document.querySelector('#addModalOverlay h2').textContent='إضافة عملية';
   document.getElementById('txCategory').value=''; document.getElementById('txStatement').value=''; document.getElementById('txAmount').value=''; document.getElementById('txToAmount').value='';
@@ -1987,11 +1992,22 @@ async function deleteTx(id){
   if(!firebaseUser)return;
   if(!confirm('حذف هذه العملية؟'))return;
   const previous=allTransactions.find(t=>String(t.id)===String(id)); if(!previous)return;
-  removeLocalTransaction(id); showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...'); firebaseMutationCount++;
+  removeLocalTransaction(id);
+  // ضع الحذف في طابور المزامنة حتى لا يعيد onSnapshot العملية القديمة بين الحذف المحلي وحذف Firebase.
+  // عند نجاح الحذف من Firebase يُزال العنصر من الطابور، وإذا فشل يبقى ليُعاد تلقائياً.
+  enqueueMutation_({action:'delete',id});
+  showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...');
+  firebaseMutationCount++;
   try{
-    if(!navigator.onLine){enqueueMutation_({action:'delete',id});setSyncStatus_('offline');showToast('تم الحذف محلياً؛ سيُزامن عند عودة الإنترنت.');return;}
-    try{await txCol_().doc(String(id)).delete();showToast('تم الحذف من Firebase ✅');}
-    catch(e){enqueueMutation_({action:'delete',id});scheduleSyncRetry_();setSyncStatus_('syncing');showToast('تم الحذف محلياً؛ سيُزامن تلقائياً.');}
+    if(!navigator.onLine){setSyncStatus_('offline');showToast('تم الحذف محلياً؛ سيُزامن عند عودة الإنترنت.');return;}
+    await syncQueueNow_();
+    if(syncQueue_.some(q=>q.action==='delete' && String(q.id)===String(id))){
+      scheduleSyncRetry_();
+      setSyncStatus_('syncing');
+      showToast('تم الحذف محلياً؛ سيُزامن تلقائياً.');
+    }else{
+      showToast('تم الحذف من Firebase ✅');
+    }
   }finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
 }
 
@@ -2111,12 +2127,41 @@ function getBudgetAlerts_(){
   const alerts=[]; const list=currentMonthTransactions(); const total=budgetData.find(b=>!b.category); if(total&&total.amount>0){const spent=totalExpenseBudgetBase_(list,total);const pct=spent/total.amount*100;if(pct>=100)alerts.push({danger:true,text:'🔴 تجاوزت الميزانية الشهرية العامة بنسبة '+Math.round(pct)+'%'});else if(pct>=80)alerts.push({danger:false,text:'⚠️ وصلت إلى '+Math.round(pct)+'% من الميزانية الشهرية العامة'});}
   budgetData.filter(b=>b.category&&b.amount>0).forEach(b=>{const spent=expenseForMonthCategory_(list,b.category,b.currency);const pct=spent/b.amount*100;if(pct>=100)alerts.push({danger:true,text:'🔴 فئة '+escapeHtml(b.category)+' تجاوزت ميزانيتها ('+Math.round(pct)+'%)'});else if(pct>=80)alerts.push({danger:false,text:'⚠️ فئة '+escapeHtml(b.category)+' وصلت إلى '+Math.round(pct)+'% من ميزانيتها'});}); return alerts;
 }
+/* ================= V3.5.1: إشعارات Android الأصلية ================= */
+function hasNativeNotificationBridge_(){
+  return !!(window.MasarifiAndroid && typeof window.MasarifiAndroid.showNotification === 'function');
+}
+function hasNativePermissionBridge_(){
+  return !!(window.MasarifiAndroid && typeof window.MasarifiAndroid.requestNotificationPermission === 'function');
+}
+function sendNativeNotification_(title, body){
+  try{
+    if(hasNativeNotificationBridge_()){
+      window.MasarifiAndroid.showNotification(String(title||'مصاريفي'),String(body||''));
+      return true;
+    }
+    if('Notification' in window && Notification.permission==='granted'){
+      new Notification(String(title||'مصاريفي'),{body:String(body||'')});
+      return true;
+    }
+  }catch(e){console.warn('Notification error',e);}
+  return false;
+}
 function sendBudgetNotifications_(){
   const alerts=getBudgetAlerts_(); if(!alerts.length)return; const key=budgetAlertKey_(); let sent=[];try{sent=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}; const fresh=alerts.filter(a=>!sent.includes(a.text)); if(!fresh.length)return; try{localStorage.setItem(key,JSON.stringify([...sent,...fresh.map(a=>a.text)]));}catch(e){}
-  fresh.forEach(a=>{showToast(a.text); if('Notification' in window&&Notification.permission==='granted'){try{new Notification('مصاريفي',{body:a.text});}catch(e){}}});
+  fresh.forEach(a=>{showToast(a.text);sendNativeNotification_('مصاريفي',a.text);});
 }
+window.onNativeNotificationPermissionResult=function(result){
+  if(result==='granted'){showToast('تم تفعيل إشعارات مصاريفي 🔔');sendBudgetNotifications_();}
+  else if(result==='denied'){showToast('تم رفض إشعارات مصاريفي من إعدادات الجهاز');}
+};
 async function enableNotifications_(){
-  if(!('Notification' in window)){showToast('التنبيهات غير مدعومة على هذا الجهاز');return;} try{const p=await Notification.requestPermission();showToast(p==='granted'?'تم تفعيل التنبيهات 🔔':'لم يتم تفعيل التنبيهات'); if(p==='granted')sendBudgetNotifications_();}catch(e){showToast('تعذر تفعيل التنبيهات');}
+  /* داخل APK: استخدم قناة Android الأصلية، وليس Notification API الخاص بالمتصفح. */
+  if(hasNativePermissionBridge_()){
+    try{window.MasarifiAndroid.requestNotificationPermission();showToast('جارٍ طلب إذن الإشعارات من Android…');return;}catch(e){console.warn(e);}
+  }
+  if(!('Notification' in window)){showToast('التنبيهات غير مدعومة في نسخة الويب الحالية. يلزم تثبيت نسخة Android المحدثة.');return;}
+  try{const p=await Notification.requestPermission();showToast(p==='granted'?'تم تفعيل التنبيهات 🔔':'لم يتم تفعيل التنبيهات'); if(p==='granted')sendBudgetNotifications_();}catch(e){showToast('تعذر تفعيل التنبيهات');}
 }
 
 /* Firebase budget data layer */
