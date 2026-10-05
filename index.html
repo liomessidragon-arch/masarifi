@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta name="masarifi-version" content="3.2-foundation">
+<meta name="masarifi-version" content="3.6-financial-tools">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -413,6 +413,53 @@
   .alert-box.danger{background:var(--brick-light,#FBE9E6);border-color:var(--brick,#B94A3A);}
   .notification-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);font-size:12px;}
 
+
+  /* ========== V3.6 مركز الأدوات والتحليل ========== */
+  .top-menu-btn{
+    position:absolute;right:16px;top:14px;width:42px;height:42px;border:1.5px solid var(--line);
+    background:var(--paper-2);border-radius:12px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--ink);font-size:21px;box-shadow:0 3px 10px rgba(32,38,31,.06);z-index:3;
+  }
+  .top-menu-btn:active{transform:scale(.95);background:var(--emerald-light);}
+  header.top{position:relative;padding-right:70px;}
+  .tools-menu-list{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
+  .tools-menu-item{width:100%;display:flex;align-items:center;gap:12px;padding:14px 15px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper-2);color:var(--ink);cursor:pointer;text-align:right;font:inherit;font-weight:800;}
+  .tools-menu-item:active{background:var(--emerald-light);transform:scale(.99);}
+  .tools-menu-icon{width:38px;height:38px;border-radius:11px;background:var(--emerald-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;}
+  .tools-menu-item small{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:2px;}
+  .tools-panel{display:none;}
+  .tools-panel.active{display:block;}
+  .tools-back{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--emerald);font:inherit;font-weight:800;padding:0 0 12px;cursor:pointer;}
+  .tool-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:11px;}
+  .tool-card-title{font-size:14px;font-weight:900;margin-bottom:10px;}
+  .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .tool-stat{background:var(--paper);border-radius:11px;padding:10px;text-align:center;}
+  .tool-stat .v{font-size:16px;font-weight:900;display:block;}
+  .tool-stat .l{font-size:10.5px;color:var(--muted);display:block;margin-top:3px;}
+  .tool-select-row{display:flex;gap:8px;align-items:center;}
+  .tool-select-row>*{flex:1;}
+  .tool-list{display:flex;flex-direction:column;gap:8px;}
+  .rank-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-num{font-size:18px;text-align:center;}
+  .rank-name{font-weight:800;font-size:13px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .rank-value{font-size:13px;font-weight:900;white-space:nowrap;}
+  .goal-row{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);margin-bottom:8px;}
+  .goal-head{display:flex;justify-content:space-between;gap:8px;align-items:center;}
+  .goal-name{font-weight:900;font-size:14px;}
+  .goal-pct{font-weight:900;color:var(--emerald);font-size:13px;}
+  .goal-bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:9px 0 7px;}
+  .goal-bar-fill{height:100%;background:var(--emerald);border-radius:99px;}
+  .goal-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10.5px;}
+  .goal-actions{display:flex;gap:6px;margin-top:9px;}
+  .goal-actions button{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 9px;font:inherit;font-size:11px;cursor:pointer;}
+  .goal-actions .danger{color:var(--brick);}
+  .tool-empty{text-align:center;color:var(--muted);padding:18px 8px;font-size:12px;line-height:1.7;}
+  .tool-note{font-size:11px;color:var(--muted);line-height:1.7;margin-top:8px;}
+  .tool-success{color:var(--emerald);font-weight:800;font-size:12px;}
+  @media(max-width:380px){.tool-grid{grid-template-columns:1fr;}}
+
 </style>
 </head>
 <body>
@@ -424,6 +471,7 @@
 <!-- ============ Main app ============ -->
 <div id="app" class="hidden">
   <header class="top">
+    <button class="top-menu-btn" title="الأدوات والتحليل" onclick="openToolsMenu_()" aria-label="الأدوات والتحليل">☰</button>
     <h1>مصاريفي</h1>
     <div id="syncStatus" class="sync-status online" title="حالة المزامنة">☁️ متصل</div>
     <div style="display:flex;align-items:center;gap:4px;">
@@ -665,6 +713,76 @@
       <canvas id="reportChart"></canvas>
     </div>
     <button class="secondary-btn hidden" id="exportPdfBtn" style="width:100%;margin-top:14px;" onclick="exportReportPdf()">📄 تصدير كـ PDF</button>
+  </div>
+</div>
+
+
+<!-- ============ V3.6 مركز الأدوات والتحليل ============ -->
+<div class="modal-overlay hidden" id="toolsModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head"><h2>☰ الأدوات والتحليل</h2><button class="icon-btn" onclick="closeModal('toolsModalOverlay')">✕</button></div>
+    <div id="toolsHomePanel" class="tools-panel active">
+      <div class="tools-menu-list">
+        <button class="tools-menu-item" onclick="openToolsPanel_('analytics')"><span class="tools-menu-icon">📊</span><span>التحليل المالي<small>أعلى الفئات ومتوسط الصرف</small></span></button>
+        <button class="tools-menu-item" onclick="openToolsPanel_('savings')"><span class="tools-menu-icon">🎯</span><span>أهداف الادخار<small>تابع تقدمك نحو أهدافك</small></span></button>
+        <button class="tools-menu-item" onclick="openToolsPanel_('backup')"><span class="tools-menu-icon">💾</span><span>النسخ الاحتياطي والتصدير<small>حفظ واستعادة بياناتك</small></span></button>
+      </div>
+    </div>
+
+    <div id="toolsAnalyticsPanel" class="tools-panel">
+      <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
+      <div class="tool-card">
+        <div class="tool-card-title">🏆 أعلى الفئات استهلاكاً</div>
+        <div class="tool-select-row">
+          <select id="analyticsPeriod" onchange="renderFinancialAnalytics_()">
+            <option value="month">هذا الشهر</option><option value="3m">آخر 3 أشهر</option><option value="6m">آخر 6 أشهر</option><option value="year">هذه السنة</option><option value="all">كل الوقت</option><option value="custom">فترة مخصصة</option>
+          </select>
+          <select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select>
+        </div>
+        <div id="analyticsCustomDates" class="tool-select-row" style="margin-top:8px;display:none;"><input type="date" id="analyticsFrom" onchange="renderFinancialAnalytics_()"><input type="date" id="analyticsTo" onchange="renderFinancialAnalytics_()"></div>
+        <div id="topCategoriesResults" class="tool-list" style="margin-top:10px;"></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">📅 متوسط الصرف</div>
+        <div id="spendingAverageResults"></div>
+        <div class="tool-note">المتوسط اليومي يحسب على كامل أيام الفترة المختارة، وليس فقط الأيام التي سجلت فيها عمليات.</div>
+      </div>
+    </div>
+
+    <div id="toolsSavingsPanel" class="tools-panel">
+      <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
+      <div class="tool-card">
+        <div class="tool-card-title">🎯 أهداف الادخار</div>
+        <div id="savingsGoalsList"></div>
+        <button class="primary-btn" style="margin-top:8px;max-width:none;" onclick="openSavingsGoalForm_()">＋ إضافة هدف ادخار</button>
+      </div>
+    </div>
+
+    <div id="toolsBackupPanel" class="tools-panel">
+      <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
+      <div class="tool-card">
+        <div class="tool-card-title">💾 النسخ الاحتياطي والتصدير</div>
+        <p class="tool-note" style="margin-top:0;">تقدر تحفظ نسخة كاملة من حسابك أو تصدّر العمليات بصيغة CSV.</p>
+        <button class="primary-btn" style="max-width:none;margin-top:10px;" onclick="exportBackupJson_()">💾 تصدير نسخة احتياطية كاملة</button>
+        <button class="secondary-btn" style="width:100%;margin-top:8px;" onclick="document.getElementById('backupImportInput').click()">📥 استيراد نسخة احتياطية</button>
+        <button class="secondary-btn" style="width:100%;margin-top:8px;" onclick="exportTransactionsCsv_()">📄 تصدير العمليات CSV</button>
+        <input id="backupImportInput" type="file" accept="application/json,.json" style="display:none" onchange="handleImportFile_(event)">
+        <div id="backupStatus" class="tool-note" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ V3.6 هدف ادخار ============ -->
+<div class="modal-overlay hidden" id="savingsGoalModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-head"><h2 id="savingsGoalModalTitle">🎯 هدف ادخار</h2><button class="icon-btn" onclick="closeModal('savingsGoalModalOverlay')">✕</button></div>
+    <div class="field"><label>اسم الهدف</label><input id="goalName" type="text" placeholder="مثال: لابتوب جديد"></div>
+    <div class="field"><label>المبلغ المستهدف</label><input id="goalTarget" type="number" inputmode="decimal" placeholder="1000"></div>
+    <div class="field"><label>المدخر حالياً</label><input id="goalCurrent" type="number" inputmode="decimal" placeholder="0"></div>
+    <div class="field"><label>العملة</label><select id="goalCurrency"><option value="USD">دولار ($)</option><option value="SYP">ليرة سورية (ل.س)</option><option value="TRY">ليرة تركية (₺)</option></select></div>
+    <div class="field"><label>تاريخ الهدف (اختياري)</label><input id="goalDate" type="date"></div>
+    <div class="modal-actions"><button class="secondary-btn" onclick="closeModal('savingsGoalModalOverlay')">إلغاء</button><button class="primary-btn" onclick="saveSavingsGoal_()">حفظ الهدف</button></div>
   </div>
 </div>
 
@@ -1063,7 +1181,7 @@ function renderList(list) {
       </div>
       <div class="tx-amount ${cls}">${amountText}</div>
       <button class="tx-edit" title="تعديل" onclick="event.stopPropagation(); openAddModal(txDataById['${t.id}'])">✎</button>
-      <button class="tx-del" onclick="event.stopPropagation(); deleteTx('${t.id}')">✕</button>
+      <button type="button" class="tx-del" data-delete-id="${escapeHtml(String(t.id))}" title="حذف">✕</button>
     </li>`;
   }).join('');
   document.querySelectorAll('.tx-item').forEach(item => {
@@ -1071,6 +1189,18 @@ function renderList(list) {
       if (e.target.closest('.tx-del') || e.target.closest('.tx-edit')) return;
       openAddModal(txDataById[item.dataset.id]);
     });
+  });
+  document.querySelectorAll('.tx-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.getAttribute('data-delete-id');
+      if(id) deleteTx(id);
+    });
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, {passive:false});
   });
   attachLongPress();
 }
@@ -1384,7 +1514,7 @@ function closeModal(id, fromBack=false){
   }
 }
 function closeTopModalFromBack_(){
-  const ids=['categoryManagerOverlay','firebaseSettingsOverlay','budgetModalOverlay','reportModalOverlay','filterModalOverlay','addModalOverlay'];
+  const ids=['savingsGoalModalOverlay','toolsModalOverlay','categoryManagerOverlay','firebaseSettingsOverlay','budgetModalOverlay','reportModalOverlay','filterModalOverlay','addModalOverlay','recurringModalOverlay'];
   for(const id of ids){
     const el=document.getElementById(id);
     if(el && !el.classList.contains('hidden')){
@@ -1627,7 +1757,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.5-recurring-alerts';
+const MASARIFI_VERSION = '3.6-financial-tools';
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 const firebaseAuth = firebase.auth();
 const firebaseDb = firebase.firestore();
@@ -1989,26 +2119,33 @@ async function submitAdd(){
 }
 
 async function deleteTx(id){
-  if(!firebaseUser)return;
-  if(!confirm('حذف هذه العملية؟'))return;
-  const previous=allTransactions.find(t=>String(t.id)===String(id)); if(!previous)return;
-  removeLocalTransaction(id);
-  // ضع الحذف في طابور المزامنة حتى لا يعيد onSnapshot العملية القديمة بين الحذف المحلي وحذف Firebase.
-  // عند نجاح الحذف من Firebase يُزال العنصر من الطابور، وإذا فشل يبقى ليُعاد تلقائياً.
-  enqueueMutation_({action:'delete',id});
+  if(!firebaseUser){showToast('سجّل الدخول أولاً');return false;}
+  const key=String(id||'');
+  if(!key)return false;
+  const previous=allTransactions.find(t=>String(t.id)===key);
+  if(!previous){showToast('تعذر العثور على العملية');return false;}
+  if(!window.confirm('حذف هذه العملية؟'))return false;
+
+  // الحذف المحلي فوري، ثم نضمن أن الحذف يصل إلى Firebase حتى لو كان طابور مزامنة آخر قيد التشغيل.
+  removeLocalTransaction(key);
+  enqueueMutation_({action:'delete',id:key});
   showToast('تم الحذف فوراً ⚡ جارٍ الحفظ...');
-  firebaseMutationCount++;
-  try{
-    if(!navigator.onLine){setSyncStatus_('offline');showToast('تم الحذف محلياً؛ سيُزامن عند عودة الإنترنت.');return;}
-    await syncQueueNow_();
-    if(syncQueue_.some(q=>q.action==='delete' && String(q.id)===String(id))){
-      scheduleSyncRetry_();
-      setSyncStatus_('syncing');
-      showToast('تم الحذف محلياً؛ سيُزامن تلقائياً.');
-    }else{
-      showToast('تم الحذف من Firebase ✅');
-    }
-  }finally{firebaseMutationCount=Math.max(0,firebaseMutationCount-1);}
+
+  if(!navigator.onLine){setSyncStatus_('offline');showToast('تم الحذف محلياً؛ سيُزامن عند عودة الإنترنت.');return true;}
+
+  // إذا كانت هناك مزامنة قيد التشغيل، ننتظر انتهاءها ثم نعيد المحاولة للحذف.
+  let attempts=0;
+  while(syncQueueRunning_ && attempts<40){await new Promise(r=>setTimeout(r,100));attempts++;}
+  await syncQueueNow_();
+
+  if(syncQueue_.some(q=>q.action==='delete' && String(q.id)===key)){
+    scheduleSyncRetry_();
+    setSyncStatus_('syncing');
+    showToast('تم الحذف محلياً؛ سيُزامن تلقائياً.');
+  }else{
+    showToast('تم الحذف من Firebase ✅');
+  }
+  return true;
 }
 
 async function refreshCategories_(silent=true){
@@ -2337,8 +2474,8 @@ async function exportBackupJson_(){
   if(!firebaseUser){ showToast('سجّل الدخول أولاً'); return; }
   backupStatus_('جارٍ تجهيز النسخة الاحتياطية...');
   try{
-    const [txSnap, catSnap, budgetSnap, recSnap, settingsSnap] = await Promise.all([
-      txCol_().get(), catCol_().get(), budgetCol_().get(), recurringCol_().get(),
+    const [txSnap, catSnap, budgetSnap, recSnap, savingsSnap, settingsSnap] = await Promise.all([
+      txCol_().get(), catCol_().get(), budgetCol_().get(), recurringCol_().get(), userRef_().collection('savingsGoals').get(),
       userRef_().collection('settings').doc('preferences').get()
     ]);
     const stripTimestamps_ = (d) => {
@@ -2356,6 +2493,7 @@ async function exportBackupJson_(){
       categories: catSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
       budgets: budgetSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
       recurring: recSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
+      savingsGoals: savingsSnap.docs.map(d => ({ id: d.id, ...stripTimestamps_(d.data()) })),
       settings: settingsSnap.exists ? stripTimestamps_(settingsSnap.data()) : { rateSyp, rateTry }
     };
     const dateTag = todayStr();
@@ -2419,6 +2557,7 @@ async function handleImportFile_(event){
     await importCollection_(catCol_(), data.categories);
     await importCollection_(budgetCol_(), data.budgets);
     await importCollection_(recurringCol_(), data.recurring);
+    await importCollection_(userRef_().collection('savingsGoals'), data.savingsGoals || []);
     if(data.settings){
       await userRef_().collection('settings').doc('preferences').set(
         { rateSyp: Number(data.settings.rateSyp)||0, rateTry: Number(data.settings.rateTry)||0,
@@ -2431,6 +2570,7 @@ async function handleImportFile_(event){
     await loadFirebaseSettings_();
     await refreshCategories_(true);
     await refreshBudgets_(currentMonthPrefixSafe_(), true);
+    await loadSavingsGoals_();
     await refreshData({ silent: false });
   }catch(e){
     console.error(e);
@@ -2454,6 +2594,130 @@ async function importCollection_(colRef, items){
   }
 }
 
+
+/* ================= V3.6 مركز الأدوات والتحليل + أهداف الادخار ================= */
+let savingsGoals_ = [];
+let savingsEditingId_ = null;
+let toolsPanel_ = 'home';
+
+function savingsCacheKey_(){ return 'masarifi_savings_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
+function saveSavingsCache_(){ try{localStorage.setItem(savingsCacheKey_(),JSON.stringify(savingsGoals_));}catch(e){} }
+function loadSavingsCache_(){
+  try{const raw=localStorage.getItem(savingsCacheKey_()); if(!raw)return false; const arr=JSON.parse(raw); if(!Array.isArray(arr))return false; savingsGoals_=arr; return true;}catch(e){return false;}
+}
+function openToolsMenu_(){
+  toolsPanel_='home';
+  document.querySelectorAll('#toolsModalOverlay .tools-panel').forEach(x=>x.classList.remove('active'));
+  document.getElementById('toolsHomePanel').classList.add('active');
+  showModal_('toolsModalOverlay');
+  renderSavingsGoals_();
+}
+function openToolsPanel_(panel){
+  toolsPanel_=panel;
+  document.querySelectorAll('#toolsModalOverlay .tools-panel').forEach(x=>x.classList.remove('active'));
+  let el=document.getElementById(panel==='home'?'toolsHomePanel':panel==='analytics'?'toolsAnalyticsPanel':'toolsSavingsPanel');
+  if(panel==='backup')el=document.getElementById('toolsBackupPanel');
+  if(el)el.classList.add('active');
+  if(panel==='analytics')renderFinancialAnalytics_();
+  if(panel==='savings')renderSavingsGoals_();
+}
+function analyticsPeriodDates_(){
+  const period=document.getElementById('analyticsPeriod')?.value||'month';
+  const now=new Date(); now.setHours(12,0,0,0);
+  let from,to=new Date(now);
+  if(period==='month') from=new Date(now.getFullYear(),now.getMonth(),1,12);
+  else if(period==='3m') from=new Date(now.getFullYear(),now.getMonth()-2,1,12);
+  else if(period==='6m') from=new Date(now.getFullYear(),now.getMonth()-5,1,12);
+  else if(period==='year') from=new Date(now.getFullYear(),0,1,12);
+  else if(period==='custom'){
+    const f=document.getElementById('analyticsFrom')?.value||todayStr();
+    const t=document.getElementById('analyticsTo')?.value||todayStr();
+    return {from:new Date(f+'T12:00:00'),to:new Date(t+'T12:00:00')};
+  }else if(period==='all'){
+    const dates=allTransactions.map(t=>t.date).filter(Boolean).sort();
+    from=dates.length?new Date(dates[0]+'T12:00:00'):new Date(now);
+  }
+  return {from,to};
+}
+function periodDays_(from,to){
+  const a=new Date(from);a.setHours(12,0,0,0); const b=new Date(to);b.setHours(12,0,0,0);
+  return Math.max(1,Math.floor((b-a)/86400000)+1);
+}
+function renderFinancialAnalytics_(){
+  const period=document.getElementById('analyticsPeriod');
+  const custom=document.getElementById('analyticsCustomDates');
+  if(custom)custom.style.display=period?.value==='custom'?'flex':'none';
+  const cur=document.getElementById('analyticsCurrency')?.value||'USD';
+  const {from,to}=analyticsPeriodDates_();
+  const fromStr=dateToStr_(from),toStr=dateToStr_(to);
+  const list=allTransactions.filter(t=>t.type==='مصروف'&&t.date>=fromStr&&t.date<=toStr);
+  const grouped={}; let total=0; let missingRate=false;
+  list.forEach(t=>{
+    const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur);
+    if(v<=0 && Number(t.amount)>0 && t.currency!==cur)missingRate=true;
+    grouped[t.category||'غير مصنف']=(grouped[t.category||'غير مصنف']||0)+v;
+    total+=v;
+  });
+  const rows=Object.entries(grouped).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const wrap=document.getElementById('topCategoriesResults');
+  if(!rows.length){wrap.innerHTML='<div class="tool-empty">لا توجد مصاريف ضمن الفترة المختارة.</div>';}else{
+    wrap.innerHTML=rows.map((r,i)=>{const pct=total?Math.round(r[1]/total*100):0;return `<div class="rank-row"><div class="rank-num">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div><div><div class="rank-name">${escapeHtml(r[0])}</div><div class="rank-sub">${pct}% من إجمالي الصرف</div></div><div class="rank-value">${fmt(r[1])} ${CUR_SYMBOL[cur]||cur}</div></div>`;}).join('');
+  }
+  const days=periodDays_(from,to); const daily=total/days; const weekly=daily*7; const monthly=daily*30.4375;
+  const avg=document.getElementById('spendingAverageResults');
+  avg.innerHTML=`<div class="tool-grid"><div class="tool-stat"><span class="v">${fmt(daily)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط يومي</span></div><div class="tool-stat"><span class="v">${fmt(weekly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط أسبوعي</span></div><div class="tool-stat"><span class="v">${fmt(monthly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">وتيرة شهرية</span></div><div class="tool-stat"><span class="v">${fmt(total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">إجمالي الفترة</span></div></div>${missingRate?'<div class="tool-note">⚠️ بعض العمليات بعملة مختلفة ولم تُحتسب بدقة لأن سعر تحويل هذه العملة غير مضبوط في الإعدادات.</div>':''}`;
+}
+function openSavingsGoalForm_(goal){
+  savingsEditingId_=goal?goal.id:null;
+  document.getElementById('savingsGoalModalTitle').textContent=goal?'✎ تعديل هدف الادخار':'🎯 هدف ادخار جديد';
+  document.getElementById('goalName').value=goal?.name||'';
+  document.getElementById('goalTarget').value=goal?.target||'';
+  document.getElementById('goalCurrent').value=goal?.current||'';
+  document.getElementById('goalCurrency').value=goal?.currency||'USD';
+  document.getElementById('goalDate').value=goal?.targetDate||'';
+  showModal_('savingsGoalModalOverlay');
+}
+async function saveSavingsGoal_(){
+  if(!firebaseUser){showToast('سجّل الدخول أولاً');return;}
+  const name=document.getElementById('goalName').value.trim();
+  const target=Number(document.getElementById('goalTarget').value); const current=Number(document.getElementById('goalCurrent').value)||0;
+  const currency=document.getElementById('goalCurrency').value; const targetDate=document.getElementById('goalDate').value||'';
+  if(!name){showToast('اكتب اسم الهدف');return;} if(!Number.isFinite(target)||target<=0){showToast('اكتب المبلغ المستهدف بشكل صحيح');return;} if(current<0){showToast('المبلغ الحالي لا يمكن أن يكون سالباً');return;}
+  const payload={name,target,current:Math.min(current,target),currency,targetDate,owner:firebaseUser.uid};
+  const id=savingsEditingId_||('goal-'+Date.now()+'-'+Math.random().toString(36).slice(2,7));
+  const local={id,...payload,updatedAt:Date.now()};
+  const idx=savingsGoals_.findIndex(g=>String(g.id)===String(id)); if(idx>=0)savingsGoals_[idx]=local; else savingsGoals_.push(local); saveSavingsCache_(); renderSavingsGoals_(); closeModal('savingsGoalModalOverlay'); showToast('تم حفظ هدف الادخار ✅');
+  try{await userRef_().collection('savingsGoals').doc(String(id)).set({...payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}
+  catch(e){showToast('تم حفظ الهدف محلياً؛ تعذر المزامنة حالياً.');}
+}
+async function loadSavingsGoals_(){
+  loadSavingsCache_(); renderSavingsGoals_();
+  if(!firebaseUser||!navigator.onLine)return;
+  try{const snap=await userRef_().collection('savingsGoals').get(); savingsGoals_=snap.docs.map(d=>({id:d.id,...d.data()})); saveSavingsCache_(); renderSavingsGoals_();}catch(e){}
+}
+async function editSavingsGoal_(id){const g=savingsGoals_.find(x=>String(x.id)===String(id));if(g)openSavingsGoalForm_(g);}
+async function deleteSavingsGoal_(id){
+  const g=savingsGoals_.find(x=>String(x.id)===String(id)); if(!g)return;
+  if(!window.confirm('حذف هدف الادخار «'+g.name+'»؟'))return;
+  savingsGoals_=savingsGoals_.filter(x=>String(x.id)!==String(id)); saveSavingsCache_(); renderSavingsGoals_();
+  if(firebaseUser&&navigator.onLine){try{await userRef_().collection('savingsGoals').doc(String(id)).delete();}catch(e){showToast('تعذر حذف الهدف من Firebase');}}
+}
+async function adjustSavingsGoal_(id,delta){
+  const g=savingsGoals_.find(x=>String(x.id)===String(id));if(!g)return;
+  const amount=Number(prompt(delta>0?'كم تريد إضافة للهدف؟':'كم تريد سحب من الهدف؟','0')); if(!Number.isFinite(amount)||amount<=0)return;
+  g.current=Math.max(0,Math.min(Number(g.target)||0,(Number(g.current)||0)+(delta>0?amount:-amount))); saveSavingsCache_(); renderSavingsGoals_();
+  if(firebaseUser&&navigator.onLine){try{await userRef_().collection('savingsGoals').doc(String(id)).set({current:g.current,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){showToast('تم التعديل محلياً؛ تعذر المزامنة حالياً.');}}
+}
+function renderSavingsGoals_(){
+  const wrap=document.getElementById('savingsGoalsList'); if(!wrap)return;
+  if(!savingsGoals_.length){wrap.innerHTML='<div class="tool-empty">ما عندك أهداف ادخار حالياً.<br>أضف أول هدف وابدأ تابع تقدّمك 🎯</div>';return;}
+  wrap.innerHTML=savingsGoals_.map(g=>{
+    const target=Math.max(0,Number(g.target)||0), current=Math.max(0,Number(g.current)||0), pct=target?Math.min(100,Math.round(current/target*100)):0, remain=Math.max(0,target-current),sym=CUR_SYMBOL[g.currency]||g.currency;
+    const done=pct>=100;
+    return `<div class="goal-row"><div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span></div><div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div><div class="goal-meta"><span>${fmt(current)} / ${fmt(target)} ${sym}</span><span>${done?'تم تحقيق الهدف':'متبقي '+fmt(remain)+' '+sym}</span></div>${g.targetDate?`<div class="goal-meta" style="margin-top:4px;"><span>📅 الموعد</span><span>${formatDisplayDate(g.targetDate)}</span></div>`:''}<div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button><button onclick="editSavingsGoal_('${g.id}')">✎ تعديل</button><button class="danger" onclick="deleteSavingsGoal_('${g.id}')">حذف</button></div></div>`;
+  }).join('');
+}
+
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true;
   if(!user){
@@ -2470,6 +2734,7 @@ firebaseAuth.onAuthStateChanged(async user=>{
   setSyncStatus_(navigator.onLine ? 'online' : 'offline');
   if(navigator.onLine) await ensureDefaultCategories_();
   await loadFirebaseSettings_();
+  await loadSavingsGoals_();
   await refreshBudgets_(currentMonthPrefixSafe_(), true);
   loadRecurringCache_();
   const hadCache=loadFirebaseCache_();
