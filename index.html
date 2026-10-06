@@ -9,16 +9,20 @@ window.__masarifiBootTimer = setTimeout(function(){
   var boot=document.getElementById('firebaseBootScreen');
   if(!boot) return;
   boot.innerHTML='<div style="text-align:center;padding:24px;max-width:340px;"><div class="boot-mark">مصاريفي</div><div style="margin-top:12px;color:#666;font-size:13px;line-height:1.7;">تعذر تحميل خدمات التطبيق. تأكد من الإنترنت ثم حاول مرة ثانية.</div><button class="primary-btn" style="margin-top:14px;" onclick="location.reload()">إعادة المحاولة</button></div>';
-}, 10000);
+}, 25000);
 window.__masarifiFinishBoot = function(){
   window.__masarifiBootDone = true;
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="3.6-financial-tools">
+<meta name="masarifi-version" content="3.6.1-web-stability-search">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -1748,9 +1752,6 @@ async function addNewCategory(){ return addCategory(); }
 <!-- Firebase SDK / V3.2 data layer -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
 <script>
 /* ================= Masarifi Firebase V1 bridge ================= */
 const firebaseConfig = {
@@ -1762,7 +1763,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.6.1-stability';
+const MASARIFI_VERSION = '3.6.1-web-stability-search';
 if(typeof firebase === 'undefined'){
   throw new Error('Firebase SDK failed to load');
 }
@@ -2744,20 +2745,35 @@ function handleSearchInput_(value){
 // حتى لا يبقى البحث عالقاً بعد إعادة فتح التطبيق أو استعادة الصفحة.
 function bindSearchEvents_(){
   const input=document.getElementById('searchInput');
-  if(!input) return false;
-  if(input.dataset.searchBound!=='1'){
-    input.dataset.searchBound='1';
-    const run=()=>applyFiltersAndRender();
-    ['input','search','change','keyup'].forEach(evt=>input.addEventListener(evt,run));
+  if(input){
+    const run=()=>{ requestAnimationFrame(()=>applyFiltersAndRender()); };
     input.oninput=run;
     input.onsearch=run;
+    input.onchange=run;
+    input.onkeyup=run;
   }
-  return true;
+
+  // Delegated listener: survives any future re-render/replacement of the search input.
+  if(!window.__masarifiSearchDelegated){
+    window.__masarifiSearchDelegated=true;
+    document.addEventListener('input',function(e){
+      if(e.target && e.target.id==='searchInput'){
+        requestAnimationFrame(()=>applyFiltersAndRender());
+      }
+    },true);
+    document.addEventListener('search',function(e){
+      if(e.target && e.target.id==='searchInput'){
+        requestAnimationFrame(()=>applyFiltersAndRender());
+      }
+    },true);
+  }
+  return !!input;
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindSearchEvents_);
 else bindSearchEvents_();
 setTimeout(bindSearchEvents_,500);
 setTimeout(bindSearchEvents_,1500);
+setTimeout(bindSearchEvents_,3000);
 
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true; clearTimeout(firebaseBootTimeout_);
