@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="3.7.2-analytics-navigation">
+<meta name="masarifi-version" content="3.7.3-financial-analysis">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -462,14 +462,8 @@ window.__masarifiFinishBoot = function(){
   .tools-menu-item:active{background:var(--emerald-light);transform:scale(.99);}
   .tools-menu-icon{width:38px;height:38px;border-radius:11px;background:var(--emerald-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;}
   .tools-menu-item small{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:2px;}
-  .analytics-feature-list{display:flex;flex-direction:column;gap:9px;}
-  .analytics-feature-item{width:100%;display:grid;grid-template-columns:42px minmax(0,1fr) 18px;align-items:center;gap:10px;padding:13px 12px;border:1.5px solid var(--line);border-radius:13px;background:var(--paper-2);color:var(--ink);cursor:pointer;text-align:right;font:inherit;}
-  .analytics-feature-item:active{background:var(--emerald-light);transform:scale(.99);}
-  .analytics-feature-item b{font-size:20px;color:var(--muted);font-weight:500;}
-  .analytics-feature-icon{width:40px;height:40px;border-radius:11px;background:var(--emerald-light);display:flex;align-items:center;justify-content:center;font-size:20px;}
-  .analytics-feature-item strong{display:block;font-size:13.5px;font-weight:900;}
-  .analytics-feature-item small{display:block;color:var(--muted);font-size:10.5px;font-weight:500;margin-top:3px;}
-  .tools-panel{display:none;}
+  .budget-analysis-row{padding:11px 0;border-bottom:1px dashed var(--line)}.budget-analysis-head{display:flex;justify-content:space-between;font-weight:800}.budget-analysis-bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:7px 0}.budget-analysis-fill{height:100%;background:var(--emerald)}.budget-analysis-fill.warning,.budget-analysis-head .warning{background:var(--gold);color:var(--gold)}.budget-analysis-fill.expense,.budget-analysis-head .expense{background:var(--brick);color:var(--brick)}.budget-analysis-meta{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted)}
+.tools-panel{display:none;}
   .tools-panel.active{display:block;}
   .tools-back{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--emerald);font:inherit;font-weight:800;padding:0 0 12px;cursor:pointer;}
   .tool-card{background:var(--paper-2);border:1.5px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:11px;}
@@ -773,68 +767,22 @@ window.__masarifiFinishBoot = function(){
 
     <div id="toolsAnalyticsPanel" class="tools-panel">
       <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
-      <div class="tool-card" style="margin-bottom:0;">
-        <div class="tool-card-title">📊 التحليل المالي</div>
-        <div class="tool-note" style="margin-bottom:12px;">اختر التحليل الذي تريد عرضه. كل تحليل يفتح في شاشة مستقلة لتبقى المعلومات واضحة وسهلة.</div>
-        <div class="analytics-feature-list">
-          <button class="analytics-feature-item" onclick="openToolsPanel_('analytics-top')"><span class="analytics-feature-icon">🏆</span><span><strong>أعلى الفئات استهلاكاً</strong><small>اعرف أين يذهب معظم صرفك</small></span><b>‹</b></button>
-          <button class="analytics-feature-item" onclick="openToolsPanel_('analytics-average')"><span class="analytics-feature-icon">📅</span><span><strong>متوسط الصرف</strong><small>يومي وأسبوعي ووتيرة شهرية</small></span><b>‹</b></button>
-          <button class="analytics-feature-item" onclick="openToolsPanel_('analytics-compare')"><span class="analytics-feature-icon">📈</span><span><strong>مقارنة الإنفاق</strong><small>هذا الشهر مقابل الشهر الماضي</small></span><b>‹</b></button>
-          <button class="analytics-feature-item" onclick="openToolsPanel_('analytics-forecast')"><span class="analytics-feature-icon">🔮</span><span><strong>توقع نهاية الشهر</strong><small>تقدير الصرف المتوقع حتى نهاية الشهر</small></span><b>‹</b></button>
-          <button class="analytics-feature-item" onclick="openToolsPanel_('analytics-trend')"><span class="analytics-feature-icon">📉</span><span><strong>اتجاه الإنفاق</strong><small>تطور مصروفك خلال آخر 6 أشهر</small></span><b>‹</b></button>
-          <button class="analytics-feature-item" onclick="openToolsPanel_('analytics-changes')"><span class="analytics-feature-icon">🔍</span><span><strong>الفئات الأكثر تغيّراً</strong><small>أكبر الزيادات والانخفاضات</small></span><b>‹</b></button>
-        </div>
+      <div class="tools-menu-list">
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('top')"><span class="tools-menu-icon">🏆</span><span>أعلى الفئات استهلاكاً<small>أكثر الفئات صرفاً خلال الفترة</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('average')"><span class="tools-menu-icon">📅</span><span>متوسط الصرف<small>يومي وأسبوعي ووتيرة شهرية</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('comparison')"><span class="tools-menu-icon">📈</span><span>مقارنة الإنفاق<small>الشهر الحالي مقابل السابق</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('forecast')"><span class="tools-menu-icon">🔮</span><span>توقع نهاية الشهر<small>التوقع الحالي + المسار المتوقع والميزانية</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('trend')"><span class="tools-menu-icon">📉</span><span>اتجاه الإنفاق<small>مسار الصرف خلال آخر 6 أشهر</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('changes')"><span class="tools-menu-icon">🔍</span><span>الفئات الأكثر تغيّراً<small>أكبر ارتفاع وانخفاض مقارنة بالسابق</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('rises')"><span class="tools-menu-icon">🔥</span><span>اكتشاف ارتفاع المصاريف<small>الفئات التي ارتفع إنفاقها بوضوح</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('budget')"><span class="tools-menu-icon">🎯</span><span>الالتزام بالميزانية<small>استخدام كل ميزانية وحالتها</small></span></button>
+        <button class="tools-menu-item" onclick="openAnalyticsFeature_('pattern')"><span class="tools-menu-icon">🧠</span><span>تحليل نمط الصرف<small>متى وأين يتكرر الإنفاق</small></span></button>
       </div>
     </div>
 
-    <!-- محرك التحليل الداخلي: مخفي بصرياً، ويُستخدم للحفاظ على منطق التحليلات الحالي كما هو. -->
-    <div id="analyticsEngine" style="display:none;">
-      <select id="analyticsPeriod"><option value="month">هذا الشهر</option><option value="3m">آخر 3 أشهر</option><option value="6m">آخر 6 أشهر</option><option value="year">هذه السنة</option><option value="all">كل الوقت</option><option value="custom">فترة مخصصة</option></select>
-      <select id="analyticsCurrency"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select>
-      <div id="analyticsCustomDates"><input type="date" id="analyticsFrom"><input type="date" id="analyticsTo"></div>
-      <div id="topCategoriesResults"></div><div id="spendingAverageResults"></div>
-      <div id="monthlyComparisonResults"></div><div id="monthForecastResults"></div>
-      <div id="spendingTrendResults"></div><div id="categoryChangeResults"></div>
-    </div>
-
-    <div id="toolsAnalyticsTopPanel" class="tools-panel">
-      <button class="tools-back" onclick="openToolsPanel_('analytics')">‹ رجوع للتحليل المالي</button>
-      <div class="tool-card">
-        <div class="tool-card-title">🏆 أعلى الفئات استهلاكاً</div>
-        <div class="tool-select-row"><select id="faTopPeriod" onchange="refreshAnalyticsFeature_('top')"><option value="month">هذا الشهر</option><option value="3m">آخر 3 أشهر</option><option value="6m">آخر 6 أشهر</option><option value="year">هذه السنة</option><option value="all">كل الوقت</option><option value="custom">فترة مخصصة</option></select><select id="faTopCurrency" onchange="refreshAnalyticsFeature_('top')"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div>
-        <div id="faTopDates" class="tool-select-row" style="margin-top:8px;display:none;"><input type="date" id="faTopFrom" onchange="refreshAnalyticsFeature_('top')"><input type="date" id="faTopTo" onchange="refreshAnalyticsFeature_('top')"></div>
-        <div id="faTopResults" class="tool-list" style="margin-top:10px;"></div>
-      </div>
-    </div>
-
-    <div id="toolsAnalyticsAveragePanel" class="tools-panel">
-      <button class="tools-back" onclick="openToolsPanel_('analytics')">‹ رجوع للتحليل المالي</button>
-      <div class="tool-card">
-        <div class="tool-card-title">📅 متوسط الصرف</div>
-        <div class="tool-select-row"><select id="faAvgPeriod" onchange="refreshAnalyticsFeature_('average')"><option value="month">هذا الشهر</option><option value="3m">آخر 3 أشهر</option><option value="6m">آخر 6 أشهر</option><option value="year">هذه السنة</option><option value="all">كل الوقت</option><option value="custom">فترة مخصصة</option></select><select id="faAvgCurrency" onchange="refreshAnalyticsFeature_('average')"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div>
-        <div id="faAvgDates" class="tool-select-row" style="margin-top:8px;display:none;"><input type="date" id="faAvgFrom" onchange="refreshAnalyticsFeature_('average')"><input type="date" id="faAvgTo" onchange="refreshAnalyticsFeature_('average')"></div>
-        <div id="faAvgResults" style="margin-top:10px;"></div>
-      </div>
-    </div>
-
-    <div id="toolsAnalyticsComparePanel" class="tools-panel">
-      <button class="tools-back" onclick="openToolsPanel_('analytics')">‹ رجوع للتحليل المالي</button>
-      <div class="tool-card"><div class="tool-card-title">📈 مقارنة الإنفاق</div><div class="tool-select-row"><select id="faCompareCurrency" onchange="refreshAnalyticsFeature_('compare')"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="faCompareResults" style="margin-top:10px;"></div></div>
-    </div>
-
-    <div id="toolsAnalyticsForecastPanel" class="tools-panel">
-      <button class="tools-back" onclick="openToolsPanel_('analytics')">‹ رجوع للتحليل المالي</button>
-      <div class="tool-card"><div class="tool-card-title">🔮 توقع نهاية الشهر</div><div class="tool-select-row"><select id="faForecastCurrency" onchange="refreshAnalyticsFeature_('forecast')"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="faForecastResults" style="margin-top:10px;"></div></div>
-    </div>
-
-    <div id="toolsAnalyticsTrendPanel" class="tools-panel">
-      <button class="tools-back" onclick="openToolsPanel_('analytics')">‹ رجوع للتحليل المالي</button>
-      <div class="tool-card"><div class="tool-card-title">📉 اتجاه الإنفاق</div><div class="tool-select-row"><select id="faTrendCurrency" onchange="refreshAnalyticsFeature_('trend')"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="faTrendResults" style="margin-top:10px;"></div></div>
-    </div>
-
-    <div id="toolsAnalyticsChangesPanel" class="tools-panel">
-      <button class="tools-back" onclick="openToolsPanel_('analytics')">‹ رجوع للتحليل المالي</button>
-      <div class="tool-card"><div class="tool-card-title">🔍 الفئات الأكثر تغيّراً</div><div class="tool-select-row"><select id="faChangesCurrency" onchange="refreshAnalyticsFeature_('changes')"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="faChangesResults" style="margin-top:10px;"></div></div>
+    <div id="analyticsFeaturePanel" class="tools-panel">
+      <button class="tools-back" onclick="openAnalyticsFeature_('home')">‹ رجوع للتحليل المالي</button>
+      <div id="analyticsFeatureContent"></div>
     </div>
 
     <div id="toolsSavingsPanel" class="tools-panel">
@@ -1833,7 +1781,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.7.2-analytics-navigation';
+const MASARIFI_VERSION = '3.7.0-financial-analysis';
 if(typeof firebase === 'undefined'){
   throw new Error('Firebase SDK failed to load');
 }
@@ -2702,54 +2650,40 @@ function openToolsMenu_(){
 function openToolsPanel_(panel){
   toolsPanel_=panel;
   document.querySelectorAll('#toolsModalOverlay .tools-panel').forEach(x=>x.classList.remove('active'));
-  const map={
-    home:'toolsHomePanel',
-    analytics:'toolsAnalyticsPanel',
-    'analytics-top':'toolsAnalyticsTopPanel',
-    'analytics-average':'toolsAnalyticsAveragePanel',
-    'analytics-compare':'toolsAnalyticsComparePanel',
-    'analytics-forecast':'toolsAnalyticsForecastPanel',
-    'analytics-trend':'toolsAnalyticsTrendPanel',
-    'analytics-changes':'toolsAnalyticsChangesPanel',
-    savings:'toolsSavingsPanel',
-    backup:'toolsBackupPanel'
-  };
-  const el=document.getElementById(map[panel]||'');
+  let el=document.getElementById(panel==='home'?'toolsHomePanel':panel==='analytics'?'toolsAnalyticsPanel':panel==='savings'?'toolsSavingsPanel':'toolsBackupPanel');
   if(el)el.classList.add('active');
-  if(panel==='analytics')return;
+  if(panel==='analytics') renderAnalyticsHome_();
   if(panel==='savings')renderSavingsGoals_();
-  if(panel.startsWith('analytics-'))refreshAnalyticsFeature_(panel.replace('analytics-',''));
 }
 
-function copyAnalyticsEngine_(sourceId,targetId){
-  const src=document.getElementById(sourceId),dst=document.getElementById(targetId);
-  if(src&&dst)dst.innerHTML=src.innerHTML;
+function renderAnalyticsHome_(){
+  const p=document.getElementById('toolsAnalyticsPanel'); if(p)p.classList.add('active');
 }
-function setAnalyticsEngineControls_(period,currency,from,to){
-  const p=document.getElementById('analyticsPeriod'),c=document.getElementById('analyticsCurrency');
-  if(p)p.value=period||'month'; if(c)c.value=currency||'USD';
-  const custom=document.getElementById('analyticsCustomDates');
-  if(custom)custom.style.display=p&&p.value==='custom'?'flex':'none';
-  const f=document.getElementById('analyticsFrom'),t=document.getElementById('analyticsTo');
-  if(f)f.value=from||''; if(t)t.value=to||'';
+
+function analyticsFeatureTitle_(key){
+  return {top:'🏆 أعلى الفئات استهلاكاً',average:'📅 متوسط الصرف',comparison:'📈 مقارنة الإنفاق',forecast:'🔮 توقع نهاية الشهر',trend:'📉 اتجاه الإنفاق',changes:'🔍 الفئات الأكثر تغيّراً',rises:'🔥 اكتشاف ارتفاع المصاريف',budget:'🎯 الالتزام بالميزانية',pattern:'🧠 تحليل نمط الصرف'}[key]||'التحليل المالي';
 }
-function refreshAnalyticsFeature_(feature){
-  let period='month',currency='USD',from='',to='';
-  if(feature==='top'){period=document.getElementById('faTopPeriod')?.value||'month';currency=document.getElementById('faTopCurrency')?.value||'USD';from=document.getElementById('faTopFrom')?.value||'';to=document.getElementById('faTopTo')?.value||'';document.getElementById('faTopDates').style.display=period==='custom'?'flex':'none';}
-  else if(feature==='average'){period=document.getElementById('faAvgPeriod')?.value||'month';currency=document.getElementById('faAvgCurrency')?.value||'USD';from=document.getElementById('faAvgFrom')?.value||'';to=document.getElementById('faAvgTo')?.value||'';document.getElementById('faAvgDates').style.display=period==='custom'?'flex':'none';}
-  else if(feature==='compare')currency=document.getElementById('faCompareCurrency')?.value||'USD';
-  else if(feature==='forecast')currency=document.getElementById('faForecastCurrency')?.value||'USD';
-  else if(feature==='trend')currency=document.getElementById('faTrendCurrency')?.value||'USD';
-  else if(feature==='changes')currency=document.getElementById('faChangesCurrency')?.value||'USD';
-  setAnalyticsEngineControls_(period,currency,from,to);
-  renderFinancialAnalytics_();
-  if(feature==='top')copyAnalyticsEngine_('topCategoriesResults','faTopResults');
-  else if(feature==='average')copyAnalyticsEngine_('spendingAverageResults','faAvgResults');
-  else if(feature==='compare')copyAnalyticsEngine_('monthlyComparisonResults','faCompareResults');
-  else if(feature==='forecast')copyAnalyticsEngine_('monthForecastResults','faForecastResults');
-  else if(feature==='trend')copyAnalyticsEngine_('spendingTrendResults','faTrendResults');
-  else if(feature==='changes')copyAnalyticsEngine_('categoryChangeResults','faChangesResults');
+function analyticsFeatureTemplate_(key){
+  const title=analyticsFeatureTitle_(key);
+  if(key==='top') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsPeriod" onchange="renderFinancialAnalytics_()"><option value="month">هذا الشهر</option><option value="3m">آخر 3 أشهر</option><option value="6m">آخر 6 أشهر</option><option value="year">هذه السنة</option><option value="all">كل الوقت</option><option value="custom">فترة مخصصة</option></select><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="analyticsCustomDates" class="tool-select-row" style="margin-top:8px;display:none"><input type="date" id="analyticsFrom" onchange="renderFinancialAnalytics_()"><input type="date" id="analyticsTo" onchange="renderFinancialAnalytics_()"></div><div id="topCategoriesResults" class="tool-list" style="margin-top:10px"></div></div>`;
+  if(key==='average') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="spendingAverageResults" style="margin-top:10px"></div><div class="tool-note">المتوسط اليومي يحسب على كامل أيام الفترة المختارة، وليس فقط الأيام التي سجلت فيها عمليات.</div></div>`;
+  if(key==='comparison') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="monthlyComparisonResults" style="margin-top:10px"></div></div>`;
+  if(key==='forecast') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="monthForecastResults" style="margin-top:10px"></div></div>`;
+  if(key==='trend') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="spendingTrendResults" style="margin-top:10px"></div></div>`;
+  if(key==='changes') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="categoryChangeResults" style="margin-top:10px"></div></div>`;
+  if(key==='rises') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="expenseRiseResults" style="margin-top:10px"></div></div>`;
+  if(key==='budget') return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="budgetAnalysisCurrency" onchange="renderBudgetAnalysis_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="budgetAnalysisResults" style="margin-top:10px"></div></div>`;
+  return `<div class="tool-card"><div class="tool-card-title">${title}</div><div class="tool-select-row"><select id="analyticsCurrency" onchange="renderFinancialAnalytics_()"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select></div><div id="spendingPatternResults" style="margin-top:10px"></div></div>`;
 }
+
+function openAnalyticsFeature_(key){
+  const home=document.getElementById('toolsAnalyticsPanel'), feature=document.getElementById('analyticsFeaturePanel'), content=document.getElementById('analyticsFeatureContent');
+  if(key==='home'){ if(feature)feature.classList.remove('active'); if(home)home.classList.add('active'); return; }
+  if(!feature||!content)return;
+  home.classList.remove('active'); feature.classList.add('active'); content.innerHTML=analyticsFeatureTemplate_(key);
+  if(key==='budget') renderBudgetAnalysis_(); else renderFinancialAnalytics_();
+}
+
 function analyticsPeriodDates_(){
   const period=document.getElementById('analyticsPeriod')?.value||'month';
   const now=new Date(); now.setHours(12,0,0,0);
@@ -2799,12 +2733,14 @@ function renderFinancialAnalytics_(){
   // V3.7: مقارنة الشهر الحالي بالشهر السابق + توقع نهاية الشهر.
   renderV37MonthlyInsights_(cur);
   renderV371TrendInsights_(cur);
+  renderExpenseRiseAnalysis_(cur);
+  renderSpendingPatternAnalysis_(cur);
 }
 
 function renderV37MonthlyInsights_(cur){
   const cmp=document.getElementById('monthlyComparisonResults');
   const forecast=document.getElementById('monthForecastResults');
-  if(!cmp||!forecast)return;
+
 
   const now=new Date(); now.setHours(12,0,0,0);
   const year=now.getFullYear(), month=now.getMonth(), day=now.getDate();
@@ -2835,7 +2771,7 @@ function renderV37MonthlyInsights_(cur){
   const pct=previous.total>0?(diff/previous.total*100):null;
   const direction=diff>0?'▲ أعلى':diff<0?'▼ أقل':'— بدون تغيير';
   const directionClass=diff>0?'expense':diff<0?'income':'neutral';
-  cmp.innerHTML=`<div class="tool-grid">
+  if(cmp) cmp.innerHTML=`<div class="tool-grid">
     <div class="tool-stat"><span class="v">${fmt(current.total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">هذا الشهر حتى اليوم</span></div>
     <div class="tool-stat"><span class="v">${fmt(previous.total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">الشهر الماضي لنفس المدة</span></div>
   </div>
@@ -2848,19 +2784,22 @@ function renderV37MonthlyInsights_(cur){
   const remaining=Math.max(0,forecastTotal-current.total);
   const prevFull=sumRange(prevStart,prevEnd);
   const vsPrevFull=prevFull.total>0?(forecastTotal-prevFull.total)/prevFull.total*100:null;
-  forecast.innerHTML=`<div class="tool-grid">
+  const totalBudget=budgetData.find(b=>!b.category&&b.month===currentMonthPrefixSafe_());
+  let budgetNote='';
+  if(totalBudget&&Number(totalBudget.amount)>0){const b=toBudgetCurrency_(Number(totalBudget.amount),totalBudget.currency,cur); const gap=forecastTotal-b; budgetNote=`<div class="tool-stat" style="margin-top:8px;"><span class="v ${gap>0?'expense':'income'}">${gap>0?'🔴 متوقع تجاوز الميزانية':'🟢 متوقع البقاء ضمن الميزانية'}</span><span class="l">الميزانية ${fmt(b)} ${CUR_SYMBOL[cur]||cur} • الفرق المتوقع ${fmt(Math.abs(gap))} ${CUR_SYMBOL[cur]||cur}</span></div>`;}
+  if(forecast) forecast.innerHTML=`<div class="tool-grid">
     <div class="tool-stat"><span class="v">${fmt(daily)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">معدل الصرف اليومي</span></div>
     <div class="tool-stat"><span class="v">${fmt(forecastTotal)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">المتوقع نهاية الشهر</span></div>
     <div class="tool-stat"><span class="v">${fmt(remaining)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">المتوقع صرفه المتبقي</span></div>
     <div class="tool-stat"><span class="v">${vsPrevFull===null?'—':(vsPrevFull>=0?'▲ ':'▼ ')+Math.abs(vsPrevFull).toFixed(1)+'%'}</span><span class="l">مقارنة بتكلفة الشهر الماضي</span></div>
-  </div>
+  </div>${budgetNote}
   <div class="tool-note">التوقع مبني على متوسط صرفك اليومي منذ بداية الشهر حتى اليوم.</div>`;
 }
 
 function renderV371TrendInsights_(cur){
   const trend=document.getElementById('spendingTrendResults');
   const changes=document.getElementById('categoryChangeResults');
-  if(!trend||!changes)return;
+
   const now=new Date(); now.setHours(12,0,0,0);
   const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   const monthly=[];
@@ -2890,7 +2829,7 @@ function renderV371TrendInsights_(cur){
     }
   }
   const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
-  trend.innerHTML=`<div class="trend-bars">${monthly.map(m=>{
+  if(trend) trend.innerHTML=`<div class="trend-bars">${monthly.map(m=>{
     const h=max?Math.max(4,Math.round(m.total/max*100)):4;
     return `<div class="trend-col"><div class="trend-value">${m.total?fmt(m.total):'—'}</div><div class="trend-track"><div class="trend-fill" style="height:${h}%"></div></div><div class="trend-label">${m.label.slice(0,3)}</div></div>`;
   }).join('')}</div>
@@ -2918,8 +2857,8 @@ function renderV371TrendInsights_(cur){
     const prev=a[cat]||0, curr=b[cat]||0;
     return {cat,prev,curr,diff:curr-prev,pct:prev>0?(curr-prev)/prev*100:(curr>0?100:null)};
   }).filter(x=>x.curr>0||x.prev>0).sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff)).slice(0,5);
-  if(!cats.length){changes.innerHTML='<div class="tool-empty">لا توجد بيانات كافية للمقارنة.</div>';return;}
-  changes.innerHTML=cats.map(x=>{
+  if(!cats.length){if(changes)changes.innerHTML='<div class="tool-empty">لا توجد بيانات كافية للمقارنة.</div>';return;}
+  if(changes) changes.innerHTML=cats.map(x=>{
     const cls=x.diff>0?'expense':x.diff<0?'income':'neutral';
     const arrow=x.diff>0?'▲':x.diff<0?'▼':'—';
     const pct=x.pct===null?'جديدة':Math.abs(x.pct).toFixed(1)+'%';
@@ -3046,6 +2985,32 @@ firebaseAuth.onAuthStateChanged(async user=>{
 });
 
 /* Override the old startup timer's dependency on Apps Script. */
+
+function renderExpenseRiseAnalysis_(cur){
+  const el=document.getElementById('expenseRiseResults'); if(!el)return;
+  const now=new Date(); now.setHours(12,0,0,0); const day=Math.max(1,now.getDate());
+  const cs=new Date(now.getFullYear(),now.getMonth(),1,12), ps=new Date(now.getFullYear(),now.getMonth()-1,1,12), pe=new Date(now.getFullYear(),now.getMonth(),0,12);
+  const pEnd=new Date(ps); pEnd.setDate(Math.min(day,pe.getDate()));
+  const sums=(from,to)=>{const a={}; allTransactions.forEach(t=>{if(t.type!=='مصروف'||!t.date||t.date<dateToStr_(from)||t.date>dateToStr_(to))return; const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); a[t.category||'غير مصنف']=(a[t.category||'غير مصنف']||0)+v;}); return a;};
+  const a=sums(cs,now), b=sums(ps,pEnd); const rows=Object.keys(a).map(c=>({c,cur:a[c],prev:b[c]||0,diff:a[c]-(b[c]||0)})).filter(x=>x.cur>0&&x.diff>0).sort((x,y)=>y.diff-x.diff);
+  if(!rows.length){el.innerHTML='<div class="tool-empty">لا يوجد ارتفاع واضح في الفئات حتى الآن. 👍</div>';return;}
+  el.innerHTML=rows.map(x=>{const pct=x.prev>0?x.diff/x.prev*100:null; return `<div class="rank-row"><div class="rank-num">🔥</div><div><div class="rank-name">${escapeHtml(x.c)}</div><div class="rank-sub">هذا الشهر ${fmt(x.cur)} ${CUR_SYMBOL[cur]||cur} • السابق ${fmt(x.prev)} ${CUR_SYMBOL[cur]||cur}</div></div><div class="rank-value">+${fmt(x.diff)} ${CUR_SYMBOL[cur]||cur}${pct!==null?`<div class="rank-sub">+${pct.toFixed(1)}%</div>`:''}</div></div>`;}).join('');
+}
+function renderBudgetAnalysis_(){
+  const el=document.getElementById('budgetAnalysisResults'); if(!el)return; const cur=document.getElementById('budgetAnalysisCurrency')?.value||'USD'; const month=currentMonthPrefixSafe_();
+  const list=allTransactions.filter(t=>t.type==='مصروف'&&String(t.date||'').slice(0,7)===month); const budgets=budgetData.filter(b=>b.month===month&&Number(b.amount)>=0);
+  if(!budgets.length){el.innerHTML='<div class="tool-empty">لا توجد ميزانيات محددة لهذا الشهر.</div>';return;}
+  el.innerHTML=budgets.map(b=>{const spent=b.category?expenseForMonthCategory_(list,b.category,b.currency):totalExpenseBudgetBase_(list,b); const base=toBudgetCurrency_(spent,b.currency,cur); const limit=toBudgetCurrency_(Number(b.amount)||0,b.currency,cur); const pct=limit>0?base/limit*100:0; const cls=pct>=100?'expense':pct>=80?'warning':''; const remain=limit-base; const label=b.category||'الميزانية الإجمالية'; const status=pct>=100?'🔴 متجاوزة':pct>=80?'🟡 اقتربت من الحد':'🟢 ضمن الميزانية'; return `<div class="budget-analysis-row"><div class="budget-analysis-head"><span>${escapeHtml(label)}</span><b class="${cls}">${Math.round(pct)}%</b></div><div class="budget-analysis-bar"><div class="budget-analysis-fill ${cls}" style="width:${Math.min(100,pct)}%"></div></div><div class="budget-analysis-meta"><span>صرف: ${fmt(base)} ${CUR_SYMBOL[cur]||cur}</span><span>ميزانية: ${fmt(limit)} ${CUR_SYMBOL[cur]||cur}</span></div><div class="rank-sub">${status}${remain>=0?' • المتبقي '+fmt(remain)+' '+(CUR_SYMBOL[cur]||cur):' • التجاوز '+fmt(Math.abs(remain))+' '+(CUR_SYMBOL[cur]||cur)}</div></div>`;}).join('');
+}
+function renderSpendingPatternAnalysis_(cur){
+  const el=document.getElementById('spendingPatternResults'); if(!el)return;
+  const expenses=allTransactions.filter(t=>t.type==='مصروف'&&t.date); if(!expenses.length){el.innerHTML='<div class="tool-empty">لا توجد بيانات كافية لتحليل النمط بعد.</div>';return;}
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']; const byDay=days.map(()=>0), byCat={}; const byDate={};
+  expenses.forEach(t=>{const d=new Date(t.date+'T12:00:00'); if(Number.isNaN(d.getTime()))return; const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); byDay[d.getDay()]+=v; byCat[t.category||'غير مصنف']=(byCat[t.category||'غير مصنف']||0)+v; byDate[t.date]=(byDate[t.date]||0)+v;});
+  const topDay=byDay.indexOf(Math.max(...byDay)), topCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0], topDate=Object.entries(byDate).sort((a,b)=>b[1]-a[1])[0];
+  const weekdayText=`أعلى يوم صرف: <b>${days[topDay]}</b> (${fmt(byDay[topDay])} ${CUR_SYMBOL[cur]||cur})`; const catText=topCat?`أكبر فئة من حيث الصرف: <b>${escapeHtml(topCat[0])}</b> (${fmt(topCat[1])} ${CUR_SYMBOL[cur]||cur})`:'لا توجد فئات'; const dateText=topDate?`أعلى يوم مسجل بالصرف: <b>${formatDisplayDate(topDate[0])}</b> (${fmt(topDate[1])} ${CUR_SYMBOL[cur]||cur})`:'';
+  el.innerHTML=`<div class="tool-grid"><div class="tool-stat"><span class="v">${days[topDay]}</span><span class="l">أعلى يوم أسبوعي</span></div><div class="tool-stat"><span class="v">${topCat?escapeHtml(topCat[0]):'—'}</span><span class="l">أكبر فئة</span></div></div><div class="tool-card" style="margin-top:10px;background:var(--paper)"><div class="rank-sub" style="font-size:12px;line-height:1.9">${weekdayText}<br>${catText}<br>${dateText}</div></div>`;
+}
 </script>
 
 </body>
