@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="3.7.0-financial-analysis">
+<meta name="masarifi-version" content="3.7.1-financial-trends">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -419,6 +419,23 @@ window.__masarifiFinishBoot = function(){
 
 .sync-status.error{background:var(--brick-light,#FBE9E6);color:var(--brick,#B94A3A);}
 
+
+  .trend-bars{display:flex;align-items:flex-end;gap:7px;height:150px;padding:8px 2px 0;border-bottom:1px solid var(--line);}
+  .trend-col{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;}
+  .trend-value{font-size:9px;color:var(--muted);height:18px;white-space:nowrap;transform:scale(.9);}
+  .trend-track{height:108px;width:100%;max-width:34px;background:var(--paper);border-radius:7px 7px 2px 2px;display:flex;align-items:flex-end;overflow:hidden;}
+  .trend-fill{width:100%;background:var(--emerald);border-radius:7px 7px 2px 2px;min-height:4px;}
+  .trend-label{font-size:10px;color:var(--muted);margin-top:6px;white-space:nowrap;}
+  .change-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);}
+  .change-row:last-child{border-bottom:0;}
+  .change-main{min-width:0;flex:1;}
+  .change-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .change-sub{font-size:10.5px;color:var(--muted);margin-top:3px;}
+  .change-value{font-size:12px;font-weight:900;white-space:nowrap;}
+  .change-value.expense{color:var(--brick);}
+  .change-value.income{color:var(--emerald);}
+  .change-value.neutral{color:var(--muted);}
+
   /* V3.5 recurring transactions + smart alerts */
   .recurring-list{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
   .recurring-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);}
@@ -772,6 +789,14 @@ window.__masarifiFinishBoot = function(){
       <div class="tool-card">
         <div class="tool-card-title">🔮 توقع نهاية الشهر</div>
         <div id="monthForecastResults"></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">📉 اتجاه الإنفاق</div>
+        <div id="spendingTrendResults"></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">🔍 الفئات الأكثر تغيّراً</div>
+        <div id="categoryChangeResults"></div>
       </div>
     </div>
 
@@ -2694,6 +2719,7 @@ function renderFinancialAnalytics_(){
 
   // V3.7: مقارنة الشهر الحالي بالشهر السابق + توقع نهاية الشهر.
   renderV37MonthlyInsights_(cur);
+  renderV371TrendInsights_(cur);
 }
 
 function renderV37MonthlyInsights_(cur){
@@ -2750,6 +2776,76 @@ function renderV37MonthlyInsights_(cur){
     <div class="tool-stat"><span class="v">${vsPrevFull===null?'—':(vsPrevFull>=0?'▲ ':'▼ ')+Math.abs(vsPrevFull).toFixed(1)+'%'}</span><span class="l">مقارنة بتكلفة الشهر الماضي</span></div>
   </div>
   <div class="tool-note">التوقع مبني على متوسط صرفك اليومي منذ بداية الشهر حتى اليوم.</div>`;
+}
+
+function renderV371TrendInsights_(cur){
+  const trend=document.getElementById('spendingTrendResults');
+  const changes=document.getElementById('categoryChangeResults');
+  if(!trend||!changes)return;
+  const now=new Date(); now.setHours(12,0,0,0);
+  const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const monthly=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1,12);
+    const from=dateToStr_(d);
+    const to=dateToStr_(new Date(d.getFullYear(),d.getMonth()+1,0,12));
+    let total=0,missing=false;
+    allTransactions.forEach(t=>{
+      if(t.type!=='مصروف'||!t.date||t.date<from||t.date>to)return;
+      const raw=Number(t.amount)||0;
+      const v=toBudgetCurrency_(raw,t.currency,cur);
+      if(v<=0&&raw>0&&t.currency!==cur)missing=true;
+      total+=v;
+    });
+    monthly.push({label:monthNames[d.getMonth()],total,missing});
+  }
+  const max=Math.max(...monthly.map(x=>x.total),0);
+  const vals=monthly.map(x=>x.total).filter(x=>x>0);
+  let trendText='لا يوجد اتجاه واضح بعد';
+  if(vals.length>=2){
+    const first=monthly.find(x=>x.total>0)?.total||0;
+    const last=monthly[monthly.length-1].total;
+    if(first>0){
+      const change=(last-first)/first*100;
+      trendText=change>5?`📈 الإنفاق يميل للارتفاع (${change.toFixed(1)}%)`:change<-5?`📉 الإنفاق يميل للانخفاض (${Math.abs(change).toFixed(1)}%)`:'↔️ الإنفاق مستقر تقريباً';
+    }
+  }
+  const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+  trend.innerHTML=`<div class="trend-bars">${monthly.map(m=>{
+    const h=max?Math.max(4,Math.round(m.total/max*100)):4;
+    return `<div class="trend-col"><div class="trend-value">${m.total?fmt(m.total):'—'}</div><div class="trend-track"><div class="trend-fill" style="height:${h}%"></div></div><div class="trend-label">${m.label.slice(0,3)}</div></div>`;
+  }).join('')}</div>
+  <div class="tool-stat" style="margin-top:10px;"><span class="v">${trendText}</span><span class="l">متوسط الأشهر المتاحة: ${fmt(avg)} ${CUR_SYMBOL[cur]||cur}</span></div>
+  ${monthly.some(x=>x.missing)?'<div class="tool-note">⚠️ بعض العمليات بعملة مختلفة لم تُحتسب بدقة لعدم ضبط سعر التحويل.</div>':''}`;
+
+  const elapsed=Math.max(1,now.getDate());
+  const currentStart=new Date(now.getFullYear(),now.getMonth(),1,12);
+  const prevStart=new Date(now.getFullYear(),now.getMonth()-1,1,12);
+  const prevEnd=new Date(now.getFullYear(),now.getMonth(),0,12);
+  const prevTo=new Date(prevStart); prevTo.setDate(Math.min(elapsed,prevEnd.getDate()));
+  const sums=(from,to)=>{
+    const fs=dateToStr_(from),ts=dateToStr_(to),out={};
+    allTransactions.forEach(t=>{
+      if(t.type!=='مصروف'||!t.date||t.date<fs||t.date>ts)return;
+      const raw=Number(t.amount)||0;
+      const v=toBudgetCurrency_(raw,t.currency,cur);
+      if(v<=0)return;
+      const c=t.category||'غير مصنف'; out[c]=(out[c]||0)+v;
+    });
+    return out;
+  };
+  const a=sums(prevStart,prevTo), b=sums(currentStart,now);
+  const cats=[...new Set([...Object.keys(a),...Object.keys(b)])].map(cat=>{
+    const prev=a[cat]||0, curr=b[cat]||0;
+    return {cat,prev,curr,diff:curr-prev,pct:prev>0?(curr-prev)/prev*100:(curr>0?100:null)};
+  }).filter(x=>x.curr>0||x.prev>0).sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff)).slice(0,5);
+  if(!cats.length){changes.innerHTML='<div class="tool-empty">لا توجد بيانات كافية للمقارنة.</div>';return;}
+  changes.innerHTML=cats.map(x=>{
+    const cls=x.diff>0?'expense':x.diff<0?'income':'neutral';
+    const arrow=x.diff>0?'▲':x.diff<0?'▼':'—';
+    const pct=x.pct===null?'جديدة':Math.abs(x.pct).toFixed(1)+'%';
+    return `<div class="change-row"><div class="change-main"><div class="change-name">${escapeHtml(x.cat)}</div><div class="change-sub">السابق ${fmt(x.prev)} · الحالي ${fmt(x.curr)}</div></div><div class="change-value ${cls}">${arrow} ${pct}</div></div>`;
+  }).join('')+`<div class="tool-note">المقارنة مع الشهر الماضي لنفس عدد الأيام المنقضية من الشهر الحالي.</div>`;
 }
 function openSavingsGoalForm_(goal){
   savingsEditingId_=goal?goal.id:null;
