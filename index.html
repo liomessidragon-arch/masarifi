@@ -1770,6 +1770,7 @@ if(typeof firebase === 'undefined'){
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 const firebaseAuth = firebase.auth();
 const firebaseDb = firebase.firestore();
+let firebaseBootTimeout_=null;
 let firebaseUser = null;
 let firebaseAuthReady = false;
 let firebaseMutationCount = 0;
@@ -1859,7 +1860,6 @@ function showFirebaseLogin_(){
   setAuthScreen_(authMode_);
 }
 
-let firebaseBootTimeout_=null;
 function armFirebaseBootSafety_(){
   clearTimeout(firebaseBootTimeout_);
   firebaseBootTimeout_=setTimeout(()=>{
