@@ -2723,12 +2723,14 @@ function renderFinancialAnalytics_(){
   });
   const rows=Object.entries(grouped).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const wrap=document.getElementById('topCategoriesResults');
-  if(!rows.length){wrap.innerHTML='<div class="tool-empty">لا توجد مصاريف ضمن الفترة المختارة.</div>';}else{
-    wrap.innerHTML=rows.map((r,i)=>{const pct=total?Math.round(r[1]/total*100):0;return `<div class="rank-row"><div class="rank-num">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div><div><div class="rank-name">${escapeHtml(r[0])}</div><div class="rank-sub">${pct}% من إجمالي الصرف</div></div><div class="rank-value">${fmt(r[1])} ${CUR_SYMBOL[cur]||cur}</div></div>`;}).join('');
+  if(wrap){
+    if(!rows.length){wrap.innerHTML='<div class="tool-empty">لا توجد مصاريف ضمن الفترة المختارة.</div>';}else{
+      wrap.innerHTML=rows.map((r,i)=>{const pct=total?Math.round(r[1]/total*100):0;return `<div class="rank-row"><div class="rank-num">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div><div><div class="rank-name">${escapeHtml(r[0])}</div><div class="rank-sub">${pct}% من إجمالي الصرف</div></div><div class="rank-value">${fmt(r[1])} ${CUR_SYMBOL[cur]||cur}</div></div>`;}).join('');
+    }
   }
   const days=periodDays_(from,to); const daily=total/days; const weekly=daily*7; const monthly=daily*30.4375;
   const avg=document.getElementById('spendingAverageResults');
-  avg.innerHTML=`<div class="tool-grid"><div class="tool-stat"><span class="v">${fmt(daily)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط يومي</span></div><div class="tool-stat"><span class="v">${fmt(weekly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط أسبوعي</span></div><div class="tool-stat"><span class="v">${fmt(monthly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">وتيرة شهرية</span></div><div class="tool-stat"><span class="v">${fmt(total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">إجمالي الفترة</span></div></div>${missingRate?'<div class="tool-note">⚠️ بعض العمليات بعملة مختلفة ولم تُحتسب بدقة لأن سعر تحويل هذه العملة غير مضبوط في الإعدادات.</div>':''}`;
+  if(avg) avg.innerHTML=`<div class="tool-grid"><div class="tool-stat"><span class="v">${fmt(daily)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط يومي</span></div><div class="tool-stat"><span class="v">${fmt(weekly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط أسبوعي</span></div><div class="tool-stat"><span class="v">${fmt(monthly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">وتيرة شهرية</span></div><div class="tool-stat"><span class="v">${fmt(total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">إجمالي الفترة</span></div></div>${missingRate?'<div class="tool-note">⚠️ بعض العمليات بعملة مختلفة ولم تُحتسب بدقة لأن سعر تحويل هذه العملة غير مضبوط في الإعدادات.</div>':''}`;
 
   // V3.7: مقارنة الشهر الحالي بالشهر السابق + توقع نهاية الشهر.
   renderV37MonthlyInsights_(cur);
