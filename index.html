@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="3.7.3-financial-analysis">
+<meta name="masarifi-version" content="3.9-savings-report-polish">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -285,6 +285,44 @@ window.__masarifiFinishBoot = function(){
     font-family:inherit;
     color:var(--ink);
   }
+  /* V3.9 — unified dropdown design */
+  select{
+    -webkit-appearance:none;
+    appearance:none;
+    background-color:var(--paper-2);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%237A7566' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:left 12px center;
+    background-size:17px 17px;
+    padding-left:38px !important;
+    min-height:46px;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    color:var(--ink);
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    outline:none;
+    transition:border-color .18s, box-shadow .18s, background-color .18s;
+  }
+  select:focus{
+    border-color:var(--emerald);
+    box-shadow:0 0 0 3px var(--emerald-light);
+  }
+  select:active{background-color:var(--emerald-light);}
+  .tool-select-row select{
+    flex:1;
+    min-width:0;
+    min-height:44px;
+    border-radius:12px;
+    background-color:var(--paper-2);
+    font-size:13px;
+    font-weight:700;
+  }
+  .field select{min-height:46px;}
+  #totalBudgetCurrency{min-height:40px;}
+  .budget-cat-currency{min-height:40px;}
+
   .seg{display:flex;gap:8px;}
   .seg button{
     flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--line);
@@ -491,6 +529,14 @@ window.__masarifiFinishBoot = function(){
   .goal-actions{display:flex;gap:6px;margin-top:9px;}
   .goal-actions button{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 9px;font:inherit;font-size:11px;cursor:pointer;}
   .goal-actions .danger{color:var(--brick);}
+  .savings-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+  .savings-summary .tool-stat{min-width:0;}
+  .goal-status{font-size:10.5px;font-weight:800;margin-top:5px;}
+  .goal-status.good{color:var(--emerald);}
+  .goal-status.warn{color:var(--gold);}
+  .goal-status.danger{color:var(--brick);}
+  .goal-monthly{font-size:10.5px;color:var(--ink);margin-top:5px;}
+  @media(max-width:380px){.savings-summary{grid-template-columns:1fr 1fr;}}
   .tool-empty{text-align:center;color:var(--muted);padding:18px 8px;font-size:12px;line-height:1.7;}
   .tool-note{font-size:11px;color:var(--muted);line-height:1.7;margin-top:8px;}
   .tool-success{color:var(--emerald);font-weight:800;font-size:12px;}
@@ -761,6 +807,7 @@ window.__masarifiFinishBoot = function(){
       <div class="tools-menu-list">
         <button class="tools-menu-item" onclick="openToolsPanel_('analytics')"><span class="tools-menu-icon">📊</span><span>التحليل المالي<small>أعلى الفئات ومتوسط الصرف</small></span></button>
         <button class="tools-menu-item" onclick="openToolsPanel_('savings')"><span class="tools-menu-icon">🎯</span><span>أهداف الادخار<small>تابع تقدمك نحو أهدافك</small></span></button>
+        <button class="tools-menu-item" onclick="openToolsPanel_('report')"><span class="tools-menu-icon">📋</span><span>التقرير المالي الشامل<small>ملخص كامل لوضعك المالي</small></span></button>
         <button class="tools-menu-item" onclick="openToolsPanel_('backup')"><span class="tools-menu-icon">💾</span><span>النسخ الاحتياطي والتصدير<small>حفظ واستعادة بياناتك</small></span></button>
       </div>
     </div>
@@ -791,6 +838,28 @@ window.__masarifiFinishBoot = function(){
         <div class="tool-card-title">🎯 أهداف الادخار</div>
         <div id="savingsGoalsList"></div>
         <button class="primary-btn" style="margin-top:8px;max-width:none;" onclick="openSavingsGoalForm_()">＋ إضافة هدف ادخار</button>
+      </div>
+    </div>
+
+    <div id="toolsReportPanel" class="tools-panel">
+      <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
+      <div class="tool-card">
+        <div class="tool-card-title">📋 التقرير المالي الشامل</div>
+        <div class="tool-select-row">
+          <select id="comprehensiveReportPeriod" onchange="renderComprehensiveReport_()">
+            <option value="month">هذا الشهر</option>
+            <option value="3m">آخر 3 أشهر</option>
+            <option value="6m">آخر 6 أشهر</option>
+            <option value="year">هذه السنة</option>
+            <option value="all">كل الوقت</option>
+          </select>
+          <select id="comprehensiveReportCurrency" onchange="renderComprehensiveReport_()">
+            <option value="USD">$ USD</option>
+            <option value="SYP">ل.س SYP</option>
+            <option value="TRY">₺ TRY</option>
+          </select>
+        </div>
+        <div id="comprehensiveReportResults" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -2630,7 +2699,7 @@ async function importCollection_(colRef, items){
    - automatic retry scheduling whenever queued mutations remain after a transient failure
    - backup import confirmation includes savings goals
 */
-/* ================= V3.6 مركز الأدوات والتحليل + أهداف الادخار ================= */
+/* ================= V3.9 مركز الأدوات + الادخار + التقرير الشامل ================= */
 let savingsGoals_ = [];
 let savingsEditingId_ = null;
 let toolsPanel_ = 'home';
@@ -2650,10 +2719,11 @@ function openToolsMenu_(){
 function openToolsPanel_(panel){
   toolsPanel_=panel;
   document.querySelectorAll('#toolsModalOverlay .tools-panel').forEach(x=>x.classList.remove('active'));
-  let el=document.getElementById(panel==='home'?'toolsHomePanel':panel==='analytics'?'toolsAnalyticsPanel':panel==='savings'?'toolsSavingsPanel':'toolsBackupPanel');
+  let el=document.getElementById(panel==='home'?'toolsHomePanel':panel==='analytics'?'toolsAnalyticsPanel':panel==='savings'?'toolsSavingsPanel':panel==='report'?'toolsReportPanel':'toolsBackupPanel');
   if(el)el.classList.add('active');
   if(panel==='analytics') renderAnalyticsHome_();
   if(panel==='savings')renderSavingsGoals_();
+  if(panel==='report')renderComprehensiveReport_();
 }
 
 function renderAnalyticsHome_(){
@@ -2876,6 +2946,90 @@ function renderV371TrendInsights_(cur){
     return `<div class="change-row"><div class="change-main"><div class="change-name">${escapeHtml(x.cat)}</div><div class="change-sub">السابق ${fmt(x.prev)} · الحالي ${fmt(x.curr)}</div></div><div class="change-value ${cls}">${arrow} ${pct}</div></div>`;
   }).join('')+`<div class="tool-note">المقارنة مع الشهر الماضي لنفس عدد الأيام المنقضية من الشهر الحالي.</div>`;
 }
+function comprehensivePeriodDates_(){
+  const period=document.getElementById('comprehensiveReportPeriod')?.value||'month';
+  const now=new Date(); now.setHours(12,0,0,0);
+  let from=new Date(now.getFullYear(),now.getMonth(),1,12), to=new Date(now);
+  if(period==='3m') from=new Date(now.getFullYear(),now.getMonth()-2,1,12);
+  else if(period==='6m') from=new Date(now.getFullYear(),now.getMonth()-5,1,12);
+  else if(period==='year') from=new Date(now.getFullYear(),0,1,12);
+  else if(period==='all') from=null;
+  return {from,to};
+}
+
+function renderComprehensiveReport_(){
+  const box=document.getElementById('comprehensiveReportResults'); if(!box)return;
+  const cur=document.getElementById('comprehensiveReportCurrency')?.value||'USD';
+  const {from,to}=comprehensivePeriodDates_();
+  const fs=from?dateToStr_(from):''; const ts=dateToStr_(to);
+  let income=0,expense=0,missing=false,txCount=0;
+  const catTotals={};
+  allTransactions.forEach(t=>{
+    if(!t.date || (fs&&t.date<fs) || t.date>ts)return;
+    txCount++;
+    const raw=Number(t.amount)||0;
+    if(t.type==='مصروف'){
+      const v=toBudgetCurrency_(raw,t.currency,cur); if(v<=0&&raw>0&&t.currency!==cur)missing=true; expense+=v;
+      const cat=t.category||'غير مصنف'; catTotals[cat]=(catTotals[cat]||0)+v;
+    }else if(t.type==='دخل'){
+      const v=toBudgetCurrency_(raw,t.currency,cur); if(v<=0&&raw>0&&t.currency!==cur)missing=true; income+=v;
+    }
+  });
+  const net=income-expense;
+  const savingsRate=income>0?(net/income*100):null;
+  const topCats=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const sym=CUR_SYMBOL[cur]||cur;
+  const now=new Date(); now.setHours(12,0,0,0);
+  const currentMonth=currentMonthPrefixSafe_();
+  const currentMonthStart=new Date(now.getFullYear(),now.getMonth(),1,12);
+  let monthExpense=0;
+  allTransactions.forEach(t=>{
+    if(t.type!=='مصروف'||!t.date)return;
+    if(t.date<dateToStr_(currentMonthStart)||t.date>todayStr())return;
+    const raw=Number(t.amount)||0; monthExpense+=toBudgetCurrency_(raw,t.currency,cur);
+  });
+  const budget=budgetData.find(b=>!b.category&&b.month===currentMonth);
+  let budgetHtml='';
+  if(budget && Number(budget.amount)>0){
+    const b=toBudgetCurrency_(Number(budget.amount),budget.currency,cur);
+    const pct=b>0?monthExpense/b*100:0;
+    const cls=pct>100?'expense':pct>=80?'warning':'income';
+    budgetHtml=`<div class="tool-stat"><span class="v ${cls}">${fmt(Math.min(999,pct))}%</span><span class="l">استهلاك ميزانية هذا الشهر</span></div>`;
+  }else budgetHtml=`<div class="tool-stat"><span class="v">—</span><span class="l">لا توجد ميزانية شهرية</span></div>`;
+
+  const elapsed=Math.max(1,now.getDate());
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const forecast=monthExpense/elapsed*daysInMonth;
+
+  let goalHtml='';
+  const goals=savingsGoals_.filter(g=>g.currency===cur);
+  if(goals.length){
+    const done=goals.filter(g=>Number(g.target)>0&&Number(g.current)>=Number(g.target)).length;
+    const remaining=goals.reduce((sum,g)=>sum+Math.max(0,(Number(g.target)||0)-(Number(g.current)||0)),0);
+    goalHtml=`<div class="tool-card" style="margin-top:10px;background:var(--paper)"><div class="tool-card-title">🎯 الادخار</div><div class="tool-grid"><div class="tool-stat"><span class="v">${goals.length}</span><span class="l">أهداف بهذه العملة</span></div><div class="tool-stat"><span class="v">${done}</span><span class="l">مكتملة</span></div></div><div class="tool-stat" style="margin-top:8px"><span class="v">${fmt(remaining)} ${sym}</span><span class="l">إجمالي المتبقي للأهداف</span></div></div>`;
+  }
+
+  const period=document.getElementById('comprehensiveReportPeriod')?.value||'month';
+  const labels={month:'هذا الشهر', '3m':'آخر 3 أشهر','6m':'آخر 6 أشهر',year:'هذه السنة',all:'كل الوقت'};
+  const netClass=net>0?'income':net<0?'expense':'neutral';
+  const topHtml=topCats.length?topCats.map((x,i)=>`<div class="rank-row"><div class="rank-num">${i+1}</div><div><div class="rank-name">${escapeHtml(x[0])}</div><div class="rank-sub">${expense>0?Math.round(x[1]/expense*100):0}% من إجمالي الصرف</div></div><div class="rank-value">${fmt(x[1])} ${sym}</div></div>`).join(''):'<div class="tool-empty">لا توجد مصاريف في الفترة.</div>';
+  const trendNote=savingsRate===null?'لا يمكن حساب نسبة الادخار لعدم وجود دخل مسجل.':savingsRate>=20?'🟢 نسبة الادخار جيدة حالياً.':savingsRate>0?'🟡 يوجد فائض، لكن نسبة الادخار منخفضة.':'🔴 المصروف يساوي أو يتجاوز الدخل في الفترة.';
+
+  box.innerHTML=`<div class="tool-note" style="margin:0 0 8px">${labels[period]} · ${txCount} عملية</div>
+    <div class="tool-grid">
+      <div class="tool-stat"><span class="v income">${fmt(income)} ${sym}</span><span class="l">إجمالي الدخل</span></div>
+      <div class="tool-stat"><span class="v expense">${fmt(expense)} ${sym}</span><span class="l">إجمالي المصروف</span></div>
+      <div class="tool-stat"><span class="v ${netClass}">${fmt(net)} ${sym}</span><span class="l">صافي الفترة</span></div>
+      <div class="tool-stat"><span class="v">${savingsRate===null?'—':fmt(savingsRate)+'%'}</span><span class="l">نسبة الادخار</span></div>
+      ${budgetHtml}
+      <div class="tool-stat"><span class="v">${fmt(forecast)} ${sym}</span><span class="l">توقع صرف نهاية الشهر</span></div>
+    </div>
+    <div class="tool-card" style="margin-top:10px;background:var(--paper)"><div class="tool-card-title">🏆 أهم الفئات</div>${topHtml}</div>
+    <div class="tool-card" style="margin-top:10px;background:var(--paper)"><div class="tool-card-title">🧭 الخلاصة</div><div class="rank-sub" style="font-size:12px;line-height:1.9">${trendNote}<br>📅 التوقع الحالي لنهاية الشهر: <strong>${fmt(forecast)} ${sym}</strong></div></div>
+    ${goalHtml}
+    ${missing?'<div class="tool-note">⚠️ بعض العمليات بعملات مختلفة لم تُحتسب بدقة لعدم ضبط سعر التحويل.</div>':''}`;
+}
+
 function openSavingsGoalForm_(goal){
   savingsEditingId_=goal?goal.id:null;
   document.getElementById('savingsGoalModalTitle').textContent=goal?'✎ تعديل هدف الادخار':'🎯 هدف ادخار جديد';
@@ -2892,8 +3046,10 @@ async function saveSavingsGoal_(){
   const target=Number(document.getElementById('goalTarget').value); const current=Number(document.getElementById('goalCurrent').value)||0;
   const currency=document.getElementById('goalCurrency').value; const targetDate=document.getElementById('goalDate').value||'';
   if(!name){showToast('اكتب اسم الهدف');return;} if(!Number.isFinite(target)||target<=0){showToast('اكتب المبلغ المستهدف بشكل صحيح');return;} if(current<0){showToast('المبلغ الحالي لا يمكن أن يكون سالباً');return;}
-  const payload={name,target,current:Math.min(current,target),currency,targetDate,owner:firebaseUser.uid};
   const id=savingsEditingId_||('goal-'+Date.now()+'-'+Math.random().toString(36).slice(2,7));
+  const existing=savingsGoals_.find(g=>String(g.id)===String(id));
+  const createdAt=existing?.createdAt||new Date().toISOString();
+  const payload={name,target,current:Math.min(current,target),currency,targetDate,owner:firebaseUser.uid,createdAt};
   const local={id,...payload,updatedAt:Date.now()};
   const idx=savingsGoals_.findIndex(g=>String(g.id)===String(id)); if(idx>=0)savingsGoals_[idx]=local; else savingsGoals_.push(local); saveSavingsCache_(); renderSavingsGoals_(); closeModal('savingsGoalModalOverlay'); showToast('تم حفظ هدف الادخار ✅');
   try{await userRef_().collection('savingsGoals').doc(String(id)).set({...payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}
@@ -2920,12 +3076,54 @@ async function adjustSavingsGoal_(id,delta){
 function renderSavingsGoals_(){
   const wrap=document.getElementById('savingsGoalsList'); if(!wrap)return;
   if(!savingsGoals_.length){wrap.innerHTML='<div class="tool-empty">ما عندك أهداف ادخار حالياً.<br>أضف أول هدف وابدأ تابع تقدّمك 🎯</div>';return;}
-  wrap.innerHTML=savingsGoals_.map(g=>{
-    const target=Math.max(0,Number(g.target)||0), current=Math.max(0,Number(g.current)||0), pct=target?Math.min(100,Math.round(current/target*100)):0, remain=Math.max(0,target-current),sym=CUR_SYMBOL[g.currency]||g.currency;
-    const done=pct>=100;
-    return `<div class="goal-row"><div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span></div><div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div><div class="goal-meta"><span>${fmt(current)} / ${fmt(target)} ${sym}</span><span>${done?'تم تحقيق الهدف':'متبقي '+fmt(remain)+' '+sym}</span></div>${g.targetDate?`<div class="goal-meta" style="margin-top:4px;"><span>📅 الموعد</span><span>${formatDisplayDate(g.targetDate)}</span></div>`:''}<div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button><button onclick="editSavingsGoal_('${g.id}')">✎ تعديل</button><button class="danger" onclick="deleteSavingsGoal_('${g.id}')">حذف</button></div></div>`;
+
+  const totalGoals=savingsGoals_.length;
+  const completed=savingsGoals_.filter(g=>Number(g.target)>0 && Number(g.current)>=Number(g.target)).length;
+  const active=savingsGoals_.filter(g=>Number(g.target)>0 && Number(g.current)<Number(g.target)).length;
+  const symCount={USD:0,SYP:0,TRY:0};
+  savingsGoals_.forEach(g=>{if(symCount[g.currency]!=null)symCount[g.currency]++;});
+
+  const summary=`<div class="savings-summary">
+    <div class="tool-stat"><span class="v">${totalGoals}</span><span class="l">إجمالي الأهداف</span></div>
+    <div class="tool-stat"><span class="v">${completed}</span><span class="l">مكتملة</span></div>
+    <div class="tool-stat"><span class="v">${active}</span><span class="l">قيد التقدم</span></div>
+  </div>`;
+
+  const now=new Date(); now.setHours(12,0,0,0);
+  const monthsUntil=(dateStr)=>{
+    if(!dateStr)return null;
+    const d=new Date(dateStr+'T12:00:00');
+    if(Number.isNaN(d.getTime()))return null;
+    const days=Math.ceil((d-now)/86400000);
+    return {days,months:Math.max(1,Math.ceil(days/30))};
+  };
+
+  const rows=savingsGoals_.map(g=>{
+    const target=Math.max(0,Number(g.target)||0), current=Math.max(0,Number(g.current)||0);
+    const pct=target?Math.min(100,Math.round(current/target*100)):0;
+    const remain=Math.max(0,target-current), sym=CUR_SYMBOL[g.currency]||g.currency, done=pct>=100;
+    const due=monthsUntil(g.targetDate);
+    let status='';
+    let statusClass='good';
+    if(done){status='🏆 تم تحقيق الهدف';}
+    else if(due && due.days<0){status='⚠️ تجاوز الموعد ولم يكتمل الهدف';statusClass='danger';}
+    else if(due && due.days<=30){status='⏳ الموعد قريب';statusClass='warn';}
+    else if(due){status=`📅 متبقي ${due.days} يوم تقريباً`;} 
+    const monthly=due&&!done?remain/due.months:0;
+    return `<div class="goal-row">
+      <div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span></div>
+      <div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
+      <div class="goal-meta"><span>${fmt(current)} / ${fmt(target)} ${sym}</span><span>${done?'تم تحقيق الهدف':'متبقي '+fmt(remain)+' '+sym}</span></div>
+      ${g.targetDate?`<div class="goal-meta" style="margin-top:4px;"><span>📅 الموعد</span><span>${formatDisplayDate(g.targetDate)}</span></div>`:''}
+      ${status?`<div class="goal-status ${statusClass}">${status}</div>`:''}
+      ${monthly>0?`<div class="goal-monthly">💡 المطلوب تقريباً ${fmt(monthly)} ${sym} شهرياً للوصول للهدف في الموعد</div>`:''}
+      <div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button><button onclick="editSavingsGoal_('${g.id}')">✎ تعديل</button><button class="danger" onclick="deleteSavingsGoal_('${g.id}')">حذف</button></div>
+    </div>`;
   }).join('');
+
+  wrap.innerHTML=summary+rows;
 }
+
 
 function handleSearchInput_(value){
   const input=document.getElementById('searchInput');
