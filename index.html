@@ -578,6 +578,63 @@ window.__masarifiFinishBoot = function(){
   .stability-strip strong{color:var(--ink);}
   @media(max-width:380px){.assistant-quick{grid-template-columns:1fr;}.assistant-input-row{flex-direction:column;}.assistant-ask{min-height:42px;}}
 
+<style id="masarifiPremiumUI">
+:root{
+  --ui-bg:#f5f7fb;--ui-card:#fff;--ui-line:#e7ebf2;--ui-text:#111827;--ui-muted:#7b8494;
+  --ui-blue:#1746d1;--ui-blue2:#0f2f8f;--ui-blue-soft:#edf3ff;--ui-green:#11845b;--ui-red:#b43b48;
+  --ui-radius:18px;--ui-shadow:0 8px 28px rgba(15,35,75,.07);
+}
+body{background:var(--ui-bg);color:var(--ui-text);}
+button,input,select{font-family:'Tajawal',system-ui,sans-serif;}
+.top{background:rgba(255,255,255,.94)!important;border-bottom:1px solid var(--ui-line)!important;box-shadow:0 2px 14px rgba(15,35,75,.04);padding:12px 16px!important;position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);}
+.top h1{font-size:19px!important;font-weight:900!important;color:#101828!important;}
+.top-menu-btn,.icon-btn{border:0!important;background:#f3f6fb!important;color:#344054!important;border-radius:12px!important;width:40px;height:40px!important;box-shadow:none!important;}
+.sync-status{font-size:10px!important;border-radius:999px!important;padding:5px 8px!important;background:#eef8f3!important;color:#11845b!important;}
+#balanceLabel{padding:16px 18px 7px!important;font-size:12px!important;color:var(--ui-muted)!important;}
+#summaryCards{display:block!important;padding:0 16px 12px;}
+#summaryCards .premium-balance-card{background:linear-gradient(145deg,#173fbd 0%,#0c2b7e 100%);color:#fff;border-radius:24px;padding:22px 20px;box-shadow:0 16px 35px rgba(23,70,209,.22);position:relative;overflow:hidden;margin-bottom:10px;}
+#summaryCards .premium-balance-card:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;border:1px solid rgba(255,255,255,.13);left:-55px;top:-70px;}
+.premium-balance-card .eyebrow{font-size:12px;opacity:.78;font-weight:700;}
+.premium-balance-card .balance-value{font-size:31px;font-weight:900;letter-spacing:-.7px;margin:7px 0 15px;direction:ltr;text-align:right;}
+.premium-balance-card .balance-meta{display:flex;justify-content:space-between;gap:10px;font-size:11px;opacity:.86;}
+#summaryCards .currency-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.currency-mini{background:#fff;border:1px solid var(--ui-line);border-radius:15px;padding:11px 9px;min-width:0;box-shadow:0 4px 14px rgba(15,35,75,.035);}
+.currency-mini .cm-name{font-size:11px;color:var(--ui-muted);font-weight:700}.currency-mini .cm-val{font-size:14px;font-weight:900;margin-top:4px;direction:ltr;text-align:right}.currency-mini .cm-sub{font-size:9px;color:var(--ui-muted);margin-top:2px;}
+.dashboard-strip{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px 12px!important;}
+.dash-card{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:15px!important;box-shadow:none!important;padding:12px 8px!important;min-height:74px;}
+.dash-icon{font-size:17px!important}.dash-value{font-size:14px!important}.dash-label{font-size:10px!important;color:var(--ui-muted)!important}
+.budget-section{padding:0 16px 10px!important}.budget-card,.chart-card{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:18px!important;box-shadow:var(--ui-shadow)!important}
+.search-wrap{margin:4px 16px 12px!important;background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:15px!important;box-shadow:none!important;height:48px!important;}
+.search-wrap input{font-size:13px!important;background:transparent!important;}
+.toolbar{margin:0 16px 10px!important;padding:4px!important;background:#eef2f7!important;border-radius:14px!important;border:1px solid #e5eaf1!important;display:flex!important;gap:4px!important;}
+.toolbar .chip-btn{flex:1!important;border:0!important;background:transparent!important;border-radius:11px!important;padding:9px 6px!important;color:#667085!important;font-size:11px!important;}
+.toolbar .chip-btn:first-child{background:#fff!important;color:#173fbd!important;box-shadow:0 2px 7px rgba(15,35,75,.08)!important;}
+#clearFiltersBtn{margin:0 16px 8px!important;border:0!important;background:transparent!important;color:#b43b48!important;font-size:11px!important;}
+#transactionList{list-style:none;margin:0 16px 110px!important;padding:0!important;}
+.tx-day-group{background:#fff;border:1px solid var(--ui-line);border-radius:18px;margin:0 0 10px;overflow:hidden;box-shadow:0 5px 18px rgba(15,35,75,.04);}
+.tx-day-head{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;background:#fafbfc;border-bottom:1px solid var(--ui-line);font-size:11px;font-weight:800;color:#344054;}
+.tx-day-total{color:#667085;font-weight:700}.tx-day-total b{color:#1d2939;font-weight:900;}
+.tx-item{margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:12px 10px!important;display:grid!important;grid-template-columns:42px 1fr auto 30px 30px;gap:9px!important;align-items:center;min-height:68px;}
+.tx-item+.tx-item{border-top:1px solid #eef1f5!important}.tx-badge{width:38px!important;height:38px!important;border-radius:13px!important;background:#eef3ff!important;display:flex;align-items:center;justify-content:center;position:relative;font-size:0;}
+.tx-badge:after{content:'↔';font-size:16px;font-weight:900;color:#1746d1}.tx-item:has(.tx-amount.expense) .tx-badge{background:#fff1f2!important}.tx-item:has(.tx-amount.expense) .tx-badge:after{content:'−';color:#b43b48}.tx-item:has(.tx-amount.income) .tx-badge{background:#eaf8f2!important}.tx-item:has(.tx-amount.income) .tx-badge:after{content:'+';color:#11845b}
+.tx-mid{min-width:0}.tx-cat{font-size:13px!important;font-weight:900!important;color:#172033!important}.tx-statement{font-size:11px!important;color:#7b8494!important;margin-top:2px!important}.tx-date{display:none!important}
+.tx-amount{font-size:13px!important;font-weight:900!important;text-align:left!important;direction:ltr;white-space:nowrap}.tx-amount.expense{color:#9f3441!important}.tx-amount.income{color:#11845b!important}.tx-amount.transfer{color:#1746d1!important;font-size:11px!important;white-space:normal;max-width:90px}
+.tx-edit,.tx-del{width:28px!important;height:28px!important;border:0!important;border-radius:9px!important;background:#f4f6f9!important;color:#667085!important;font-size:12px!important;padding:0!important}.tx-del{color:#b43b48!important;background:#fff2f3!important}
+.fab{width:58px!important;height:58px!important;border-radius:19px!important;background:#1746d1!important;box-shadow:0 12px 28px rgba(23,70,209,.28)!important;bottom:76px!important;right:18px!important;font-size:29px!important;z-index:25!important}
+/* Bottom navigation */
+.mas-bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:62px;background:rgba(255,255,255,.97);border:1px solid var(--ui-line);border-radius:20px;box-shadow:0 10px 30px rgba(15,35,75,.13);display:grid;grid-template-columns:repeat(4,1fr);z-index:24;backdrop-filter:blur(12px);padding:5px;}
+.mas-bottom-nav button{border:0;background:transparent;border-radius:15px;color:#7b8494;font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.mas-bottom-nav button.active{background:#eef3ff;color:#1746d1}.mas-bottom-nav .bn-icon{font-size:18px;line-height:1}
+/* Modals */
+.modal-overlay{background:rgba(8,20,45,.42)!important;backdrop-filter:blur(4px);padding:12px!important;align-items:flex-end!important}.modal-sheet,.modal-card{background:#fff!important;border:0!important;border-radius:24px 24px 16px 16px!important;box-shadow:0 -10px 35px rgba(15,35,75,.15)!important;max-height:92vh;overflow:auto;padding:20px!important;width:min(100%,520px)!important}.modal-sheet h2,.modal-head h2{font-size:18px!important;font-weight:900!important}.field label{font-size:11px!important;color:#667085!important;font-weight:800!important;margin-bottom:6px!important}.field input,.field select,.field textarea{background:#f7f9fc!important;border:1px solid #e4e8ef!important;border-radius:12px!important;min-height:44px!important;padding:10px 12px!important;outline:none!important}.field input:focus,.field select:focus{border-color:#9db5ff!important;box-shadow:0 0 0 3px rgba(23,70,209,.08)!important}.primary-btn{background:#1746d1!important;border:0!important;border-radius:13px!important;min-height:46px!important;font-weight:900!important;box-shadow:0 7px 16px rgba(23,70,209,.17)!important}.secondary-btn{border:1px solid #e1e6ee!important;background:#f7f9fc!important;border-radius:13px!important;min-height:46px!important;font-weight:800!important}
+/* Tools */
+#toolsModalOverlay .modal-sheet{padding:18px!important}.tools-home-title{font-size:19px!important;font-weight:900!important}.tools-menu-grid{gap:9px!important}.tools-menu-item{border:1px solid var(--ui-line)!important;background:#fff!important;border-radius:17px!important;box-shadow:none!important;min-height:68px!important}.tools-menu-item:first-child{background:linear-gradient(145deg,#173fbd,#0d2d82)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 12px 25px rgba(23,70,209,.18)!important}.tools-menu-item:first-child small{color:rgba(255,255,255,.72)!important}.tools-menu-item .tools-menu-icon{background:#f1f4f9!important;border-radius:12px!important}.tools-menu-item:first-child .tools-menu-icon{background:rgba(255,255,255,.14)!important}.tools-menu-item:nth-child(2){order:3}.tools-menu-item:nth-child(3){order:2}.tools-menu-item:nth-child(4){order:4}.tools-menu-item:nth-child(5){order:5}
+.assistant-hero{border-radius:20px!important;background:linear-gradient(145deg,#173fbd,#0d2d82)!important;color:#fff!important;padding:18px!important}.assistant-hero-sub{color:rgba(255,255,255,.78)!important}.assistant-insight{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:17px!important;box-shadow:none!important}.assistant-suggest button{border:1px solid var(--ui-line)!important;background:#fff!important;border-radius:13px!important}
+/* Settings */
+#firebaseSettingsOverlay .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.settings-exchange-card{background:#f8faff;border:1px solid #e2e8f5;border-radius:18px;padding:13px;margin:10px 0 14px}.settings-rate-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0}.settings-rate-label{font-size:12px;font-weight:800;color:#344054}.settings-rate-eq{font-size:11px;color:#667085}.settings-rate-input{width:92px!important;text-align:center!important;background:#fff!important;font-weight:900!important}.settings-category-tile{display:flex;align-items:center;gap:12px;padding:13px;background:#fff;border:1px solid var(--ui-line);border-radius:16px;margin-top:10px}.settings-category-icon{width:42px;height:42px;border-radius:13px;background:#eef3ff;display:flex;align-items:center;justify-content:center;color:#1746d1;font-size:19px}.settings-category-text{flex:1}.settings-category-text b{display:block;font-size:13px}.settings-category-text span{display:block;font-size:10px;color:#7b8494;margin-top:2px}.settings-category-arrow{font-size:22px;color:#98a2b3}.about-card{margin-top:12px;padding:13px 14px;border:1px solid var(--ui-line);background:#fafbfc;border-radius:16px;text-align:center}.about-card b{font-size:12px}.about-card div{font-size:10px;color:#7b8494;margin-top:4px}
+/* Auth */
+#setupScreen .auth-card{border:1px solid var(--ui-line)!important;border-radius:24px!important;box-shadow:0 15px 45px rgba(15,35,75,.09)!important;background:#fff!important;padding:28px 20px!important}.auth-card .mark{color:#1746d1!important}.auth-card input{background:#f7f9fc!important;border:1px solid #e4e8ef!important;border-radius:13px!important;min-height:48px!important}.auth-name-note{font-size:10px;color:#7b8494;text-align:right;width:100%;margin-top:-7px}
+@media(max-width:380px){.tx-item{grid-template-columns:38px 1fr auto 27px 27px;gap:6px!important}.tx-amount{font-size:11px!important}.tx-edit,.tx-del{width:25px!important}.premium-balance-card .balance-value{font-size:27px}.dashboard-strip{gap:6px!important}}
+
 </style>
 </head>
 <body>
@@ -3447,6 +3504,143 @@ function renderSpendingPatternAnalysis_(cur){
       ${exceptionalHtml}
     </div>`;
 }
+</script>
+
+
+<script id="masarifiPremiumLogic">
+(function(){
+  function safe(s){return escapeHtml(String(s||''));}
+  window.getProfileName_=async function(){
+    if(!firebaseUser)return '';
+    try{const snap=await userRef_().collection('settings').doc('profile').get();return snap.exists?String(snap.data().name||'').trim():'';}catch(e){return ''}
+  };
+  window.saveProfileName_=async function(name){
+    if(!firebaseUser)return;
+    const n=String(name||'').trim().slice(0,40);
+    try{await userRef_().collection('settings').doc('profile').set({name:n,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){console.warn('profile save',e)}
+    return n;
+  };
+  window.updateGreeting_=function(name){
+    const h=document.querySelector('.top h1');
+    if(h)h.innerHTML=name?'أهلاً، '+safe(name)+' <span style="font-size:17px">👋</span>':'مصاريفي';
+  };
+
+  // Registration screen: add user name only for new accounts.
+  window.setAuthScreen_=function(mode,message=''){
+    const setup=document.getElementById('setupScreen'); if(!setup)return;
+    setup.innerHTML=`<div class="auth-card">
+      <div class="mark">مصاريفي</div>
+      <p id="authSubtitle" class="auth-subtitle">${mode==='login'?'سجّل الدخول للوصول إلى مصاريفك من أي جهاز.':'أنشئ حسابك الخاص وابدأ بإدارة مصاريفك.'}</p>
+      ${mode==='signup'?'<input id="authName" type="text" autocomplete="name" placeholder="اسم المستخدم"><div class="auth-name-note">سيظهر الاسم في الصفحة الرئيسية ويمكن تعديله لاحقاً.</div>':''}
+      <input id="authEmail" type="email" autocomplete="email" placeholder="البريد الإلكتروني">
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:ltr;text-align:left;">
+      <div class="setup-error" id="setupError">${safe(message)}</div>
+      <button class="primary-btn" id="authSubmitBtn" onclick="handleAuthSubmit_()">${mode==='login'?'تسجيل الدخول':'إنشاء الحساب'}</button>
+      <button class="secondary-btn" id="authToggleBtn" onclick="toggleAuthMode_()">${mode==='login'?'إنشاء حساب جديد':'لدي حساب — تسجيل الدخول'}</button>
+      <div style="font-size:10px;color:#98a2b3;margin-top:2px">خصوصيتك أولاً — بياناتك مرتبطة بحسابك.</div>
+    </div>`;
+    setup.dataset.authMode=mode;
+  };
+  window.handleAuthSubmit_=async function(){
+    const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+    const name=(document.getElementById('authName')?.value||'').trim();
+    const err=document.getElementById('setupError'),btn=document.getElementById('authSubmitBtn');
+    if(!email||!email.includes('@')){err.textContent='اكتب بريد إلكتروني صحيح.';return}
+    if(password.length<6){err.textContent='كلمة المرور يجب أن تكون 6 أحرف على الأقل.';return}
+    if(authMode_==='signup'&&!name){err.textContent='اكتب اسم المستخدم أولاً.';return}
+    btn.disabled=true;btn.textContent='جارٍ التنفيذ...';err.textContent='';
+    try{
+      if(authMode_==='login'){
+        await firebaseAuth.signInWithEmailAndPassword(email,password);
+      }else{
+        const cred=await firebaseAuth.createUserWithEmailAndPassword(email,password);
+        await firebaseDb.collection('users').doc(cred.user.uid).collection('settings').doc('profile').set({name:name.slice(0,40),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      }
+    }catch(e){
+      const map={'auth/invalid-credential':'البريد أو كلمة المرور غير صحيحة.','auth/user-not-found':'لا يوجد حساب بهذا البريد.','auth/wrong-password':'كلمة المرور غير صحيحة.','auth/email-already-in-use':'هذا البريد مستخدم مسبقاً.','auth/invalid-email':'البريد الإلكتروني غير صحيح.','auth/weak-password':'كلمة المرور ضعيفة. استخدم 6 أحرف أو أكثر.'};
+      err.textContent=map[e.code]||e.message||'حدث خطأ. حاول مرة ثانية.';btn.disabled=false;btn.textContent=authMode_==='login'?'تسجيل الدخول':'إنشاء الحساب';
+    }
+  };
+
+  // Premium dashboard balance card, same data source as the original summary.
+  window.renderSummary=function(list){
+    const byCur={}; const ensure=cur=>{if(!cur)return null;if(!byCur[cur])byCur[cur]={income:0,expense:0,transferIn:0,transferOut:0};return byCur[cur]};
+    list.forEach(t=>{const a=Number(t.amount)||0,c=t.currency;if(!c)return;if(t.type==='دخل')ensure(c).income+=a;else if(t.type==='مصروف')ensure(c).expense+=a;else if(t.type==='تحويل'){ensure(c).transferOut+=a;const tc=String(t.toCurrency||'').trim(),ta=Number(t.toAmount);if(tc&&ta>0)ensure(tc).transferIn+=ta;}});
+    const wrap=document.getElementById('summaryCards');if(!wrap)return;const currencies=Object.keys(byCur);if(!currencies.length){wrap.innerHTML='';return;}
+    const bal=d=>d.income-d.expense+d.transferIn-d.transferOut;
+    let total=0,hasRate=false; currencies.forEach(c=>{const d=byCur[c];if(c==='USD'){total+=bal(d);hasRate=true}else if(c==='SYP'&&rateSyp>0){total+=bal(d)/rateSyp;hasRate=true}else if(c==='TRY'&&rateTry>0){total+=bal(d)/rateTry;hasRate=true}});
+    const usd=byCur.USD?bal(byCur.USD):0;
+    const displayTotal=hasRate?total:usd;
+    const monthLabel=document.getElementById('balanceLabel')?.textContent?.replace(/^.*?رصيد /,'')||'';
+    const cards=currencies.map(c=>{const d=byCur[c],b=bal(d),sym=CUR_SYMBOL[c]||c;return `<div class="currency-mini"><div class="cm-name">${CUR_LABEL[c]||c}</div><div class="cm-val">${fmt(b)} ${sym}</div><div class="cm-sub">دخل ${fmt(d.income)} · مصروف ${fmt(d.expense)}</div></div>`}).join('');
+    wrap.innerHTML=`<div class="premium-balance-card"><div class="eyebrow">الرصيد الإجمالي التقريبي ${monthLabel?'<span style="opacity:.65">• '+safe(monthLabel)+'</span>':''}</div><div class="balance-value">${fmt(displayTotal)} $</div><div class="balance-meta"><span>دولار ${fmt(usd)} $</span><span>${hasRate?'محسوب بأسعار الصرف الحالية':'أضف أسعار الصرف من الإعدادات'}</span></div></div><div class="currency-mini-row">${cards}</div>`;
+  };
+
+  // Clean daily grouped transactions with a safer visual hierarchy.
+  window.renderList=function(list){
+    const ul=document.getElementById('transactionList'),empty=document.getElementById('emptyState');txDataById={};list.forEach(t=>txDataById[t.id]=t);
+    if(!list.length){ul.innerHTML='';empty.classList.remove('hidden');return} empty.classList.add('hidden');
+    const sorted=list.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    const groups={};sorted.forEach(t=>(groups[t.date]||(groups[t.date]=[])).push(t));
+    const icon=t=>t.type==='تحويل'?'↔':t.type==='دخل'?'+':'−';
+    const groupHtml=Object.entries(groups).map(([date,items])=>{
+      let totalExpense=0,totalIncome=0,totalTransfer=0,cur='USD';items.forEach(t=>{cur=t.currency||cur;if(t.type==='مصروف')totalExpense+=Number(t.amount)||0;if(t.type==='دخل')totalIncome+=Number(t.amount)||0;if(t.type==='تحويل')totalTransfer+=Number(t.amount)||0});
+      const sym=CUR_SYMBOL[cur]||cur; const parts=[];if(totalExpense)parts.push('- '+fmt(totalExpense)+' '+sym);if(totalIncome)parts.push('+ '+fmt(totalIncome)+' '+sym);if(totalTransfer)parts.push('↔ '+fmt(totalTransfer)+' '+sym);
+      const rows=items.map(t=>{let cls,amountText;if(t.type==='تحويل'){cls='transfer';const ts=CUR_SYMBOL[t.toCurrency]||t.toCurrency||'';amountText=fmt(t.amount)+' '+(CUR_SYMBOL[t.currency]||t.currency)+(t.toCurrency?' ← '+(Number(t.toAmount)>0?fmt(t.toAmount)+' ':'')+ts:'')}else{const income=t.type==='دخل';cls=income?'income':'expense';amountText=(income?'+':'−')+fmt(t.amount)+' '+(CUR_SYMBOL[t.currency]||t.currency)};return `<li class="tx-item" data-id="${safe(t.id)}"><div class="tx-badge ${cls}">${icon(t)}</div><div class="tx-mid"><div class="tx-cat">${safe(t.category||'غير مصنف')}</div>${t.statement?`<div class="tx-statement">${safe(t.statement)}</div>`:''}</div><div class="tx-amount ${cls}">${amountText}</div><button type="button" class="tx-edit" title="تعديل" onclick="event.stopPropagation();openAddModal(txDataById['${safe(t.id)}'])">✎</button><button type="button" class="tx-del" title="حذف" onclick="event.stopPropagation();deleteTx('${safe(t.id)}')">✕</button></li>`}).join('');
+      return `<section class="tx-day-group"><div class="tx-day-head"><span>${date===todayStr()?'اليوم، ':''}${formatDisplayDate(date)}</span><span class="tx-day-total">المجموع: <b>${parts.join(' · ')||'—'}</b></span></div><ul style="list-style:none;margin:0;padding:0">${rows}</ul></section>`;
+    }).join('');
+    ul.innerHTML=groupHtml;attachLongPress();
+  };
+
+  function installBottomNav_(){
+    if(document.getElementById('masBottomNav'))return;
+    const nav=document.createElement('nav');nav.id='masBottomNav';nav.className='mas-bottom-nav';
+    nav.innerHTML=`<button class="active" onclick="window.scrollTo({top:0,behavior:'smooth'});setBottomActive_(this)"><span class="bn-icon">⌂</span>الرئيسية</button><button onclick="document.getElementById('transactionList').scrollIntoView({behavior:'smooth',block:'start'});setBottomActive_(this)"><span class="bn-icon">≡</span>العمليات</button><button onclick="openBudgetModal();setBottomActive_(this)"><span class="bn-icon">▣</span>الميزانية</button><button onclick="openToolsMenu_();setBottomActive_(this)"><span class="bn-icon">☰</span>الأدوات</button>`;
+    document.body.appendChild(nav);
+  }
+  window.setBottomActive_=function(btn){document.querySelectorAll('#masBottomNav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active')};
+
+  function installFilterTabs_(){
+    if(document.getElementById('masFilterTabs'))return;
+    const toolbar=document.querySelector('.toolbar');if(!toolbar)return;
+    toolbar.id='masFilterTabs';toolbar.innerHTML=`<button class="chip-btn" onclick="setQuickTypeFilter_('')">الكل</button><button class="chip-btn" onclick="setQuickTypeFilter_('مصروف')">مصاريف</button><button class="chip-btn" onclick="setQuickTypeFilter_('دخل')">دخل</button><button class="chip-btn" onclick="openFilterModal()">حسب الفئة ▾</button>`;
+  }
+  window.setQuickTypeFilter_=function(type){currentFilters.type=type;applyFiltersAndRender();const b=[...document.querySelectorAll('#masFilterTabs .chip-btn')];b.forEach(x=>x.style.background='transparent');const i=type===''?0:type==='مصروف'?1:2;if(b[i]){b[i].style.background='#fff';b[i].style.color='#173fbd';}setBottomActive_(document.querySelector('#masBottomNav button:nth-child(2)'));};
+
+  // Settings redesign + profile name + creator card.
+  const oldEnsureSettings=window.ensureSettingsModal_;
+  window.ensureSettingsModal_=function(){
+    if(document.getElementById('firebaseSettingsOverlay'))return;
+    const div=document.createElement('div');div.id='firebaseSettingsOverlay';div.className='modal-overlay hidden';
+    div.innerHTML=`<div class="modal-card"><div class="modal-head"><h2>الإعدادات</h2><button class="icon-btn" onclick="closeModal('firebaseSettingsOverlay')">✕</button></div>
+      <div class="settings-exchange-card"><div style="font-size:12px;font-weight:900;margin-bottom:3px">أسعار الصرف</div><div style="font-size:10px;color:#7b8494;margin-bottom:4px">استخدم السعر الحالي لتحسين التحويلات والتحليل.</div>
+        <div class="settings-rate-row"><div><div class="settings-rate-label">🇸🇾 الليرة السورية</div><div class="settings-rate-eq">1 دولار ($) =</div></div><div style="display:flex;align-items:center;gap:4px"><input id="settingsRateSyp" class="settings-rate-input" type="number" step="any" inputmode="decimal" placeholder="13800"><span style="font-size:11px">ل.س</span></div></div>
+        <div class="settings-rate-row"><div><div class="settings-rate-label">🇹🇷 الليرة التركية</div><div class="settings-rate-eq">1 دولار ($) =</div></div><div style="display:flex;align-items:center;gap:4px"><input id="settingsRateTry" class="settings-rate-input" type="number" step="any" inputmode="decimal" placeholder="49"><span style="font-size:11px">₺</span></div></div>
+      </div>
+      <div class="field"><label>اسم المستخدم</label><input id="settingsUserName" type="text" maxlength="40" placeholder="مثال: أبو قيس"></div>
+      <div class="settings-category-tile" onclick="openCategoryManager()"><div class="settings-category-icon">⌘</div><div class="settings-category-text"><b>إدارة الفئات</b><span>تعديل وإضافة بنود المصاريف</span></div><div class="settings-category-arrow">‹</div></div>
+      <div class="about-card"><b>مصاريفي</b><div>صنع بواسطة abo-qais • الإصدار V4.0</div><div>© 2026 abo-qais</div></div>
+      <div class="modal-actions"><button class="primary-btn" style="width:100%" onclick="saveFirebaseSettings_()">حفظ الإعدادات</button></div></div>`;
+    document.body.appendChild(div);
+  };
+  const oldOpenSettings=window.openSettings;
+  window.openSettings=async function(){if(!firebaseUser)return;ensureSettingsModal_();document.getElementById('settingsRateSyp').value=rateSyp||'';document.getElementById('settingsRateTry').value=rateTry||'';document.getElementById('settingsUserName').value=await getProfileName_();showModal_('firebaseSettingsOverlay');};
+  const oldSaveSettings=window.saveFirebaseSettings_;
+  window.saveFirebaseSettings_=async function(){
+    if(!firebaseUser)return;const syp=parseFloat(document.getElementById('settingsRateSyp').value)||0,tr=parseFloat(document.getElementById('settingsRateTry').value)||0,name=(document.getElementById('settingsUserName').value||'').trim().slice(0,40);
+    rateSyp=syp;rateTry=tr;localStorage.setItem(RATE_SYP_KEY,String(syp));localStorage.setItem(RATE_TRY_KEY,String(tr));
+    try{await userRef_().collection('settings').doc('preferences').set({rateSyp:syp,rateTry:tr,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await saveProfileName_(name);updateGreeting_(name);applyFiltersAndRender();closeModal('firebaseSettingsOverlay');showToast('تم حفظ الإعدادات ✅');}catch(e){showToast('تعذر حفظ الإعدادات');}
+  };
+
+  const oldShowApp=window.showFirebaseApp_;
+  window.showFirebaseApp_=async function(){
+    if(window.__masarifiFinishBoot)window.__masarifiFinishBoot();document.body.classList.add('firebase-ready');const boot=document.getElementById('firebaseBootScreen');if(boot)boot.classList.add('hidden');document.getElementById('setupScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');ensureUserMenu_();installBottomNav_();installFilterTabs_();
+    const name=await getProfileName_();updateGreeting_(name);
+  };
+
+  window.applyPremiumUI_=function(){installBottomNav_();installFilterTabs_();};
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(firebaseUser){installBottomNav_();installFilterTabs_();}},700));
+})();
 </script>
 
 </body>
