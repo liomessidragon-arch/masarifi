@@ -2807,35 +2807,46 @@ function renderV371TrendInsights_(cur){
   const monthly=[];
   for(let i=5;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1,12);
-    const from=dateToStr_(d);
-    const to=dateToStr_(new Date(d.getFullYear(),d.getMonth()+1,0,12));
+    const from=dateToStr_(d), to=dateToStr_(new Date(d.getFullYear(),d.getMonth()+1,0,12));
     let total=0,missing=false;
     allTransactions.forEach(t=>{
       if(t.type!=='مصروف'||!t.date||t.date<from||t.date>to)return;
-      const raw=Number(t.amount)||0;
-      const v=toBudgetCurrency_(raw,t.currency,cur);
+      const raw=Number(t.amount)||0, v=toBudgetCurrency_(raw,t.currency,cur);
       if(v<=0&&raw>0&&t.currency!==cur)missing=true;
       total+=v;
     });
     monthly.push({label:monthNames[d.getMonth()],total,missing});
   }
-  const max=Math.max(...monthly.map(x=>x.total),0);
+
   const vals=monthly.map(x=>x.total).filter(x=>x>0);
-  let trendText='لا يوجد اتجاه واضح بعد';
-  if(vals.length>=2){
-    const first=monthly.find(x=>x.total>0)?.total||0;
-    const last=monthly[monthly.length-1].total;
-    if(first>0){
-      const change=(last-first)/first*100;
-      trendText=change>5?`📈 الإنفاق يميل للارتفاع (${change.toFixed(1)}%)`:change<-5?`📉 الإنفاق يميل للانخفاض (${Math.abs(change).toFixed(1)}%)`:'↔️ الإنفاق مستقر تقريباً';
-    }
+  const max=Math.max(...monthly.map(x=>x.total),0);
+  let trendText='لا يوجد اتجاه واضح بعد', momentum='لا توجد بيانات كافية';
+  const active=monthly.filter(x=>x.total>0);
+  if(active.length>=3){
+    const first=active[0].total, last=active[active.length-1].total;
+    const change=first>0?(last-first)/first*100:0;
+    const recent=active.slice(-3).map(x=>x.total);
+    const recentRising=recent[2]>recent[1]&&recent[1]>recent[0];
+    const recentFalling=recent[2]<recent[1]&&recent[1]<recent[0];
+    trendText=change>5?`📈 الاتجاه العام صاعد (${change.toFixed(1)}%)`:change<-5?`📉 الاتجاه العام هابط (${Math.abs(change).toFixed(1)}%)`:'↔️ الاتجاه العام مستقر تقريباً';
+    momentum=recentRising?'الصرف يرتفع لثلاثة أشهر متتالية':recentFalling?'الصرف ينخفض لثلاثة أشهر متتالية':'لا يوجد اتجاه متتالٍ واضح في آخر 3 أشهر';
+  }else if(active.length>=2){
+    const first=active[0].total,last=active[active.length-1].total,change=first>0?(last-first)/first*100:0;
+    trendText=change>5?`📈 الاتجاه يميل للارتفاع (${change.toFixed(1)}%)`:change<-5?`📉 الاتجاه يميل للانخفاض (${Math.abs(change).toFixed(1)}%)`:'↔️ الإنفاق متقارب';
   }
+
   const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+  const lastMonth=monthly[monthly.length-1]?.total||0;
+  const prevMonth=monthly[monthly.length-2]?.total||0;
+  const lastVsPrev=prevMonth>0?(lastMonth-prevMonth)/prevMonth*100:null;
   if(trend) trend.innerHTML=`<div class="trend-bars">${monthly.map(m=>{
     const h=max?Math.max(4,Math.round(m.total/max*100)):4;
     return `<div class="trend-col"><div class="trend-value">${m.total?fmt(m.total):'—'}</div><div class="trend-track"><div class="trend-fill" style="height:${h}%"></div></div><div class="trend-label">${m.label.slice(0,3)}</div></div>`;
   }).join('')}</div>
   <div class="tool-stat" style="margin-top:10px;"><span class="v">${trendText}</span><span class="l">متوسط الأشهر المتاحة: ${fmt(avg)} ${CUR_SYMBOL[cur]||cur}</span></div>
+  <div class="tool-card" style="margin-top:10px;background:var(--paper)">
+    <div class="rank-sub" style="font-size:12px;line-height:2">📌 ${momentum}<br>${lastVsPrev===null?'لا توجد مقارنة كافية للشهر الأخير.':`الشهر الأخير ${lastVsPrev>0?'أعلى':lastVsPrev<0?'أقل':'مماثل'} من السابق بـ ${Math.abs(lastVsPrev).toFixed(1)}%.`}</div>
+  </div>
   ${monthly.some(x=>x.missing)?'<div class="tool-note">⚠️ بعض العمليات بعملة مختلفة لم تُحتسب بدقة لعدم ضبط سعر التحويل.</div>':''}`;
 
   const elapsed=Math.max(1,now.getDate());
@@ -2847,22 +2858,20 @@ function renderV371TrendInsights_(cur){
     const fs=dateToStr_(from),ts=dateToStr_(to),out={};
     allTransactions.forEach(t=>{
       if(t.type!=='مصروف'||!t.date||t.date<fs||t.date>ts)return;
-      const raw=Number(t.amount)||0;
-      const v=toBudgetCurrency_(raw,t.currency,cur);
+      const raw=Number(t.amount)||0,v=toBudgetCurrency_(raw,t.currency,cur);
       if(v<=0)return;
-      const c=t.category||'غير مصنف'; out[c]=(out[c]||0)+v;
+      const c=t.category||'غير مصنف';out[c]=(out[c]||0)+v;
     });
     return out;
   };
-  const a=sums(prevStart,prevTo), b=sums(currentStart,now);
+  const a=sums(prevStart,prevTo),b=sums(currentStart,now);
   const cats=[...new Set([...Object.keys(a),...Object.keys(b)])].map(cat=>{
-    const prev=a[cat]||0, curr=b[cat]||0;
+    const prev=a[cat]||0,curr=b[cat]||0;
     return {cat,prev,curr,diff:curr-prev,pct:prev>0?(curr-prev)/prev*100:(curr>0?100:null)};
   }).filter(x=>x.curr>0||x.prev>0).sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff)).slice(0,5);
   if(!cats.length){if(changes)changes.innerHTML='<div class="tool-empty">لا توجد بيانات كافية للمقارنة.</div>';return;}
   if(changes) changes.innerHTML=cats.map(x=>{
-    const cls=x.diff>0?'expense':x.diff<0?'income':'neutral';
-    const arrow=x.diff>0?'▲':x.diff<0?'▼':'—';
+    const cls=x.diff>0?'expense':x.diff<0?'income':'neutral',arrow=x.diff>0?'▲':x.diff<0?'▼':'—';
     const pct=x.pct===null?'جديدة':Math.abs(x.pct).toFixed(1)+'%';
     return `<div class="change-row"><div class="change-main"><div class="change-name">${escapeHtml(x.cat)}</div><div class="change-sub">السابق ${fmt(x.prev)} · الحالي ${fmt(x.curr)}</div></div><div class="change-value ${cls}">${arrow} ${pct}</div></div>`;
   }).join('')+`<div class="tool-note">المقارنة مع الشهر الماضي لنفس عدد الأيام المنقضية من الشهر الحالي.</div>`;
@@ -2993,10 +3002,21 @@ function renderExpenseRiseAnalysis_(cur){
   const now=new Date(); now.setHours(12,0,0,0); const day=Math.max(1,now.getDate());
   const cs=new Date(now.getFullYear(),now.getMonth(),1,12), ps=new Date(now.getFullYear(),now.getMonth()-1,1,12), pe=new Date(now.getFullYear(),now.getMonth(),0,12);
   const pEnd=new Date(ps); pEnd.setDate(Math.min(day,pe.getDate()));
-  const sums=(from,to)=>{const a={}; allTransactions.forEach(t=>{if(t.type!=='مصروف'||!t.date||t.date<dateToStr_(from)||t.date>dateToStr_(to))return; const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); a[t.category||'غير مصنف']=(a[t.category||'غير مصنف']||0)+v;}); return a;};
-  const a=sums(cs,now), b=sums(ps,pEnd); const rows=Object.keys(a).map(c=>({c,cur:a[c],prev:b[c]||0,diff:a[c]-(b[c]||0)})).filter(x=>x.cur>0&&x.diff>0).sort((x,y)=>y.diff-x.diff);
-  if(!rows.length){el.innerHTML='<div class="tool-empty">لا يوجد ارتفاع واضح في الفئات حتى الآن. 👍</div>';return;}
-  el.innerHTML=rows.map(x=>{const pct=x.prev>0?x.diff/x.prev*100:null; return `<div class="rank-row"><div class="rank-num">🔥</div><div><div class="rank-name">${escapeHtml(x.c)}</div><div class="rank-sub">هذا الشهر ${fmt(x.cur)} ${CUR_SYMBOL[cur]||cur} • السابق ${fmt(x.prev)} ${CUR_SYMBOL[cur]||cur}</div></div><div class="rank-value">+${fmt(x.diff)} ${CUR_SYMBOL[cur]||cur}${pct!==null?`<div class="rank-sub">+${pct.toFixed(1)}%</div>`:''}</div></div>`;}).join('');
+  const sums=(from,to)=>{const a={}; allTransactions.forEach(t=>{if(t.type!=='مصروف'||!t.date||t.date<dateToStr_(from)||t.date>dateToStr_(to))return; const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); if(v<=0)return; a[t.category||'غير مصنف']=(a[t.category||'غير مصنف']||0)+v;}); return a;};
+  const a=sums(cs,now), b=sums(ps,pEnd);
+  const rows=Object.keys(a).map(c=>{
+    const curr=a[c], prev=b[c]||0, diff=curr-prev;
+    const pct=prev>0?diff/prev*100:null;
+    return {c,cur:curr,prev,diff,pct};
+  }).filter(x=>x.cur>0&&x.diff>0&&(x.pct===null||x.pct>=20)).sort((x,y)=>{
+    const yp=y.pct===null?Infinity:y.pct, xp=x.pct===null?Infinity:x.pct;
+    return yp-xp || y.diff-x.diff;
+  });
+  if(!rows.length){el.innerHTML='<div class="tool-empty">لا يوجد ارتفاع غير معتاد في المصاريف حتى الآن. 👍</div>';return;}
+  el.innerHTML=rows.slice(0,5).map(x=>{
+    const pctText=x.pct===null?'جديدة':`+${x.pct.toFixed(1)}%`;
+    return `<div class="rank-row"><div class="rank-num">🔥</div><div><div class="rank-name">${escapeHtml(x.c)}</div><div class="rank-sub">هذا الشهر ${fmt(x.cur)} ${CUR_SYMBOL[cur]||cur} • السابق ${fmt(x.prev)} ${CUR_SYMBOL[cur]||cur}</div></div><div class="rank-value">+${fmt(x.diff)} ${CUR_SYMBOL[cur]||cur}<div class="rank-sub">${pctText}</div></div></div>`;
+  }).join('')+`<div class="tool-note">يعرض فقط الفئات التي ارتفعت مصاريفها بشكل ملحوظ (20% أو أكثر)، أو الفئات الجديدة هذا الشهر، مع المقارنة مع الشهر الماضي لنفس عدد الأيام.</div>`;
 }
 function renderBudgetAnalysis_(){
   const el=document.getElementById('budgetAnalysisResults'); if(!el)return; const cur=document.getElementById('budgetAnalysisCurrency')?.value||'USD'; const month=currentMonthPrefixSafe_();
@@ -3006,12 +3026,61 @@ function renderBudgetAnalysis_(){
 }
 function renderSpendingPatternAnalysis_(cur){
   const el=document.getElementById('spendingPatternResults'); if(!el)return;
-  const expenses=allTransactions.filter(t=>t.type==='مصروف'&&t.date); if(!expenses.length){el.innerHTML='<div class="tool-empty">لا توجد بيانات كافية لتحليل النمط بعد.</div>';return;}
-  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']; const byDay=days.map(()=>0), byCat={}; const byDate={};
-  expenses.forEach(t=>{const d=new Date(t.date+'T12:00:00'); if(Number.isNaN(d.getTime()))return; const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); byDay[d.getDay()]+=v; byCat[t.category||'غير مصنف']=(byCat[t.category||'غير مصنف']||0)+v; byDate[t.date]=(byDate[t.date]||0)+v;});
-  const topDay=byDay.indexOf(Math.max(...byDay)), topCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0], topDate=Object.entries(byDate).sort((a,b)=>b[1]-a[1])[0];
-  const weekdayText=`أعلى يوم صرف: <b>${days[topDay]}</b> (${fmt(byDay[topDay])} ${CUR_SYMBOL[cur]||cur})`; const catText=topCat?`أكبر فئة من حيث الصرف: <b>${escapeHtml(topCat[0])}</b> (${fmt(topCat[1])} ${CUR_SYMBOL[cur]||cur})`:'لا توجد فئات'; const dateText=topDate?`أعلى يوم مسجل بالصرف: <b>${formatDisplayDate(topDate[0])}</b> (${fmt(topDate[1])} ${CUR_SYMBOL[cur]||cur})`:'';
-  el.innerHTML=`<div class="tool-grid"><div class="tool-stat"><span class="v">${days[topDay]}</span><span class="l">أعلى يوم أسبوعي</span></div><div class="tool-stat"><span class="v">${topCat?escapeHtml(topCat[0]):'—'}</span><span class="l">أكبر فئة</span></div></div><div class="tool-card" style="margin-top:10px;background:var(--paper)"><div class="rank-sub" style="font-size:12px;line-height:1.9">${weekdayText}<br>${catText}<br>${dateText}</div></div>`;
+  const expenses=allTransactions.filter(t=>t.type==='مصروف'&&t.date);
+  if(!expenses.length){el.innerHTML='<div class="tool-empty">لا توجد بيانات كافية لتحليل النمط بعد.</div>';return;}
+
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const byDay=days.map(()=>0), byDate={}, byMonthDay={};
+  let total=0;
+  expenses.forEach(t=>{
+    const d=new Date(t.date+'T12:00:00'); if(Number.isNaN(d.getTime()))return;
+    const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); if(v<=0)return;
+    total+=v; byDay[d.getDay()]=(byDay[d.getDay()]||0)+v; byDate[t.date]=(byDate[t.date]||0)+v;
+    const md=d.getDate(); byMonthDay[md]=(byMonthDay[md]||0)+v;
+  });
+  if(total<=0){el.innerHTML='<div class="tool-empty">لا توجد بيانات كافية لتحليل النمط بهذه العملة.</div>';return;}
+
+  const topDay=byDay.indexOf(Math.max(...byDay));
+  const dayShare=byDay[topDay]/total*100;
+  const dates=Object.entries(byDate).sort((a,b)=>b[1]-a[1]);
+  const topDate=dates[0];
+  const dateVals=Object.values(byDate);
+  const avgDay=dateVals.length?dateVals.reduce((a,b)=>a+b,0)/dateVals.length:0;
+  const exceptional=dates.filter(x=>x[1]>=avgDay*2).slice(0,3);
+
+  const monthEntries=Object.entries(byMonthDay);
+  const early=monthEntries.filter(([d])=>Number(d)<=10).reduce((a,[,v])=>a+v,0);
+  const mid=monthEntries.filter(([d])=>Number(d)>=11&&Number(d)<=20).reduce((a,[,v])=>a+v,0);
+  const late=monthEntries.filter(([d])=>Number(d)>=21).reduce((a,[,v])=>a+v,0);
+  const parts=[['بداية الشهر',early],['منتصف الشهر',mid],['نهاية الشهر',late]].sort((a,b)=>b[1]-a[1]);
+  const concentration=parts[0][1]/total*100;
+
+  const mean=byDay.reduce((a,b)=>a+b,0)/7;
+  const variance=byDay.reduce((a,b)=>a+Math.pow(b-mean,2),0)/7;
+  const cv=mean>0?Math.sqrt(variance)/mean:0;
+  const regularity=cv<0.45?'منتظم نسبياً':cv<0.8?'متفاوت':'متذبذب بشكل واضح';
+
+  const weekdayText=`أكثر أيام الأسبوع صرفاً: <b>${days[topDay]}</b> (${fmt(byDay[topDay])} ${CUR_SYMBOL[cur]||cur} — ${dayShare.toFixed(1)}% من إجمالي الصرف)`;
+  const dateText=topDate?`أعلى يوم صرف فعلي: <b>${formatDisplayDate(topDate[0])}</b> (${fmt(topDate[1])} ${CUR_SYMBOL[cur]||cur})`:'';
+  const timingText=`تركّز الصرف أكثر في <b>${parts[0][0]}</b> (${concentration.toFixed(1)}% من إجمالي الصرف)`;
+  const regularityText=`نمط الصرف العام: <b>${regularity}</b>`;
+
+  const exceptionalHtml=exceptional.length
+    ? exceptional.map(x=>`<div class="rank-row"><div class="rank-num">⚡</div><div><div class="rank-name">${formatDisplayDate(x[0])}</div><div class="rank-sub">أعلى من متوسط يوم التسجيل بنحو ${Math.round(x[1]/avgDay)}×</div></div><div class="rank-value">${fmt(x[1])} ${CUR_SYMBOL[cur]||cur}</div></div>`).join('')
+    : '<div class="tool-empty">لا توجد أيام صرف استثنائية واضحة مقارنة بمتوسط أيام الصرف.</div>';
+
+  el.innerHTML=`
+    <div class="tool-grid">
+      <div class="tool-stat"><span class="v">${days[topDay]}</span><span class="l">أكثر يوم أسبوعي صرفاً</span></div>
+      <div class="tool-stat"><span class="v">${regularity}</span><span class="l">انتظام الصرف</span></div>
+    </div>
+    <div class="tool-card" style="margin-top:10px;background:var(--paper)">
+      <div class="rank-sub" style="font-size:12px;line-height:2">${weekdayText}<br>${dateText}<br>${timingText}<br>${regularityText}</div>
+    </div>
+    <div class="tool-card" style="margin-top:10px">
+      <div class="tool-card-title">⚡ أيام صرف استثنائية</div>
+      ${exceptionalHtml}
+    </div>`;
 }
 </script>
 
