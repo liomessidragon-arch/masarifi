@@ -519,15 +519,24 @@ window.__masarifiFinishBoot = function(){
   .rank-name{font-weight:800;font-size:13px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .rank-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
   .rank-value{font-size:13px;font-weight:900;white-space:nowrap;}
-  .goal-row{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper-2);margin-bottom:8px;}
+  .goal-row{padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--paper-2);margin-bottom:9px;box-shadow:0 1px 0 rgba(0,0,0,.02);}
   .goal-head{display:flex;justify-content:space-between;gap:8px;align-items:center;}
-  .goal-name{font-weight:900;font-size:14px;}
-  .goal-pct{font-weight:900;color:var(--emerald);font-size:13px;}
-  .goal-bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:9px 0 7px;}
-  .goal-bar-fill{height:100%;background:var(--emerald);border-radius:99px;}
-  .goal-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10.5px;}
-  .goal-actions{display:flex;gap:6px;margin-top:9px;}
-  .goal-actions button{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 9px;font:inherit;font-size:11px;cursor:pointer;}
+  .goal-name{font-weight:900;font-size:15px;}
+  .goal-pct{font-weight:900;color:var(--emerald);font-size:13px;background:var(--emerald-light);padding:4px 8px;border-radius:999px;}
+  .goal-bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0 9px;}
+  .goal-bar-fill{height:100%;background:var(--emerald);border-radius:99px;transition:width .25s ease;}
+  .goal-numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px;}
+  .goal-number{background:var(--paper);border-radius:10px;padding:7px 6px;text-align:center;min-width:0;}
+  .goal-number .v{display:block;font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .goal-number .l{display:block;font-size:9.5px;color:var(--muted);margin-top:2px;}
+  .goal-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10.5px;margin-top:7px;}
+  .goal-status{padding:7px 9px;border-radius:9px;background:var(--paper);font-size:10.5px;font-weight:800;margin-top:8px;}
+  .goal-status.good{color:var(--emerald);}
+  .goal-status.warn{color:var(--gold);}
+  .goal-status.danger{color:var(--brick);}
+  .goal-monthly{font-size:10.5px;color:var(--ink);margin-top:7px;padding:8px 9px;border-radius:9px;background:var(--emerald-light);line-height:1.6;}
+  .goal-actions{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:10px;}
+  .goal-actions button{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:7px 5px;font:inherit;font-size:10.5px;cursor:pointer;white-space:nowrap;}
   .goal-actions .danger{color:var(--brick);}
   .savings-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
   .savings-summary .tool-stat{min-width:0;}
@@ -3080,8 +3089,6 @@ function renderSavingsGoals_(){
   const totalGoals=savingsGoals_.length;
   const completed=savingsGoals_.filter(g=>Number(g.target)>0 && Number(g.current)>=Number(g.target)).length;
   const active=savingsGoals_.filter(g=>Number(g.target)>0 && Number(g.current)<Number(g.target)).length;
-  const symCount={USD:0,SYP:0,TRY:0};
-  savingsGoals_.forEach(g=>{if(symCount[g.currency]!=null)symCount[g.currency]++;});
 
   const summary=`<div class="savings-summary">
     <div class="tool-stat"><span class="v">${totalGoals}</span><span class="l">إجمالي الأهداف</span></div>
@@ -3099,31 +3106,38 @@ function renderSavingsGoals_(){
   };
 
   const rows=savingsGoals_.map(g=>{
-    const target=Math.max(0,Number(g.target)||0), current=Math.max(0,Number(g.current)||0);
+    const target=Math.max(0,Number(g.target)||0), current=Math.max(0,Math.min(Number(g.current)||0,target));
     const pct=target?Math.min(100,Math.round(current/target*100)):0;
     const remain=Math.max(0,target-current), sym=CUR_SYMBOL[g.currency]||g.currency, done=pct>=100;
     const due=monthsUntil(g.targetDate);
-    let status='';
-    let statusClass='good';
-    if(done){status='🏆 تم تحقيق الهدف';}
+    let status='', statusClass='good';
+    if(done){status='🏆 تم تحقيق الهدف — أحسنت!';}
     else if(due && due.days<0){status='⚠️ تجاوز الموعد ولم يكتمل الهدف';statusClass='danger';}
-    else if(due && due.days<=30){status='⏳ الموعد قريب';statusClass='warn';}
-    else if(due){status=`📅 متبقي ${due.days} يوم تقريباً`;} 
+    else if(due && due.days<=30){status=`⏳ الموعد قريب — متبقي ${due.days} يوم تقريباً`;statusClass='warn';}
+    else if(due){status=`📅 متبقي ${due.days} يوم تقريباً للوصول للموعد`;} 
     const monthly=due&&!done?remain/due.months:0;
+    const plan=done
+      ? '🎉 الهدف مكتمل، لم يعد هناك مبلغ مطلوب.'
+      : due
+        ? `💡 تحتاج تقريباً <strong>${fmt(monthly)} ${sym}</strong> شهرياً للوصول للهدف في الموعد.`
+        : '📅 أضف موعداً للهدف من زر «تعديل» حتى أحسب لك المبلغ المطلوب ادخاره شهرياً.';
     return `<div class="goal-row">
       <div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span></div>
       <div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
-      <div class="goal-meta"><span>${fmt(current)} / ${fmt(target)} ${sym}</span><span>${done?'تم تحقيق الهدف':'متبقي '+fmt(remain)+' '+sym}</span></div>
-      ${g.targetDate?`<div class="goal-meta" style="margin-top:4px;"><span>📅 الموعد</span><span>${formatDisplayDate(g.targetDate)}</span></div>`:''}
-      ${status?`<div class="goal-status ${statusClass}">${status}</div>`:''}
-      ${monthly>0?`<div class="goal-monthly">💡 المطلوب تقريباً ${fmt(monthly)} ${sym} شهرياً للوصول للهدف في الموعد</div>`:''}
+      <div class="goal-numbers">
+        <div class="goal-number"><span class="v">${fmt(target)} ${sym}</span><span class="l">المستهدف</span></div>
+        <div class="goal-number"><span class="v">${fmt(current)} ${sym}</span><span class="l">المدخر حالياً</span></div>
+        <div class="goal-number"><span class="v">${fmt(remain)} ${sym}</span><span class="l">المتبقي</span></div>
+      </div>
+      ${g.targetDate?`<div class="goal-meta"><span>📅 الموعد المستهدف</span><strong>${formatDisplayDate(g.targetDate)}</strong></div>`:''}
+      <div class="goal-status ${statusClass}">${status||'🎯 الهدف قيد التقدم'}</div>
+      <div class="goal-monthly">${plan}</div>
       <div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button><button onclick="editSavingsGoal_('${g.id}')">✎ تعديل</button><button class="danger" onclick="deleteSavingsGoal_('${g.id}')">حذف</button></div>
     </div>`;
   }).join('');
 
   wrap.innerHTML=summary+rows;
 }
-
 
 function handleSearchInput_(value){
   const input=document.getElementById('searchInput');
