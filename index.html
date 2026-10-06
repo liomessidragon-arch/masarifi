@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script>
+// Early boot safety: must run BEFORE Firebase SDKs initialize.
+window.__masarifiBootDone = false;
+window.__masarifiBootTimer = setTimeout(function(){
+  if(window.__masarifiBootDone) return;
+  var boot=document.getElementById('firebaseBootScreen');
+  if(!boot) return;
+  boot.innerHTML='<div style="text-align:center;padding:24px;max-width:340px;"><div class="boot-mark">مصاريفي</div><div style="margin-top:12px;color:#666;font-size:13px;line-height:1.7;">تعذر تحميل خدمات التطبيق. تأكد من الإنترنت ثم حاول مرة ثانية.</div><button class="primary-btn" style="margin-top:14px;" onclick="location.reload()">إعادة المحاولة</button></div>';
+}, 10000);
+window.__masarifiFinishBoot = function(){
+  window.__masarifiBootDone = true;
+  clearTimeout(window.__masarifiBootTimer);
+};
+</script>
 <meta name="masarifi-version" content="3.6-financial-tools">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
@@ -1749,6 +1763,9 @@ const firebaseConfig = {
 };
 
 const MASARIFI_VERSION = '3.6.1-stability';
+if(typeof firebase === 'undefined'){
+  throw new Error('Firebase SDK failed to load');
+}
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 const firebaseAuth = firebase.auth();
 const firebaseDb = firebase.firestore();
@@ -1825,6 +1842,7 @@ function openAccountMenu_(){
   }
 }
 function showFirebaseApp_(){
+  if(window.__masarifiFinishBoot) window.__masarifiFinishBoot();
   document.body.classList.add('firebase-ready');
   const boot=document.getElementById('firebaseBootScreen'); if(boot) boot.classList.add('hidden');
   document.getElementById('setupScreen').classList.add('hidden');
@@ -1832,6 +1850,7 @@ function showFirebaseApp_(){
   ensureUserMenu_();
 }
 function showFirebaseLogin_(){
+  if(window.__masarifiFinishBoot) window.__masarifiFinishBoot();
   document.body.classList.add('firebase-ready');
   const boot=document.getElementById('firebaseBootScreen'); if(boot) boot.classList.add('hidden');
   document.getElementById('app').classList.add('hidden');
@@ -2725,14 +2744,20 @@ function handleSearchInput_(value){
 // حتى لا يبقى البحث عالقاً بعد إعادة فتح التطبيق أو استعادة الصفحة.
 function bindSearchEvents_(){
   const input=document.getElementById('searchInput');
-  if(!input || input.dataset.searchBound==='1') return;
-  input.dataset.searchBound='1';
-  ['input','search','change','keyup'].forEach(evt=>{
-    input.addEventListener(evt,()=>applyFiltersAndRender());
-  });
+  if(!input) return false;
+  if(input.dataset.searchBound!=='1'){
+    input.dataset.searchBound='1';
+    const run=()=>applyFiltersAndRender();
+    ['input','search','change','keyup'].forEach(evt=>input.addEventListener(evt,run));
+    input.oninput=run;
+    input.onsearch=run;
+  }
+  return true;
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindSearchEvents_);
 else bindSearchEvents_();
+setTimeout(bindSearchEvents_,500);
+setTimeout(bindSearchEvents_,1500);
 
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true; clearTimeout(firebaseBootTimeout_);
