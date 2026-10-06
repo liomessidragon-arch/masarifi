@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="3.6.1-web-stability-search">
+<meta name="masarifi-version" content="3.7.0-financial-analysis">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -764,6 +764,14 @@ window.__masarifiFinishBoot = function(){
         <div class="tool-card-title">📅 متوسط الصرف</div>
         <div id="spendingAverageResults"></div>
         <div class="tool-note">المتوسط اليومي يحسب على كامل أيام الفترة المختارة، وليس فقط الأيام التي سجلت فيها عمليات.</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">📈 مقارنة الإنفاق</div>
+        <div id="monthlyComparisonResults"></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-title">🔮 توقع نهاية الشهر</div>
+        <div id="monthForecastResults"></div>
       </div>
     </div>
 
@@ -1763,7 +1771,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.6.1-web-stability-search';
+const MASARIFI_VERSION = '3.7.0-financial-analysis';
 if(typeof firebase === 'undefined'){
   throw new Error('Firebase SDK failed to load');
 }
@@ -2683,6 +2691,65 @@ function renderFinancialAnalytics_(){
   const days=periodDays_(from,to); const daily=total/days; const weekly=daily*7; const monthly=daily*30.4375;
   const avg=document.getElementById('spendingAverageResults');
   avg.innerHTML=`<div class="tool-grid"><div class="tool-stat"><span class="v">${fmt(daily)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط يومي</span></div><div class="tool-stat"><span class="v">${fmt(weekly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">متوسط أسبوعي</span></div><div class="tool-stat"><span class="v">${fmt(monthly)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">وتيرة شهرية</span></div><div class="tool-stat"><span class="v">${fmt(total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">إجمالي الفترة</span></div></div>${missingRate?'<div class="tool-note">⚠️ بعض العمليات بعملة مختلفة ولم تُحتسب بدقة لأن سعر تحويل هذه العملة غير مضبوط في الإعدادات.</div>':''}`;
+
+  // V3.7: مقارنة الشهر الحالي بالشهر السابق + توقع نهاية الشهر.
+  renderV37MonthlyInsights_(cur);
+}
+
+function renderV37MonthlyInsights_(cur){
+  const cmp=document.getElementById('monthlyComparisonResults');
+  const forecast=document.getElementById('monthForecastResults');
+  if(!cmp||!forecast)return;
+
+  const now=new Date(); now.setHours(12,0,0,0);
+  const year=now.getFullYear(), month=now.getMonth(), day=now.getDate();
+  const currentStart=new Date(year,month,1,12);
+  const currentEnd=new Date(year,month+1,0,12);
+  const prevStart=new Date(year,month-1,1,12);
+  const prevEnd=new Date(year,month,0,12);
+  const elapsed=Math.max(1,day);
+  const prevComparableEnd=new Date(prevStart);
+  prevComparableEnd.setDate(Math.min(elapsed,prevEnd.getDate()));
+
+  const sumRange=(from,to)=>{
+    const fs=dateToStr_(from), ts=dateToStr_(to);
+    let total=0, missing=false;
+    allTransactions.forEach(t=>{
+      if(t.type!=='مصروف'||!t.date||t.date<fs||t.date>ts)return;
+      const raw=Number(t.amount)||0;
+      const v=toBudgetCurrency_(raw,t.currency,cur);
+      if(v<=0&&raw>0&&t.currency!==cur)missing=true;
+      total+=v;
+    });
+    return {total,missing};
+  };
+
+  const current=sumRange(currentStart,now);
+  const previous=sumRange(prevStart,prevComparableEnd);
+  const diff=current.total-previous.total;
+  const pct=previous.total>0?(diff/previous.total*100):null;
+  const direction=diff>0?'▲ أعلى':diff<0?'▼ أقل':'— بدون تغيير';
+  const directionClass=diff>0?'expense':diff<0?'income':'neutral';
+  cmp.innerHTML=`<div class="tool-grid">
+    <div class="tool-stat"><span class="v">${fmt(current.total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">هذا الشهر حتى اليوم</span></div>
+    <div class="tool-stat"><span class="v">${fmt(previous.total)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">الشهر الماضي لنفس المدة</span></div>
+  </div>
+  <div class="tool-stat" style="margin-top:8px;"><span class="v ${directionClass}">${direction}${pct===null?'':` ${Math.abs(pct).toFixed(1)}%`}</span><span class="l">التغير في الإنفاق</span></div>
+  ${current.missing||previous.missing?'<div class="tool-note">⚠️ توجد عمليات بعملة مختلفة لم تُحتسب بدقة لعدم ضبط سعر التحويل.</div>':''}`;
+
+  const daysInMonth=currentEnd.getDate();
+  const daily=current.total/elapsed;
+  const forecastTotal=daily*daysInMonth;
+  const remaining=Math.max(0,forecastTotal-current.total);
+  const prevFull=sumRange(prevStart,prevEnd);
+  const vsPrevFull=prevFull.total>0?(forecastTotal-prevFull.total)/prevFull.total*100:null;
+  forecast.innerHTML=`<div class="tool-grid">
+    <div class="tool-stat"><span class="v">${fmt(daily)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">معدل الصرف اليومي</span></div>
+    <div class="tool-stat"><span class="v">${fmt(forecastTotal)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">المتوقع نهاية الشهر</span></div>
+    <div class="tool-stat"><span class="v">${fmt(remaining)} ${CUR_SYMBOL[cur]||cur}</span><span class="l">المتوقع صرفه المتبقي</span></div>
+    <div class="tool-stat"><span class="v">${vsPrevFull===null?'—':(vsPrevFull>=0?'▲ ':'▼ ')+Math.abs(vsPrevFull).toFixed(1)+'%'}</span><span class="l">مقارنة بتكلفة الشهر الماضي</span></div>
+  </div>
+  <div class="tool-note">التوقع مبني على متوسط صرفك اليومي منذ بداية الشهر حتى اليوم.</div>`;
 }
 function openSavingsGoalForm_(goal){
   savingsEditingId_=goal?goal.id:null;
