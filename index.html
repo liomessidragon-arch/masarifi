@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
 <script>
 // Early boot safety: must run BEFORE Firebase SDKs initialize.
 window.__masarifiBootDone = false;
@@ -16,8 +17,7 @@ window.__masarifiFinishBoot = function(){
 };
 </script>
 <meta name="masarifi-version" content="4.0-smart-assistant-stability-polish">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
@@ -577,7 +577,7 @@ window.__masarifiFinishBoot = function(){
   .stability-strip{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:9px 11px;border-radius:11px;background:var(--paper);font-size:10.5px;color:var(--muted);}
   .stability-strip strong{color:var(--ink);}
   @media(max-width:380px){.assistant-quick{grid-template-columns:1fr;}.assistant-input-row{flex-direction:column;}.assistant-ask{min-height:42px;}}
-
+</style>
 <style id="masarifiPremiumUI">
 :root{
   --ui-bg:#f5f7fb;--ui-card:#fff;--ui-line:#e7ebf2;--ui-text:#111827;--ui-muted:#7b8494;
@@ -1016,8 +1016,9 @@ const CUR_LABEL = { USD: 'دولار ($)', SYP: 'ليرة سورية (ل.س)', T
 const CUR_SYMBOL = { USD: '$', SYP: 'ل.س', TRY: '₺' };
 const CAT_COLORS = ['#1F6E52','#A8452C','#B8860B','#6A4CA0','#2E6F8E','#8C7A3F','#C2694A','#4B8B6F','#9A6B9E','#5A7D9A'];
 
-let rateSyp = parseFloat(localStorage.getItem(RATE_SYP_KEY)) || 0;
-let rateTry = parseFloat(localStorage.getItem(RATE_TRY_KEY)) || 0;
+function lsGet_(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+let rateSyp = parseFloat(lsGet_(RATE_SYP_KEY)) || 0;
+let rateTry = parseFloat(lsGet_(RATE_TRY_KEY)) || 0;
 let allTransactions = [];
 let currentFilters = { type: '', currency: '', category: '', from: '', to: '' };
 let selectedTxType = 'مصروف';
