@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="3.9-savings-report-polish">
+<meta name="masarifi-version" content="4.0-smart-assistant-stability-polish">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -551,6 +551,33 @@ window.__masarifiFinishBoot = function(){
   .tool-success{color:var(--emerald);font-weight:800;font-size:12px;}
   @media(max-width:380px){.tool-grid{grid-template-columns:1fr;}}
 
+
+  /* V4.0 — Smart Assistant + Stability & Polish */
+  .tools-menu-item{transition:transform .16s ease,background-color .16s ease,border-color .16s ease,box-shadow .16s ease;}
+  .tools-menu-item:hover{box-shadow:0 4px 14px rgba(32,38,31,.06);}
+  .tools-menu-item:focus-visible,.tools-back:focus-visible,.primary-btn:focus-visible,.secondary-btn:focus-visible,.icon-btn:focus-visible{outline:3px solid var(--emerald-light);outline-offset:2px;}
+  button:disabled{opacity:.55;cursor:not-allowed;transform:none !important;}
+  .tool-card{box-shadow:0 2px 10px rgba(32,38,31,.035);}
+  .assistant-hero{background:linear-gradient(135deg,var(--emerald-light),var(--paper-2));border:1.5px solid #C9DED4;border-radius:16px;padding:15px;margin-bottom:11px;}
+  .assistant-hero-title{display:flex;align-items:center;gap:9px;font-weight:900;font-size:16px;}
+  .assistant-hero-icon{width:42px;height:42px;border-radius:13px;background:var(--emerald);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 5px 14px rgba(31,110,82,.22);}
+  .assistant-hero-sub{font-size:11px;color:var(--muted);line-height:1.7;margin-top:5px;}
+  .assistant-quick{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px;}
+  .assistant-quick button{border:1px solid #C9DED4;background:rgba(255,255,255,.78);border-radius:11px;padding:9px 8px;font:inherit;font-size:11px;font-weight:800;color:var(--ink);cursor:pointer;}
+  .assistant-quick button:active{background:var(--emerald-light);}
+  .assistant-input-row{display:flex;gap:7px;margin-top:10px;}
+  .assistant-input-row input{flex:1;min-width:0;padding:11px 12px;border:1.5px solid var(--line);border-radius:11px;background:var(--paper-2);font:inherit;color:var(--ink);outline:none;}
+  .assistant-input-row input:focus{border-color:var(--emerald);box-shadow:0 0 0 3px var(--emerald-light);}
+  .assistant-ask{border:0;background:var(--emerald);color:#fff;border-radius:11px;padding:0 14px;font:inherit;font-weight:800;cursor:pointer;}
+  .assistant-answer{margin-top:10px;padding:11px 12px;border-radius:12px;background:var(--paper-2);border:1px solid var(--line);font-size:12px;line-height:1.9;}
+  .assistant-answer strong{font-weight:900;}
+  .assistant-positive{color:var(--emerald);font-weight:900;}
+  .assistant-warning{color:var(--gold);font-weight:900;}
+  .assistant-danger{color:var(--brick);font-weight:900;}
+  .stability-strip{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:9px 11px;border-radius:11px;background:var(--paper);font-size:10.5px;color:var(--muted);}
+  .stability-strip strong{color:var(--ink);}
+  @media(max-width:380px){.assistant-quick{grid-template-columns:1fr;}.assistant-input-row{flex-direction:column;}.assistant-ask{min-height:42px;}}
+
 </style>
 </head>
 <body>
@@ -814,11 +841,32 @@ window.__masarifiFinishBoot = function(){
     <div class="modal-head"><h2>☰ الأدوات والتحليل</h2><button class="icon-btn" onclick="closeModal('toolsModalOverlay')">✕</button></div>
     <div id="toolsHomePanel" class="tools-panel active">
       <div class="tools-menu-list">
+        <button class="tools-menu-item" onclick="openToolsPanel_('assistant')"><span class="tools-menu-icon">🤖</span><span>المساعد المالي<small>يفهم بياناتك ويعطيك إجابات عملية</small></span></button>
         <button class="tools-menu-item" onclick="openToolsPanel_('analytics')"><span class="tools-menu-icon">📊</span><span>التحليل المالي<small>أعلى الفئات ومتوسط الصرف</small></span></button>
         <button class="tools-menu-item" onclick="openToolsPanel_('savings')"><span class="tools-menu-icon">🎯</span><span>أهداف الادخار<small>تابع تقدمك نحو أهدافك</small></span></button>
         <button class="tools-menu-item" onclick="openToolsPanel_('report')"><span class="tools-menu-icon">📋</span><span>التقرير المالي الشامل<small>ملخص كامل لوضعك المالي</small></span></button>
         <button class="tools-menu-item" onclick="openToolsPanel_('backup')"><span class="tools-menu-icon">💾</span><span>النسخ الاحتياطي والتصدير<small>حفظ واستعادة بياناتك</small></span></button>
       </div>
+    </div>
+
+    <div id="toolsAssistantPanel" class="tools-panel">
+      <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
+      <div class="assistant-hero">
+        <div class="assistant-hero-title"><div class="assistant-hero-icon">🤖</div><div>المساعد المالي الذكي</div></div>
+        <div class="assistant-hero-sub">تحليل محلي مبني على بيانات مصاريفك الحالية. لا يتم إرسال سؤالك إلى أي خدمة ذكاء اصطناعي خارجية.</div>
+        <div class="assistant-quick">
+          <button onclick="askFinancialAssistant_('ليش مصاريفي زادت هالشهر؟')">📈 ليش زادت مصاريفي؟</button>
+          <button onclick="askFinancialAssistant_('هل رح أتجاوز الميزانية؟')">🎯 هل رح أتجاوز الميزانية؟</button>
+          <button onclick="askFinancialAssistant_('كم متوقع أصرف بنهاية الشهر؟')">🔮 كم رح أصرف؟</button>
+          <button onclick="askFinancialAssistant_('كيف وضعي الادخاري؟')">💰 كيف وضعي الادخاري؟</button>
+        </div>
+        <div class="assistant-input-row">
+          <input id="assistantQuestion" type="text" placeholder="اكتب سؤالك المالي هنا..." onkeydown="if(event.key==='Enter')askFinancialAssistant_()">
+          <button class="assistant-ask" onclick="askFinancialAssistant_()">اسأل</button>
+        </div>
+        <div id="assistantAnswer" class="assistant-answer" style="display:none"></div>
+      </div>
+      <div class="stability-strip"><span>☁️ حالة البيانات</span><strong id="assistantSyncHint">تتم المزامنة تلقائياً</strong></div>
     </div>
 
     <div id="toolsAnalyticsPanel" class="tools-panel">
@@ -1859,7 +1907,7 @@ const firebaseConfig = {
   appId: "1:571444804347:web:0f9ae23101219c7ef5ce5e"
 };
 
-const MASARIFI_VERSION = '3.7.0-financial-analysis';
+const MASARIFI_VERSION = '4.0-smart-assistant-stability-polish';
 if(typeof firebase === 'undefined'){
   throw new Error('Firebase SDK failed to load');
 }
@@ -2053,6 +2101,8 @@ let txUnsubscribe_ = null;
 let syncRetryTimer_ = null;
 let syncQueue_ = [];
 let syncQueueRunning_ = false;
+let syncRetryDelay_=5000;
+let onlineRefreshTimer_=null;
 
 function syncQueueKey_(){ return 'masarifi_sync_queue_' + (firebaseUser ? firebaseUser.uid : 'guest'); }
 function loadSyncQueue_(){
@@ -2068,7 +2118,10 @@ function setSyncStatus_(mode,msg){
   else if(mode==='syncing') el.textContent='🔄 مزامنة...';
   else if(mode==='error') el.textContent='⚠️ فشل المزامنة';
   else el.textContent='☁️ '+(msg||'متصل');
+  const hint=document.getElementById('assistantSyncHint');
+  if(hint) hint.textContent=mode==='offline'?'يعمل محلياً — غير متصل':mode==='syncing'?'جاري مزامنة البيانات…':mode==='error'?'يوجد تعذر مؤقت بالمزامنة':'البيانات محدثة تلقائياً';
 }
+
 function updateSyncStatusFromQueue_(){
   if(!navigator.onLine){ setSyncStatus_('offline'); return; }
   if(syncQueue_.length){ setSyncStatus_('syncing','مزامنة'); return; }
@@ -2137,13 +2190,15 @@ async function syncQueueNow_(){
     }
     saveSyncQueue_();
     updateSyncStatusFromQueue_();
-    if(syncQueue_.length) scheduleSyncRetry_();
+    if(syncQueue_.length){ scheduleSyncRetry_(); } else { syncRetryDelay_=5000; }
   }finally{syncQueueRunning_=false;}
 }
 function scheduleSyncRetry_(){
   clearTimeout(syncRetryTimer_);
   if(!firebaseUser || !navigator.onLine || !syncQueue_.length)return;
-  syncRetryTimer_=setTimeout(()=>syncQueueNow_(),5000);
+  const delay=syncRetryDelay_;
+  syncRetryDelay_=Math.min(30000,Math.max(5000,syncRetryDelay_*2));
+  syncRetryTimer_=setTimeout(()=>syncQueueNow_(),delay);
 }
 function startTransactionListener_(){
   if(txUnsubscribe_)txUnsubscribe_();
@@ -2158,8 +2213,15 @@ function startTransactionListener_(){
   }catch(e){}
 }
 function stopTransactionListener_(){if(txUnsubscribe_){txUnsubscribe_();txUnsubscribe_=null;}}
-window.addEventListener('online',()=>{setSyncStatus_('syncing');syncQueueNow_();refreshData({silent:true});});
-window.addEventListener('offline',()=>setSyncStatus_('offline'));
+window.addEventListener('online',()=>{
+  setSyncStatus_('syncing');
+  clearTimeout(onlineRefreshTimer_);
+  onlineRefreshTimer_=setTimeout(()=>{
+    if(txUnsubscribe_) { syncQueueNow_(); refreshCategories_(true).catch(()=>{}); refreshRecurring_(true).catch(()=>{}); }
+    else refreshData({silent:true});
+  },700);
+});
+window.addEventListener('offline',()=>{clearTimeout(onlineRefreshTimer_);setSyncStatus_('offline');});
 
 async function refreshData(options={}){
   if(!firebaseUser)return false;
@@ -2728,15 +2790,97 @@ function openToolsMenu_(){
 function openToolsPanel_(panel){
   toolsPanel_=panel;
   document.querySelectorAll('#toolsModalOverlay .tools-panel').forEach(x=>x.classList.remove('active'));
-  let el=document.getElementById(panel==='home'?'toolsHomePanel':panel==='analytics'?'toolsAnalyticsPanel':panel==='savings'?'toolsSavingsPanel':panel==='report'?'toolsReportPanel':'toolsBackupPanel');
+  let el=document.getElementById(panel==='home'?'toolsHomePanel':panel==='analytics'?'toolsAnalyticsPanel':panel==='assistant'?'toolsAssistantPanel':panel==='savings'?'toolsSavingsPanel':panel==='report'?'toolsReportPanel':'toolsBackupPanel');
   if(el)el.classList.add('active');
   if(panel==='analytics') renderAnalyticsHome_();
+  if(panel==='assistant') renderFinancialAssistant_();
   if(panel==='savings')renderSavingsGoals_();
   if(panel==='report')renderComprehensiveReport_();
 }
 
 function renderAnalyticsHome_(){
   const p=document.getElementById('toolsAnalyticsPanel'); if(p)p.classList.add('active');
+}
+
+function renderFinancialAssistant_(){
+  const ans=document.getElementById('assistantAnswer');
+  const hint=document.getElementById('assistantSyncHint');
+  if(hint) hint.textContent=!navigator.onLine?'يعمل محلياً — غير متصل':(syncQueue_.length?'هناك عمليات بانتظار المزامنة':'البيانات محدثة تلقائياً');
+  if(ans && !ans.dataset.ready) ans.dataset.ready='1';
+}
+function assistantPeriodExpense_(fromStr,toStr,cur){
+  let total=0;
+  allTransactions.forEach(t=>{
+    if(t.type!=='مصروف'||!t.date||t.date<fromStr||t.date>toStr)return;
+    total+=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur);
+  });
+  return total;
+}
+function assistantPeriodIncome_(fromStr,toStr,cur){
+  let total=0;
+  allTransactions.forEach(t=>{
+    if(t.type!=='دخل'||!t.date||t.date<fromStr||t.date>toStr)return;
+    total+=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur);
+  });
+  return total;
+}
+function assistantTopRise_(cur){
+  const now=new Date(); now.setHours(12,0,0,0);
+  const day=now.getDate();
+  const currentStart=new Date(now.getFullYear(),now.getMonth(),1,12);
+  const prevMonthStart=new Date(now.getFullYear(),now.getMonth()-1,1,12);
+  const prevSameDay=new Date(now.getFullYear(),now.getMonth()-1,day,12);
+  const prevEnd=new Date(now.getFullYear(),now.getMonth(),0,12);
+  const currFrom=dateToStr_(currentStart),currTo=todayStr();
+  const prevFrom=dateToStr_(prevMonthStart),prevTo=dateToStr_(prevSameDay>prevEnd?prevEnd:prevSameDay);
+  const a={},b={};
+  allTransactions.forEach(t=>{
+    if(t.type!=='مصروف'||!t.date)return;
+    const v=toBudgetCurrency_(Number(t.amount)||0,t.currency,cur); if(v<=0)return;
+    if(t.date>=prevFrom&&t.date<=prevTo){const c=t.category||'غير مصنف';b[c]=(b[c]||0)+v;}
+    if(t.date>=currFrom&&t.date<=currTo){const c=t.category||'غير مصنف';a[c]=(a[c]||0)+v;}
+  });
+  return Object.keys({...a,...b}).map(cat=>({cat,curr:a[cat]||0,prev:b[cat]||0,diff:(a[cat]||0)-(b[cat]||0)})).filter(x=>x.diff>0).sort((x,y)=>y.diff-x.diff)[0]||null;
+}
+function askFinancialAssistant_(question){
+  const input=document.getElementById('assistantQuestion');
+  const ans=document.getElementById('assistantAnswer');
+  const q=String(question||input?.value||'').trim().toLocaleLowerCase('ar');
+  if(input && question) input.value=question;
+  if(!ans)return;
+  if(!q){ans.style.display='block';ans.innerHTML='اكتب سؤالك أو اختر أحد الأسئلة المقترحة بالأعلى.';return;}
+  const cur='USD';
+  const now=new Date(); now.setHours(12,0,0,0);
+  const start=new Date(now.getFullYear(),now.getMonth(),1,12);
+  const prevStart=new Date(now.getFullYear(),now.getMonth()-1,1,12);
+  const prevEnd=new Date(now.getFullYear(),now.getMonth()-1,now.getDate(),12);
+  const cs=dateToStr_(start), ct=todayStr(), ps=dateToStr_(prevStart), pt=dateToStr_(prevEnd);
+  const expense=assistantPeriodExpense_(cs,ct,cur), prevExpense=assistantPeriodExpense_(ps,pt,cur), income=assistantPeriodIncome_(cs,ct,cur);
+  const daysElapsed=Math.max(1,now.getDate());
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const forecast=expense/daysElapsed*daysInMonth;
+  const budget=budgetData.find(b=>!b.category&&b.month===currentMonthPrefixSafe_());
+  const budgetValue=budget&&Number(budget.amount)>0?toBudgetCurrency_(Number(budget.amount),budget.currency,cur):0;
+  const rise=assistantTopRise_(cur);
+  const rate=prevExpense>0?(expense-prevExpense)/prevExpense*100:null;
+  let html='';
+  if(q.includes('زادت')||q.includes('زيادة')||q.includes('ارتفع')||q.includes('ليش')){
+    if(rate===null) html='ما عندي فترة سابقة كافية للمقارنة حتى أحدد سبب الزيادة بدقة.';
+    else if(rate<=0) html=`<span class="assistant-positive">مصاريفك لم ترتفع حالياً.</span> مقارنة بنفس عدد الأيام من الشهر الماضي، الإنفاق تغيّر بنسبة <strong>${fmt(Math.abs(rate))}%</strong> ${rate<0?'للأسفل':'بشكل طفيف'}.`;
+    else html=`مصاريفك ارتفعت بنسبة <strong>${fmt(rate)}%</strong> مقارنة بنفس عدد الأيام من الشهر الماضي.`+(rise?` السبب الأبرز حالياً هو فئة <strong>${escapeHtml(rise.cat)}</strong> التي زادت بحوالي <strong>${fmt(rise.diff)} $</strong>.`:' لم أجد فئة واحدة تفسر الزيادة بشكل واضح.');
+  }else if(q.includes('ميزانية')||q.includes('أتجاوز')||q.includes('تجاوز')){
+    if(!budgetValue) html='لا توجد ميزانية شهرية عامة مضبوطة حالياً، لذلك لا أستطيع تحديد احتمال تجاوزها.';
+    else {const pct=expense/budgetValue*100; const remain=budgetValue-expense; html=pct>=100?`<span class="assistant-danger">نعم، تجاوزت الميزانية حالياً.</span> الاستهلاك وصل إلى <strong>${fmt(pct)}%</strong> والمتجاوز هو <strong>${fmt(Math.abs(remain))} $</strong>.`:pct>=80?`<span class="assistant-warning">اقتربت من الحد.</span> استخدمت <strong>${fmt(pct)}%</strong> من الميزانية، والمتبقي <strong>${fmt(remain)} $</strong>.`:`<span class="assistant-positive">أنت ضمن الميزانية.</span> استخدمت <strong>${fmt(pct)}%</strong> والمتبقي <strong>${fmt(remain)} $</strong>.`;}
+  }else if(q.includes('متوقع')||q.includes('نهاية الشهر')||q.includes('كم')||q.includes('صرف')){
+    html=`حسب معدل صرفك الحالي، المتوقع أن تنهي الشهر بحوالي <strong>${fmt(forecast)} $</strong>.`+(budgetValue?` ${forecast>budgetValue?'<span class="assistant-danger">هذا أعلى من ميزانيتك الشهرية.</span>':'أنت حالياً ضمن سقف الميزانية المتوقع.'}`:'');
+  }else if(q.includes('ادخار')||q.includes('مدخر')||q.includes('توفير')){
+    const net=income-expense; const sr=income>0?net/income*100:null;
+    html=sr===null?'لا يوجد دخل مسجل هذا الشهر حتى أحسب نسبة الادخار.':sr<=0?`<span class="assistant-danger">حالياً لا يوجد فائض للادخار.</span> صافي الشهر ${fmt(net)} $.`:`دخلك حتى الآن <strong>${fmt(income)} $</strong>، ومصروفك <strong>${fmt(expense)} $</strong>، وصافي المتبقي <strong>${fmt(net)} $</strong>، أي نسبة ادخار تقريبية <strong>${fmt(sr)}%</strong>.`;
+  }else{
+    html='أقدر أساعدك في 4 أشياء حالياً: <strong>سبب زيادة المصاريف، احتمال تجاوز الميزانية، توقع نهاية الشهر، ووضع الادخار.</strong> جرّب أحد الأسئلة المقترحة.';
+  }
+  ans.style.display='block';
+  ans.innerHTML=html+`<div class="tool-note" style="margin-top:7px">💡 هذا تحليل محلي مبني على بياناتك الحالية، وليس نصيحة مالية استثمارية.</div>`;
 }
 
 function analyticsFeatureTitle_(key){
@@ -3178,6 +3322,15 @@ else bindSearchEvents_();
 setTimeout(bindSearchEvents_,500);
 setTimeout(bindSearchEvents_,1500);
 setTimeout(bindSearchEvents_,3000);
+
+window.addEventListener('error',function(e){
+  console.error('Masarifi runtime error',e.error||e.message);
+  if(firebaseUser && e && e.error && e.error.name!=='AbortError') showToast('حدث خطأ مؤقت؛ التطبيق سيحاول المتابعة تلقائياً.');
+});
+window.addEventListener('unhandledrejection',function(e){
+  console.error('Masarifi promise error',e.reason);
+  if(firebaseUser) setSyncStatus_(navigator.onLine?'error':'offline');
+});
 
 firebaseAuth.onAuthStateChanged(async user=>{
   firebaseUser=user; firebaseAuthReady=true; clearTimeout(firebaseBootTimeout_);
