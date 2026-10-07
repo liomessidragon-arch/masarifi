@@ -682,6 +682,57 @@ header.top h1 small{font-size:12px;font-weight:700;color:var(--muted);}
 .assistant-input-row input{border:0;box-shadow:none;background:transparent;}
 .assistant-ask{width:42px;height:42px;padding:0;border-radius:50%;font-size:20px;}
 .assistant-answer{border:0;border-radius:18px;box-shadow:var(--shadow);}
+
+/* ===== V4.0 batch 3 ===== */
+#txSheetOverlay{z-index:120;}.toast{z-index:200;}
+.toast.ok{background:#1F6E52;}.toast.err{background:var(--brick);}.toast.warn{background:#B7791F;}.toast.info{background:var(--navy);}
+header.top{gap:2px;}header.top h1{margin-inline-end:4px;}
+.icon-btn .ic{width:22px;height:22px;fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.avatar-btn{width:38px;height:38px;border-radius:50%;border:0;background:linear-gradient(145deg,var(--navy),var(--navy-2));color:#fff;font:inherit;font-weight:900;font-size:16px;cursor:pointer;margin-inline-start:2px;}
+.sync-status.online{background:var(--emerald-light);color:var(--emerald);border-color:transparent;}
+.sync-status.syncing{background:#E3E8F8;color:#3B4F9C;border-color:transparent;}
+.sync-status.offline{background:#EFEDE6;color:var(--muted);border-color:transparent;}
+.sync-status.error{background:var(--brick-light);color:var(--brick);border-color:transparent;}
+.seg-bar{display:flex;align-items:center;gap:6px;margin:6px 20px 12px;padding:6px;background:#E9E7DF;border-radius:999px;}
+.seg-pills{display:flex;flex:1;gap:2px;}
+.seg-pills button{flex:1;border:0;background:transparent;border-radius:999px;padding:10px 6px;font:inherit;font-weight:800;font-size:13.5px;color:var(--muted);cursor:pointer;}
+.seg-pills button.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(22,33,62,.12);}
+.bar-ic{width:40px;height:40px;border:0;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.bar-ic.active{background:var(--emerald);}.bar-ic.active .ic{stroke:#fff;}
+.bar-ic .ic{width:21px;height:21px;fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;}
+.toolbar{padding-top:0;}
+.set-email{direction:ltr;text-align:right;color:var(--muted);font-size:12px;margin-top:8px;}
+.set-row .cc{width:40px;height:40px;border-radius:50%;background:var(--emerald-light);color:var(--emerald);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex:0 0 auto;}
+.set-lbl{display:flex;flex-direction:column;}.set-lbl small{color:var(--muted);font-weight:600;font-size:12px;}
+.savings-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.tool-stat{background:#fff;border:0;box-shadow:var(--shadow);border-radius:18px;padding:12px 6px;}
+.goal-row{background:#fff;border:0;box-shadow:var(--shadow);border-radius:22px;padding:18px;margin-bottom:12px;}
+.goal-head{display:flex;align-items:center;gap:8px;}.goal-name{font-weight:900;font-size:16px;flex:1;}
+.goal-pct{background:var(--emerald-light);color:var(--emerald);border-radius:999px;padding:4px 12px;font-weight:800;font-size:12.5px;}
+.goal-more{border:0;background:#F1EFE8;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;color:var(--ink);}
+.goal-big{font-size:26px;font-weight:900;margin:12px 0 8px;color:var(--navy);direction:rtl;}.goal-big small{font-size:13px;font-weight:700;color:var(--muted);}
+.goal-bar{height:10px;border-radius:999px;background:#ECE9DF;overflow:hidden;}.goal-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#1F6E52,#2E9C74);}
+.goal-note{margin-top:12px;background:#EEF1FA;color:var(--navy);border-radius:14px;padding:11px 14px;font-size:12.5px;line-height:1.8;}
+.goal-note.danger{background:var(--brick-light);color:var(--brick);}.goal-note.warn{background:#FBF1D9;color:#8A5A12;}
+.goal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.goal-actions button{border:0;background:#F1EFE8;border-radius:14px;padding:12px;font:inherit;font-weight:800;cursor:pointer;color:var(--ink);}
+#transferFields{background:#fff;border-radius:22px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px;}
+.as-avatar{text-align:center;margin-bottom:12px;}
+.as-face{position:relative;width:76px;height:76px;margin:0 auto 8px;border-radius:50%;background:linear-gradient(145deg,#BFE6D4,#C9D4F2);display:flex;align-items:center;justify-content:center;}
+.as-face .ic{width:40px;height:40px;fill:none;stroke:var(--navy);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.as-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;background:#22C55E;border:2px solid #fff;}
+.as-live{font-size:12.5px;font-weight:800;color:var(--navy);}
+.fc-card{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px;}
+.fc-t{font-weight:800;font-size:13.5px;line-height:1.8;}
+.fc-v{border-radius:999px;text-align:center;font-size:24px;font-weight:900;padding:10px;margin:10px 0 8px;direction:ltr;}
+.fc-card.ok .fc-v{background:#DDF0E7;color:#1F6E52;}.fc-card.bad .fc-v{background:#F7C9BE;color:#8B2F1C;}
+.fc-card.mid .fc-v,.fc-card.none .fc-v{background:#FBF1D9;color:#8A5A12;}
+.fc-m{font-weight:800;font-size:13px;}.fc-card.ok .fc-m{color:#1F6E52;}.fc-card.bad .fc-m{color:var(--brick);}
+.fc-bar{height:8px;border-radius:999px;background:#ECE9DF;margin-top:10px;overflow:hidden;}.fc-bar i{display:block;height:100%;border-radius:999px;background:#2E9C74;}
+.fc-card.bad .fc-bar i{background:var(--brick);}
+.fc-f{font-size:11px;color:var(--muted);margin-top:8px;}
+.why-card{margin-top:10px;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);font-size:13px;line-height:1.9;}
+.why-card b{color:var(--brick);}
 </style>
 </head>
 <body>
@@ -696,20 +747,15 @@ header.top h1 small{font-size:12px;font-weight:700;color:var(--muted);}
     <button class="top-menu-btn" title="الأدوات والتحليل" onclick="openToolsMenu_()" aria-label="الأدوات والتحليل">☰</button>
     <h1><small id="greetLine"></small>مصاريفي</h1>
     <div id="syncStatus" class="sync-status online" title="حالة المزامنة">☁️ متصل</div>
-    <div style="display:flex;align-items:center;gap:4px;">
-      <button class="icon-btn" id="firebaseUserMenuBtn" title="الحساب" onclick="openAccountMenu_()">👤</button>
-      <button class="icon-btn" onclick="openSettings()">⚙️</button>
-    </div>
+    <button class="icon-btn" onclick="openSettings()" aria-label="الإعدادات"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button class="avatar-btn" id="firebaseUserMenuBtn" title="الحساب" onclick="openAccountMenu_()"><span id="avatarLetter">؟</span></button>
   </header>
 
   <div id="balanceLabel" style="padding:0 20px 4px;font-size:12px;color:var(--muted);font-weight:700;"></div>
   <div id="summaryCards"></div>
   <div id="dashboardStrip" class="dashboard-strip"></div>
   <div class="budget-section" id="budgetSection"></div>
-  <div class="search-wrap">
-    <span class="search-icon">🔎</span>
-    <input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off">
-  </div>
+  
 
   <div class="chart-section" id="donutSection" style="display:none;">
     <div class="chart-card">
@@ -719,12 +765,13 @@ header.top h1 small{font-size:12px;font-weight:700;color:var(--muted);}
     </div>
   </div>
 
-  <div class="toolbar">
-    <button class="chip-btn" id="filterChip" onclick="openFilterModal()">🔍 فلترة</button>
-    <button class="chip-btn" onclick="openBudgetModal()">💰 الميزانية</button>
-    <button class="chip-btn" onclick="openRecurringModal_()">🔄 متكررة</button>
-    <button class="chip-btn" onclick="openReportModal()">📊 التقارير</button>
+  <div class="seg-bar">
+    <div class="seg-pills" id="typePills"><button data-t="" class="on">الكل</button><button data-t="مصروف">مصاريف</button><button data-t="دخل">دخل</button></div>
+    <button class="bar-ic" id="searchToggle" onclick="toggleSearch_()" aria-label="بحث"><svg viewBox="0 0 24 24" class="ic"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    <button class="bar-ic" id="filterChip" onclick="openFilterModal()" aria-label="المزيد من الفلاتر"><svg viewBox="0 0 24 24" class="ic"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   </div>
+  <div class="search-wrap" id="searchWrap" style="display:none;"><span class="search-icon">🔎</span><input id="searchInput" type="search" placeholder="ابحث باسم الفئة أو البيان..." autocomplete="off"></div>
+  <div class="toolbar"><button class="chip-btn" onclick="openRecurringModal_()">🔄 متكررة</button><button class="chip-btn" onclick="openReportModal()">📊 التقارير</button></div>
   <button id="clearFiltersBtn" onclick="clearFilters()">مسح الفلاتر</button>
 
   <ul id="transactionList"></ul>
@@ -968,8 +1015,8 @@ header.top h1 small{font-size:12px;font-weight:700;color:var(--muted);}
     <div id="toolsAssistantPanel" class="tools-panel">
       <button class="tools-back" onclick="openToolsPanel_('home')">‹ رجوع للأدوات</button>
       <div class="assistant-hero">
-        <div class="assistant-hero-title"><div class="assistant-hero-icon">🤖</div><div>المساعد المالي الذكي</div></div>
-        <div class="assistant-hero-sub">تحليل محلي مبني على بيانات مصاريفك الحالية. لا يتم إرسال سؤالك إلى أي خدمة ذكاء اصطناعي خارجية.</div>
+        <div class="as-avatar"><div class="as-face"><svg viewBox="0 0 24 24" class="ic"><rect x="5" y="7" width="14" height="11" rx="4"/><path d="M12 3v4M9.5 12v1.5M14.5 12v1.5M9.5 16c1.5 1 3.5 1 5 0"/></svg><i class="as-dot"></i></div><div class="as-live">🔒 مساعد محلي نشط</div></div>
+        <div id="assistantForecast"></div>
         <div class="assistant-quick">
           <button onclick="askFinancialAssistant_('ليش مصاريفي زادت هالشهر؟')">📈 ليش زادت مصاريفي؟</button>
           <button onclick="askFinancialAssistant_('هل رح أتجاوز الميزانية؟')">🎯 هل رح أتجاوز الميزانية؟</button>
@@ -2235,10 +2282,10 @@ function pendingTxIds_(){ return new Set(syncQueue_.map(q=>String(q.id)).filter(
 function setSyncStatus_(mode,msg){
   const el=document.getElementById('syncStatus'); if(!el)return;
   el.className='sync-status '+mode;
-  if(mode==='offline') el.textContent='📴 غير متصل';
-  else if(mode==='syncing') el.textContent='🔄 مزامنة...';
-  else if(mode==='error') el.textContent='⚠️ فشل المزامنة';
-  else el.textContent='☁️ '+(msg||'متصل');
+  if(mode==='offline') el.textContent='غير متصل';
+  else if(mode==='syncing') el.textContent='جارٍ الحفظ…';
+  else if(mode==='error') el.textContent='تعذر الحفظ';
+  else el.textContent='✓ '+(msg||'محفوظ');
   const hint=document.getElementById('assistantSyncHint');
   if(hint) hint.textContent=mode==='offline'?'يعمل محلياً — غير متصل':mode==='syncing'?'جاري مزامنة البيانات…':mode==='error'?'يوجد تعذر مؤقت بالمزامنة':'البيانات محدثة تلقائياً';
 }
@@ -2683,12 +2730,13 @@ function ensureSettingsModal_(){
     <div class="modal-card">
       <div class="modal-head"><h2>الإعدادات</h2><button class="icon-btn" onclick="closeModal('firebaseSettingsOverlay')" aria-label="إغلاق">✕</button></div>
       <div class="set-card">
-        <div class="set-title">اسم العرض</div>
-        <input id="settingsName" type="text" maxlength="30" placeholder="اسمك في التحية">
+        <div class="set-title">اسم المستخدم</div>
+        <input id="settingsName" type="text" maxlength="30" placeholder="مثال: أبو قيس">
+        <div class="set-email" id="settingsEmail"></div>
       </div>
       <div class="set-card">
-        <div class="set-row"><span>1 دولار ($) =</span><input id="settingsRateSyp" type="number" step="any" inputmode="decimal" placeholder="138"><b>ل.س</b></div>
-        <div class="set-row"><span>1 دولار ($) =</span><input id="settingsRateTry" type="number" step="any" inputmode="decimal" placeholder="49"><b>₺</b></div>
+        <div class="set-row"><span class="cc">ل.س</span><span class="set-lbl"><b>سعر الصرف السوري</b><small>1 دولار ($) =</small></span><input id="settingsRateSyp" type="number" step="any" inputmode="decimal" placeholder="138"></div>
+        <div class="set-row"><span class="cc">₺</span><span class="set-lbl"><b>سعر الصرف التركي</b><small>1 دولار ($) =</small></span><input id="settingsRateTry" type="number" step="any" inputmode="decimal" placeholder="49"></div>
       </div>
       <button class="set-card set-link" onclick="openCategoryManager()"><span class="set-ic">🏷</span><span><b>إدارة الفئات</b><small>تعديل وإضافة بنود المصاريف</small></span><i>‹</i></button>
       <button class="primary-btn" style="max-width:none;" onclick="saveFirebaseSettings_()">حفظ الإعدادات</button>
@@ -2730,6 +2778,7 @@ function openSettings(){
   document.getElementById('settingsRateSyp').value=rateSyp||'';
   document.getElementById('settingsRateTry').value=rateTry||'';
   document.getElementById('settingsName').value=(firebaseUser&&firebaseUser.displayName)||'';
+  document.getElementById('settingsEmail').textContent=(firebaseUser&&firebaseUser.email)||'';
   showModal_('firebaseSettingsOverlay');
 }
 
@@ -3386,17 +3435,11 @@ function renderSavingsGoals_(){
         ? `💡 تحتاج تقريباً <strong>${fmt(monthly)} ${sym}</strong> شهرياً للوصول للهدف في الموعد.`
         : '📅 أضف موعداً للهدف من زر «تعديل» حتى أحسب لك المبلغ المطلوب ادخاره شهرياً.';
     return `<div class="goal-row">
-      <div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span></div>
+      <div class="goal-head"><span class="goal-name">${escapeHtml(g.name||'هدف ادخار')}</span><span class="goal-pct">${done?'🏆 مكتمل':pct+'%'}</span><button class="goal-more" onclick="goalMore_('${g.id}')" aria-label="المزيد">⋯</button></div>
+      <div class="goal-big">${fmt(current)} <small>من ${fmt(target)} ${sym}</small></div>
       <div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
-      <div class="goal-numbers">
-        <div class="goal-number"><span class="v">${fmt(target)} ${sym}</span><span class="l">المستهدف</span></div>
-        <div class="goal-number"><span class="v">${fmt(current)} ${sym}</span><span class="l">المدخر حالياً</span></div>
-        <div class="goal-number"><span class="v">${fmt(remain)} ${sym}</span><span class="l">المتبقي</span></div>
-      </div>
-      ${g.targetDate?`<div class="goal-meta"><span>📅 الموعد المستهدف</span><strong>${formatDisplayDate(g.targetDate)}</strong></div>`:''}
-      <div class="goal-status ${statusClass}">${status||'🎯 الهدف قيد التقدم'}</div>
-      <div class="goal-monthly">${plan}</div>
-      <div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button><button onclick="editSavingsGoal_('${g.id}')">✎ تعديل</button><button class="danger" onclick="deleteSavingsGoal_('${g.id}')">حذف</button></div>
+      <div class="goal-note ${statusClass}">${done?status:(due?status+'<br>'+plan:plan)}</div>
+      <div class="goal-actions"><button onclick="adjustSavingsGoal_('${g.id}',1)">＋ إضافة</button><button onclick="adjustSavingsGoal_('${g.id}',-1)">− سحب</button></div>
     </div>`;
   }).join('');
 
@@ -3591,6 +3634,42 @@ function renderSpendingPatternAnalysis_(cur){
   var olp=window.onLongPress;window.onLongPress=function(id){window.__lpAt=Date.now();return olp(id);};
   document.addEventListener('click',function(e){var li=e.target.closest&&e.target.closest('#transactionList .tx-item');if(!li)return;if(Date.now()-(window.__lpAt||0)<900)return;openTxSheet_(li.dataset.id);});
   try{firebase.auth().onAuthStateChanged(function(){setTimeout(refreshGreeting_,50);});}catch(e){}
+})();
+</script>
+<script>
+/* V4.0 batch 3 */
+(function(){
+  var ost=window.showToast;
+  window.showToast=function(m){ost(m);var t=document.getElementById('toast');if(!t)return;var x=String(m||'');
+    t.className='toast show '+(/تعذر|فشل|خطأ|غير صحيح/.test(x)?'err':/تنبيه|⚠|سجّل الدخول/.test(x)?'warn':/✅|تم|⚡/.test(x)?'ok':'info');};
+  var oaf=window.applyFiltersAndRender;
+  window.syncPills_=function(){var c=(typeof currentFilters!=='undefined'&&currentFilters.type)||'';document.querySelectorAll('#typePills button').forEach(function(b){b.classList.toggle('on',b.dataset.t===c);});};
+  window.applyFiltersAndRender=function(){oaf();syncPills_();};
+  document.getElementById('typePills').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;currentFilters.type=b.dataset.t;applyFiltersAndRender();});
+  window.toggleSearch_=function(){var w=document.getElementById('searchWrap');var open=w.style.display==='none';w.style.display=open?'block':'none';if(open)document.getElementById('searchInput').focus();};
+  var orf=window.refreshGreeting_;
+  window.refreshGreeting_=function(){orf();var u=(typeof firebaseUser!=='undefined')?firebaseUser:null;var n=u?(u.displayName||(u.email||'').split('@')[0]):'';var el=document.getElementById('avatarLetter');if(el)el.textContent=n?Array.from(n)[0].toUpperCase():'؟';};
+  window.openAccountMenu_=function(){if(typeof firebaseUser==='undefined'||!firebaseUser)return;var u=firebaseUser;var n=u.displayName||(u.email||'').split('@')[0];
+    document.getElementById('txSheetBody').innerHTML='<div class="sheet-head"><div class="avatar-btn" style="cursor:default;display:flex;align-items:center;justify-content:center;">'+escapeHtml(Array.from(n||'؟')[0].toUpperCase())+'</div><div><div style="font-weight:900;font-size:16px;">'+escapeHtml(n)+'</div><div class="sheet-sub" style="direction:ltr;text-align:right;">'+escapeHtml(u.email||'')+'</div></div></div><div class="sheet-actions" style="grid-template-columns:1fr 1fr;"><button onclick="closeModal(\'txSheetOverlay\');openSettings()">⚙️ الإعدادات</button><button class="del" onclick="closeModal(\'txSheetOverlay\');firebaseAuth.signOut()">تسجيل الخروج</button></div>';
+    showModal_('txSheetOverlay');};
+  window.goalMore_=function(id){var g=savingsGoals_.find(function(x){return String(x.id)===String(id);});if(!g)return;
+    document.getElementById('txSheetBody').innerHTML='<div class="sheet-head"><div style="font-weight:900;font-size:16px;">'+escapeHtml(g.name||'هدف ادخار')+'</div></div><div class="sheet-actions" style="grid-template-columns:1fr 1fr;"><button onclick="closeModal(\'txSheetOverlay\');editSavingsGoal_(\''+g.id+'\')">✏️ تعديل</button><button class="del" onclick="closeModal(\'txSheetOverlay\');deleteSavingsGoal_(\''+g.id+'\')">🗑️ حذف</button></div>';
+    showModal_('txSheetOverlay');};
+  function fcCard_(){var el=document.getElementById('assistantForecast');if(!el)return;
+    var now=new Date();now.setHours(12,0,0,0);var cs=dateToStr_(new Date(now.getFullYear(),now.getMonth(),1,12)),ct=todayStr();
+    var exp=assistantPeriodExpense_(cs,ct,'USD'),d=Math.max(1,now.getDate()),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),fc=exp/d*dim;
+    var b=budgetData.find(function(x){return !x.category&&x.month===currentMonthPrefixSafe_();});var bv=b&&Number(b.amount)>0?toBudgetCurrency_(Number(b.amount),b.currency,'USD'):0;
+    var cls,tt,msg='',pct=0;
+    if(exp<=0||d<3){cls='none';tt='🟡 لا توجد بيانات كافية';msg='سجّل المزيد من العمليات حتى أقدر أعطيك توقعاً أدق.';}
+    else if(bv>0&&fc>bv){cls='bad';tt='🔴 تنبيه تجاوز متوقع';msg='حسب معدل صرفك الحالي، متوقع تتجاوز الميزانية بـ $'+fmt(fc-bv)+'.';pct=Math.min(100,fc/bv*100);}
+    else if(bv>0){cls='ok';tt='🟢 أنت ضمن الميزانية';msg='متوقع تنهي الشهر أقل من الميزانية بـ $'+fmt(bv-fc)+'.';pct=fc/bv*100;}
+    else{cls='mid';tt='ℹ️ توقع نهاية الشهر';msg='حدّد ميزانية شهرية حتى أقارن التوقع بها.';}
+    el.innerHTML='<div class="fc-card '+cls+'"><div class="fc-t">'+(cls==='none'?tt:'حسب معدل صرفك الحالي، المتوقع أن تنهي الشهر بحوالي')+'</div>'+(cls==='none'?'':'<div class="fc-v">$ '+fmt(fc)+'</div><div class="fc-m">'+tt+'</div>')+'<div class="fc-t" style="font-weight:600;">'+msg+'</div>'+(pct?'<div class="fc-bar"><i style="width:'+pct+'%"></i></div>':'')+'<div class="fc-f">🔒 تحليل محلي فوري بناءً على وتيرة صرفك الحالية.</div></div>';}
+  var orfa=window.renderFinancialAssistant_;window.renderFinancialAssistant_=function(){orfa();try{fcCard_();}catch(e){}};
+  var oask=window.askFinancialAssistant_;
+  window.askFinancialAssistant_=function(q){oask(q);try{var ans=document.getElementById('assistantAnswer');var t=String(q||(document.getElementById('assistantQuestion')||{}).value||'');
+    if(/زادت|زيادة|ارتفع|ليش/.test(t)){var r=assistantTopRise_('USD');var x=Array.isArray(r)?r[0]:null;if(x&&x.diff>0){var pc=x.prev>0?Math.round(x.diff/x.prev*100):null;ans.insertAdjacentHTML('beforeend','<div class="why-card"><strong>السبب الرئيسي: '+escapeHtml(x.cat)+'</strong><br>$'+fmt(x.prev)+' ← $'+fmt(x.curr)+'<br><b>+$'+fmt(x.diff)+(pc!==null?' / +'+pc+'%':'')+'</b></div>');}}}catch(e){}};
+  try{refreshGreeting_();syncPills_();}catch(e){}
 })();
 </script>
 </body>
