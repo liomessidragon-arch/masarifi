@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="4.0-redesign-v1">
+<meta name="masarifi-version" content="4.0-redesign-v2">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -733,10 +733,37 @@ header.top{gap:2px;}header.top h1{margin-inline-end:4px;}
 .fc-f{font-size:11px;color:var(--muted);margin-top:8px;}
 .why-card{margin-top:10px;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);font-size:13px;line-height:1.9;}
 .why-card b{color:var(--brick);}
+
+/* ===== V4.0 batch 4 ===== */
+.firebase-boot-screen{flex-direction:column;background:#F8FAFC;}
+.boot-wrap{text-align:center;margin-top:-40px;}
+.boot-logo{width:124px;height:auto;filter:drop-shadow(0 12px 18px rgba(31,122,88,.28));}
+.firebase-boot-screen .boot-mark{font-size:38px;color:var(--navy);margin-top:14px;}
+.boot-tag{color:var(--muted);font-weight:600;font-size:15px;margin-top:6px;}
+.boot-foot{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;}
+.boot-spin{width:26px;height:26px;border-radius:50%;border:3px solid #D7E9E0;border-top-color:var(--emerald);animation:bspin 1s linear infinite;}
+@keyframes bspin{to{transform:rotate(360deg);}}
+.x-btn{background:#E9E7DF;border-radius:50%;font-size:16px;}
+.category-add-row{background:#fff;border-radius:999px;box-shadow:var(--shadow);padding:6px;align-items:center;margin-bottom:14px;}
+.category-add-row input{border:0;box-shadow:none;background:transparent;padding:10px 14px;}
+.add-circle{width:44px;height:44px;border:0;border-radius:50%;background:var(--emerald);color:#fff;font-size:26px;cursor:pointer;flex:0 0 auto;}
+.category-list{background:#fff;border-radius:22px;box-shadow:var(--shadow);overflow:hidden;display:block;}
+.cat-row2{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #F1EEE4;}
+.cat-row2:last-child{border-bottom:0;}.cat-row2 .name{flex:1;font-weight:800;font-size:14.5px;}
+.bud-total{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px;}
+.bud-total label{display:block;font-weight:800;font-size:13px;color:var(--muted);margin-bottom:8px;}
+.bud-total-row{display:flex;gap:8px;}
+.bud-total-row input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:30px;font-weight:900;color:var(--navy);text-align:right;}
+.bud-total-row select{width:104px;}
+#budgetCategoryRows{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:4px 14px;margin-bottom:14px;}
+.bud-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EEE4;}
+.bud-row:last-child{border-bottom:0;}.bud-name{flex:1;font-weight:800;font-size:14px;min-width:0;}
+.bud-row input{width:96px;border:0;border-radius:12px;background:#F1EFE8;padding:10px;font:inherit;font-weight:800;text-align:center;direction:ltr;}
+.bud-row select{width:62px;padding:10px 4px;border-radius:12px;background:#F1EFE8;font:inherit;font-weight:700;}
 </style>
 </head>
 <body>
-<div id="firebaseBootScreen" class="firebase-boot-screen"><div class="boot-mark">مصاريفي</div></div>
+<div id="firebaseBootScreen" class="firebase-boot-screen"><div class="boot-wrap"><svg viewBox="0 0 120 110" class="boot-logo" aria-hidden="true"><rect x="30" y="6" width="42" height="54" rx="4" fill="#F4F2EA" stroke="#D8D4C6"/><path d="M38 20h26M38 29h26M38 38h18" stroke="#C9C5B6" stroke-width="3" stroke-linecap="round"/><circle cx="78" cy="38" r="20" fill="#F5C242"/><circle cx="78" cy="38" r="14" fill="none" stroke="#D9A21E" stroke-width="2"/><text x="78" y="46" text-anchor="middle" font-size="22" font-weight="900" fill="#B8800F" font-family="sans-serif">$</text><rect x="8" y="46" width="100" height="58" rx="14" fill="#1F7A58"/><path d="M8 62a14 14 0 0 1 14-14h72a14 14 0 0 1 14 14z" fill="#2A9168"/><rect x="14" y="54" width="88" height="44" rx="10" fill="none" stroke="#7FD1AE" stroke-dasharray="3 3" opacity=".6"/><rect x="80" y="64" width="34" height="24" rx="12" fill="#18634A"/><circle cx="96" cy="76" r="6" fill="#F5C242"/></svg><div class="boot-mark">مصاريفي</div><div class="boot-tag">إدارتك المالية الذكية</div></div><div class="boot-foot"><i class="boot-spin"></i><span>من تطوير abo-qais · v4.0</span></div></div>
 
 <!-- ============ Setup screen ============ -->
 <div id="setupScreen"></div>
@@ -898,27 +925,22 @@ header.top{gap:2px;}header.top h1{margin-inline-end:4px;}
 <!-- ============ Budget modal ============ -->
 <div class="modal-overlay hidden" id="budgetModalOverlay">
   <div class="modal-sheet">
-    <h2>💰 الميزانية</h2>
+    <div class="modal-head"><h2>الميزانية</h2><button class="icon-btn x-btn" onclick="closeModal('budgetModalOverlay')" aria-label="إغلاق">✕</button></div>
     <div class="field">
       <label>الشهر</label>
       <input type="month" id="budgetMonth" onchange="loadBudgetMonth(this.value)">
     </div>
-    <div class="field">
-      <label>الميزانية الشهرية العامة</label>
-      <div style="display:flex;gap:8px;">
-        <input type="number" id="totalBudgetAmount" inputmode="decimal" placeholder="0.00" style="flex:1;">
-        <select id="totalBudgetCurrency" style="width:115px;">
-          <option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option>
-        </select>
-      </div>
-    </div>
+    <div class="bud-total"><label>الميزانية الشهرية العامة</label>
+      <div class="bud-total-row">
+        <input type="number" id="totalBudgetAmount" inputmode="decimal" placeholder="0.00">
+        <select id="totalBudgetCurrency"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select>
+      </div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 8px;">
       <strong style="font-size:14px;">ميزانيات الفئات</strong>
       <button class="mini-btn" onclick="openCategoryManager()">⚙️ إدارة الفئات</button>
     </div>
     <div id="budgetCategoryRows"></div>
     <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModal('budgetModalOverlay')">إلغاء</button>
       <button class="primary-btn" onclick="saveAllBudgets()">حفظ الميزانية</button>
     </div>
   </div>
@@ -927,14 +949,14 @@ header.top{gap:2px;}header.top h1{margin-inline-end:4px;}
 <!-- ============ Category manager modal ============ -->
 <div class="modal-overlay hidden" id="categoryManagerOverlay">
   <div class="modal-sheet">
-    <h2>🏷️ إدارة الفئات</h2>
+    <div class="modal-head"><h2>إدارة الفئات</h2><button class="icon-btn x-btn" onclick="catDone_()" aria-label="إغلاق">✕</button></div>
     <div class="category-add-row">
-      <input id="newCategoryName" type="text" placeholder="اسم فئة جديدة">
-      <button class="primary-btn" style="max-width:120px;" onclick="addNewCategory()">إضافة</button>
+      <input id="newCategoryName" type="text" placeholder="اسم فئة جديدة...">
+      <button class="add-circle" onclick="addNewCategory()" aria-label="إضافة فئة">+</button>
     </div>
     <div class="category-list" id="categoryManagerList"></div>
     <div class="modal-actions">
-      <button class="primary-btn" onclick="closeModal('categoryManagerOverlay'); populateCategoryOptions(); renderBudgetPanel(currentMonthTransactions());">تم</button>
+      <button class="primary-btn" onclick="catDone_()">تم</button>
     </div>
   </div>
 </div>
@@ -3670,6 +3692,23 @@ function renderSpendingPatternAnalysis_(cur){
   window.askFinancialAssistant_=function(q){oask(q);try{var ans=document.getElementById('assistantAnswer');var t=String(q||(document.getElementById('assistantQuestion')||{}).value||'');
     if(/زادت|زيادة|ارتفع|ليش/.test(t)){var r=assistantTopRise_('USD');var x=Array.isArray(r)?r[0]:null;if(x&&x.diff>0){var pc=x.prev>0?Math.round(x.diff/x.prev*100):null;ans.insertAdjacentHTML('beforeend','<div class="why-card"><strong>السبب الرئيسي: '+escapeHtml(x.cat)+'</strong><br>$'+fmt(x.prev)+' ← $'+fmt(x.curr)+'<br><b>+$'+fmt(x.diff)+(pc!==null?' / +'+pc+'%':'')+'</b></div>');}}}catch(e){}};
   try{refreshGreeting_();syncPills_();}catch(e){}
+})();
+</script>
+<script>
+/* V4.0 batch 4 */
+(function(){
+  var ic=function(n){return txIcon_({category:n,type:'مصروف'});};
+  window.renderCategoryManager=function(){var w=document.getElementById('categoryManagerList');if(!w)return;
+    if(!managedCategories.length){w.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">لا توجد فئات بعد.</div>';return;}
+    w.innerHTML=managedCategories.map(function(c){return '<div class="cat-row2"><div class="tx-badge expense">'+ic(c.name)+'</div><span class="name">'+escapeHtml(c.name)+'</span><button class="goal-more" onclick="catMore_(\''+c.id+'\')" aria-label="المزيد">⋯</button></div>';}).join('');};
+  window.catMore_=function(id){var c=managedCategories.find(function(x){return String(x.id)===String(id);});if(!c)return;
+    document.getElementById('txSheetBody').innerHTML='<div class="sheet-head"><div class="tx-badge expense">'+ic(c.name)+'</div><div style="font-weight:900;font-size:16px;">'+escapeHtml(c.name)+'</div></div><div class="sheet-actions" style="grid-template-columns:1fr 1fr;"><button onclick="closeModal(\'txSheetOverlay\');editCategory(\''+c.id+'\')">✏️ تعديل</button><button class="del" onclick="closeModal(\'txSheetOverlay\');deleteCategoryUi(\''+c.id+'\')">🗑️ حذف</button></div>';
+    showModal_('txSheetOverlay');};
+  window.catDone_=function(){closeModal('categoryManagerOverlay');populateCategoryOptions();renderBudgetPanel(currentMonthTransactions());};
+  window.renderBudgetManagerRows=function(){var w=document.getElementById('budgetCategoryRows');
+    var cats=categoryNames_().filter(function(c){return c!=='تحويل عملة';});var by={};budgetData.forEach(function(b){if(b.category)by[b.category]=b;});
+    w.innerHTML=cats.map(function(c){var b=by[c],e=escapeHtml(c);var cu=b?b.currency:'USD';
+      return '<div class="bud-row"><div class="tx-badge expense">'+ic(c)+'</div><span class="bud-name">'+e+'</span><input class="budget-cat-input" data-category="'+e+'" type="number" inputmode="decimal" placeholder="0.00" value="'+(b?b.amount:'')+'"><select class="budget-cat-currency" data-category="'+e+'"><option value="USD"'+(cu==='USD'?' selected':'')+'>$</option><option value="SYP"'+(cu==='SYP'?' selected':'')+'>ل.س</option><option value="TRY"'+(cu==='TRY'?' selected':'')+'>₺</option></select></div>';}).join('');};
 })();
 </script>
 </body>
