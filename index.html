@@ -3848,5 +3848,47 @@ function renderSpendingPatternAnalysis_(cur){
   };}
 })();
 </script>
+<script>
+/* Native Android bridge (active only inside the Capacitor APK) */
+(function(){
+  var C=window.Capacitor;if(!C||!C.isNativePlatform||!C.isNativePlatform())return;
+  var P=C.Plugins||{};
+  if(P.App){P.App.addListener('backButton',function(){try{closeTopModalFromBack_();}catch(e){P.App.exitApp();}});}
+  var oldDl=window.triggerDownload_;
+  window.triggerDownload_=function(name,content,mime){
+    if(!P.Filesystem||!P.Share)return oldDl(name,content,mime);
+    P.Filesystem.writeFile({path:name,data:String(content),directory:'CACHE',encoding:'utf8'})
+      .then(function(r){return P.Share.share({title:name,url:r.uri,dialogTitle:'حفظ أو مشاركة الملف'});})
+      .catch(function(e){if(!/cancel/i.test(String((e&&e.message)||e)))showToast('تعذر حفظ الملف');});
+  };
+  var LN=P.LocalNotifications;
+  function remOn(){try{return localStorage.getItem('masarifi_reminder')==='1';}catch(e){return false;}}
+  function syncRem(){document.querySelectorAll('#remPills button').forEach(function(b){b.classList.toggle('on',(b.dataset.r==='1')===remOn());});}
+  async function setRem(on){
+    if(!LN){showToast('الإشعارات غير متاحة');return;}
+    try{
+      if(on){
+        var perm=await LN.requestPermissions();
+        if(perm.display!=='granted'){showToast('لم يتم السماح بالإشعارات');return;}
+        await LN.cancel({notifications:[{id:1}]});
+        await LN.schedule({notifications:[{id:1,title:'مصاريفي',body:'هل سجّلت مصاريف اليوم؟',schedule:{on:{hour:21,minute:0},allowWhileIdle:true}}]});
+        localStorage.setItem('masarifi_reminder','1');showToast('تم تفعيل التذكير اليومي');
+      }else{
+        await LN.cancel({notifications:[{id:1}]});localStorage.setItem('masarifi_reminder','0');showToast('تم إيقاف التذكير');
+      }
+    }catch(e){showToast('تعذر ضبط التذكير');}
+    syncRem();
+  }
+  function addCard(){
+    if(document.getElementById('remCard'))return;var a=document.getElementById('themePills');if(!a)return;var host=a.closest('.set-card');if(!host)return;
+    var d=document.createElement('div');d.className='set-card';d.id='remCard';
+    d.innerHTML='<div class="set-title">تذكير يومي لتسجيل المصاريف</div><div class="theme-seg" id="remPills"><button data-r="0">إيقاف</button><button data-r="1">تشغيل (9 مساءً)</button></div>';
+    host.parentNode.insertBefore(d,host.nextSibling);
+    d.addEventListener('click',function(e){var b=e.target.closest('button');if(b)setRem(b.dataset.r==='1');});syncRem();
+  }
+  var os=window.openSettings;
+  if(typeof os==='function'){window.openSettings=function(){var r=os.apply(this,arguments);addCard();return r;};}
+})();
+</script>
 </body>
 </html>

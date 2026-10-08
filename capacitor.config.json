@@ -1,0 +1,10 @@
+{
+  "appId": "com.aboqais.masarifi",
+  "appName": "مصاريفي",
+  "webDir": "www",
+  "backgroundColor": "#F8FAFC",
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 0, "launchAutoHide": true, "backgroundColor": "#F8FAFC" }
+  }
+}
