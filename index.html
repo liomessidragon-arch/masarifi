@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="4.0-redesign-v3">
+<meta name="masarifi-version" content="4.0-redesign-v5">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -790,6 +790,22 @@ header.top .icon-btn{padding:5px;}
 .sync-status{padding:3px 8px;}
 #balanceLabel{padding-top:2px !important;padding-bottom:2px !important;}
 #summaryCards{padding-top:4px;}
+
+/* ===== V4.0 batch 6: scroll lock, exit dialog ===== */
+body.modal-open{overflow:hidden;}
+.modal-overlay,.modal-sheet,.modal-card{overscroll-behavior:contain;}
+.modal-sheet,.modal-card{-webkit-overflow-scrolling:touch;}
+.exit-ov{position:fixed;inset:0;z-index:300;background:rgba(10,14,25,.55);display:flex;align-items:center;justify-content:center;padding:24px;}
+.exit-card{width:100%;max-width:320px;background:var(--surface);border-radius:26px;padding:24px 20px 20px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+.exit-ic{width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:var(--emerald-light);display:flex;align-items:center;justify-content:center;}
+.exit-ic .ic{width:26px;height:26px;fill:none;stroke:var(--emerald);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.exit-card h3{margin:0 0 18px;font-size:17px;font-weight:900;color:var(--ink);line-height:1.6;}
+.exit-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.exit-actions button{min-height:48px;margin:0;}
+
+/* batch 6b: stronger scroll lock */
+html.modal-open{overflow:hidden !important;}
+.modal-overlay{touch-action:none;}.modal-sheet,.modal-card{touch-action:pan-y;}
 </style>
 </head>
 <body>
@@ -862,7 +878,7 @@ header.top .icon-btn{padding:5px;}
     <div class="amount-hero">
     <div class="field">
       <label id="txAmountLabel">المبلغ</label>
-      <input type="number" id="txAmount" inputmode="decimal" placeholder="0.00">
+      <input type="text" inputmode="decimal" autocomplete="off" id="txAmount" placeholder="0.00">
     </div>
     <div class="field">
       <label id="txCurrencyLabel">العملة</label>
@@ -896,7 +912,7 @@ header.top .icon-btn{padding:5px;}
       </div>
       <div class="field">
         <label>المبلغ اللي استلمته بالعملة الجديدة (مطلوب)</label>
-        <input type="number" id="txToAmount" inputmode="decimal" placeholder="0.00">
+        <input type="text" inputmode="decimal" autocomplete="off" id="txToAmount" placeholder="0.00">
       </div>
     </div>
     <div class="modal-actions">
@@ -906,6 +922,13 @@ header.top .icon-btn{padding:5px;}
   </div>
 </div>
 
+<div class="exit-ov hidden" id="exitDialog" role="dialog" aria-modal="true">
+  <div class="exit-card">
+    <div class="exit-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+    <h3>هل تريد الخروج من البرنامج؟</h3>
+    <div class="exit-actions"><button class="primary-btn" id="exitYes">نعم</button><button class="secondary-btn" id="exitNo">لا</button></div>
+  </div>
+</div>
 <div class="modal-overlay hidden" id="txSheetOverlay" onclick="if(event.target===this)closeModal('txSheetOverlay')">
   <div class="modal-sheet" id="txSheetBody"></div>
 </div>
@@ -962,7 +985,7 @@ header.top .icon-btn{padding:5px;}
     </div>
     <div class="bud-total"><label>الميزانية الشهرية العامة</label>
       <div class="bud-total-row">
-        <input type="number" id="totalBudgetAmount" inputmode="decimal" placeholder="0.00">
+        <input type="text" inputmode="decimal" autocomplete="off" id="totalBudgetAmount" placeholder="0.00">
         <select id="totalBudgetCurrency"><option value="USD">$ USD</option><option value="SYP">ل.س SYP</option><option value="TRY">₺ TRY</option></select>
       </div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 8px;">
@@ -1006,10 +1029,10 @@ header.top .icon-btn{padding:5px;}
     </div>
     <div class="field"><label>الفئة</label><select id="recCategory"></select></div>
     <div class="field"><label>البيان</label><input id="recStatement" type="text" placeholder="مثال: اشتراك الإنترنت"></div>
-    <div class="field"><label>المبلغ</label><input id="recAmount" type="number" inputmode="decimal" placeholder="0.00"></div>
+    <div class="field"><label>المبلغ</label><input id="recAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
     <div class="field"><label>العملة</label><select id="recCurrency"><option value="USD">دولار ($)</option><option value="SYP">ليرة سورية (ل.س)</option><option value="TRY">ليرة تركية (₺)</option></select></div>
     <div class="field"><label>التكرار</label><select id="recFrequency" onchange="renderRecurringScheduleFields_()"><option value="monthly">شهري</option><option value="weekly">أسبوعي</option><option value="daily">يومي</option></select></div>
-    <div class="field" id="recDayField"><label id="recDayLabel">يوم الشهر</label><input id="recDay" type="number" min="1" max="31" inputmode="numeric" value="1"></div>
+    <div class="field" id="recDayField"><label id="recDayLabel">يوم الشهر</label><input id="recDay" type="text" inputmode="decimal" autocomplete="off" min="1" max="31" value="1"></div>
     <div class="field"><label>تاريخ البداية</label><input id="recStartDate" type="date"></div>
     <div class="field"><label>تاريخ النهاية (اختياري)</label><input id="recEndDate" type="date"></div>
     <div class="modal-actions">
@@ -1038,7 +1061,7 @@ header.top .icon-btn{padding:5px;}
     </div>
     <div class="field">
       <label>السنة</label>
-      <input type="number" id="reportYear" placeholder="2026">
+      <input type="text" inputmode="decimal" autocomplete="off" id="reportYear" placeholder="2026">
     </div>
     <button class="primary-btn" style="margin-bottom:16px;" onclick="generateReport()">عرض التقرير</button>
     <div id="reportResults"></div>
@@ -1155,8 +1178,8 @@ header.top .icon-btn{padding:5px;}
   <div class="modal-sheet">
     <div class="modal-head"><h2 id="savingsGoalModalTitle">🎯 هدف ادخار</h2><button class="icon-btn" onclick="closeModal('savingsGoalModalOverlay')">✕</button></div>
     <div class="field"><label>اسم الهدف</label><input id="goalName" type="text" placeholder="مثال: لابتوب جديد"></div>
-    <div class="field"><label>المبلغ المستهدف</label><input id="goalTarget" type="number" inputmode="decimal" placeholder="1000"></div>
-    <div class="field"><label>المدخر حالياً</label><input id="goalCurrent" type="number" inputmode="decimal" placeholder="0"></div>
+    <div class="field"><label>المبلغ المستهدف</label><input id="goalTarget" type="text" inputmode="decimal" autocomplete="off" placeholder="1000"></div>
+    <div class="field"><label>المدخر حالياً</label><input id="goalCurrent" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></div>
     <div class="field"><label>العملة</label><select id="goalCurrency"><option value="USD">دولار ($)</option><option value="SYP">ليرة سورية (ل.س)</option><option value="TRY">ليرة تركية (₺)</option></select></div>
     <div class="field"><label>تاريخ الهدف (اختياري)</label><input id="goalDate" type="date"></div>
     <div class="modal-actions"><button class="secondary-btn" onclick="closeModal('savingsGoalModalOverlay')">إلغاء</button><button class="primary-btn" onclick="saveSavingsGoal_()">حفظ الهدف</button></div>
@@ -2084,7 +2107,7 @@ function renderBudgetManagerRows(){
   const wrap=document.getElementById('budgetCategoryRows');
   const cats=categoryNames_().filter(c=>c!=='تحويل عملة');
   const byCat={};budgetData.forEach(b=>{if(b.category)byCat[b.category]=b;});
-  wrap.innerHTML=cats.map(c=>{const b=byCat[c];return `<div class="field" style="margin-bottom:9px;"><label>${escapeHtml(c)}</label><div style="display:flex;gap:8px;"><input class="budget-cat-input" data-category="${escapeHtml(c)}" type="number" inputmode="decimal" placeholder="بدون ميزانية" value="${b?b.amount:''}" style="flex:1;"><select class="budget-cat-currency" data-category="${escapeHtml(c)}" style="width:105px;"><option value="USD" ${!b||b.currency==='USD'?'selected':''}>$ USD</option><option value="SYP" ${b&&b.currency==='SYP'?'selected':''}>ل.س</option><option value="TRY" ${b&&b.currency==='TRY'?'selected':''}>₺ TRY</option></select></div></div>`;}).join('');
+  wrap.innerHTML=cats.map(c=>{const b=byCat[c];return `<div class="field" style="margin-bottom:9px;"><label>${escapeHtml(c)}</label><div style="display:flex;gap:8px;"><input class="budget-cat-input" data-category="${escapeHtml(c)}" type="text" inputmode="decimal" autocomplete="off" placeholder="بدون ميزانية" value="${b?b.amount:''}" style="flex:1;"><select class="budget-cat-currency" data-category="${escapeHtml(c)}" style="width:105px;"><option value="USD" ${!b||b.currency==='USD'?'selected':''}>$ USD</option><option value="SYP" ${b&&b.currency==='SYP'?'selected':''}>ل.س</option><option value="TRY" ${b&&b.currency==='TRY'?'selected':''}>₺ TRY</option></select></div></div>`;}).join('');
 }
 async function loadBudgetMonth(month){
   if(!month)return;
@@ -2791,8 +2814,8 @@ function ensureSettingsModal_(){
         <div class="set-email" id="settingsEmail"></div>
       </div>
       <div class="set-card">
-        <div class="set-row"><span class="cc">ل.س</span><span class="set-lbl"><b>سعر الصرف السوري</b><small>1 دولار ($) =</small></span><input id="settingsRateSyp" type="number" step="any" inputmode="decimal" placeholder="138"></div>
-        <div class="set-row"><span class="cc">₺</span><span class="set-lbl"><b>سعر الصرف التركي</b><small>1 دولار ($) =</small></span><input id="settingsRateTry" type="number" step="any" inputmode="decimal" placeholder="49"></div>
+        <div class="set-row"><span class="cc">ل.س</span><span class="set-lbl"><b>سعر الصرف السوري</b><small>1 دولار ($) =</small></span><input id="settingsRateSyp" type="text" inputmode="decimal" autocomplete="off" placeholder="138"></div>
+        <div class="set-row"><span class="cc">₺</span><span class="set-lbl"><b>سعر الصرف التركي</b><small>1 دولار ($) =</small></span><input id="settingsRateTry" type="text" inputmode="decimal" autocomplete="off" placeholder="49"></div>
       </div>
       <button class="set-card set-link" onclick="openCategoryManager()"><span class="set-ic">🏷</span><span><b>إدارة الفئات</b><small>تعديل وإضافة بنود المصاريف</small></span><i>‹</i></button>
       <button class="primary-btn" style="max-width:none;" onclick="saveFirebaseSettings_()">حفظ الإعدادات</button>
@@ -3742,7 +3765,7 @@ function renderSpendingPatternAnalysis_(cur){
   window.renderBudgetManagerRows=function(){var w=document.getElementById('budgetCategoryRows');
     var cats=categoryNames_().filter(function(c){return c!=='تحويل عملة';});var by={};budgetData.forEach(function(b){if(b.category)by[b.category]=b;});
     w.innerHTML=cats.map(function(c){var b=by[c],e=escapeHtml(c);var cu=b?b.currency:'USD';
-      return '<div class="bud-row"><div class="tx-badge expense">'+ic(c)+'</div><span class="bud-name">'+e+'</span><input class="budget-cat-input" data-category="'+e+'" type="number" inputmode="decimal" placeholder="0.00" value="'+(b?b.amount:'')+'"><select class="budget-cat-currency" data-category="'+e+'"><option value="USD"'+(cu==='USD'?' selected':'')+'>$</option><option value="SYP"'+(cu==='SYP'?' selected':'')+'>ل.س</option><option value="TRY"'+(cu==='TRY'?' selected':'')+'>₺</option></select></div>';}).join('');};
+      return '<div class="bud-row"><div class="tx-badge expense">'+ic(c)+'</div><span class="bud-name">'+e+'</span><input class="budget-cat-input" data-category="'+e+'" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+(b?b.amount:'')+'"><select class="budget-cat-currency" data-category="'+e+'"><option value="USD"'+(cu==='USD'?' selected':'')+'>$</option><option value="SYP"'+(cu==='SYP'?' selected':'')+'>ل.س</option><option value="TRY"'+(cu==='TRY'?' selected':'')+'>₺</option></select></div>';}).join('');};
 })();
 </script>
 <script>
@@ -3758,6 +3781,71 @@ function renderSpendingPatternAnalysis_(cur){
   if(mq){var f=function(){if(mode()==='auto')apply();};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f);}
   apply();
   var os=window.openSettings;if(typeof os==='function'){window.openSettings=function(){var r=os.apply(this,arguments);apply();return r;};}
+})();
+</script>
+<script>
+/* V4.0 batch 6: back navigation, scroll lock, latin digits */
+(function(){
+  function vis(id){var e=document.getElementById(id);return !!e&&!e.classList.contains('hidden');}
+  function toolsStep_(){
+    var f=document.getElementById('analyticsFeaturePanel');
+    if(f&&f.classList.contains('active')){openAnalyticsFeature_('home');return true;}
+    if(typeof toolsPanel_!=='undefined'&&toolsPanel_!=='home'){openToolsPanel_('home');return true;}
+    return false;
+  }
+  var orig=window.closeTopModalFromBack_;
+  window.closeTopModalFromBack_=function(){
+    var ex=document.getElementById('exitDialog');
+    if(ex&&!ex.classList.contains('hidden')){ex.classList.add('hidden');return true;}
+    if(vis('txSheetOverlay')){document.getElementById('txSheetOverlay').classList.add('hidden');return true;}
+    if(!vis('savingsGoalModalOverlay')&&vis('toolsModalOverlay')&&toolsStep_())return true;
+    if(orig())return true;
+    if(window.__exiting)return false;
+    if(ex)ex.classList.remove('hidden');
+    return true;
+  };
+  function exitApp_(){
+    try{var C=window.Capacitor;if(C&&C.Plugins&&C.Plugins.App&&C.Plugins.App.exitApp){C.Plugins.App.exitApp();return;}}catch(e){}
+    try{if(window.median&&median.app&&typeof median.app.exit==='function'){median.app.exit();return;}}catch(e){}
+    window.__exiting=true;var ps=history.pushState;history.pushState=function(){};
+    setTimeout(function(){history.pushState=ps;window.__exiting=false;},1500);
+    try{history.go(-history.length);}catch(e){}
+    try{window.close();}catch(e){}
+  }
+  document.getElementById('exitYes').addEventListener('click',exitApp_);
+  document.getElementById('exitNo').addEventListener('click',function(){document.getElementById('exitDialog').classList.add('hidden');});
+  document.getElementById('exitDialog').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
+  /* scroll lock while any overlay is open */
+  var upd=function(){document.body.classList.toggle('modal-open',!!document.querySelector('.modal-overlay:not(.hidden)'));};
+  new MutationObserver(upd).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});upd();
+  /* latin digits only in numeric fields */
+  function norm(v){v=v.replace(/[\u0660-\u0669]/g,function(d){return d.charCodeAt(0)-1632;}).replace(/[\u06F0-\u06F9]/g,function(d){return d.charCodeAt(0)-1776;}).replace(/[\u066B\u066C,\u060C]/g,'.').replace(/[^0-9.]/g,'');
+    var a=v.split('.');if(a.length>2)v=a.shift()+'.'+a.join('');return v;}
+  document.addEventListener('input',function(e){var t=e.target;if(t&&t.tagName==='INPUT'&&t.getAttribute('inputmode')==='decimal'){var n=norm(t.value);if(n!==t.value)t.value=n;}},true);
+})();
+</script>
+<script>
+/* V4.0 batch 6b: back/scroll refinements */
+(function(){
+  var $=function(i){return document.getElementById(i);};
+  var upd=function(){document.documentElement.classList.toggle('modal-open',!!document.querySelector('.modal-overlay:not(.hidden)'));};
+  new MutationObserver(upd).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});upd();
+  var known=['savingsGoalModalOverlay','toolsModalOverlay','categoryManagerOverlay','firebaseSettingsOverlay','budgetModalOverlay','reportModalOverlay','filterModalOverlay','addModalOverlay','recurringModalOverlay','txSheetOverlay'];
+  var o2=window.closeTopModalFromBack_;
+  window.closeTopModalFromBack_=function(){
+    var ex=$('exitDialog');
+    if(ex&&ex.classList.contains('hidden')){
+      var unk=[].filter.call(document.querySelectorAll('.modal-overlay:not(.hidden)'),function(e){return known.indexOf(e.id)<0;});
+      if(unk.length){unk[unk.length-1].classList.add('hidden');return true;}
+    }
+    return o2();
+  };
+  var cd=window.catDone_;
+  if(typeof cd==='function'){window.catDone_=function(){
+    var back=(typeof categoryOpenedFromSettings_!=='undefined')&&categoryOpenedFromSettings_;
+    cd.apply(this,arguments);
+    if(back){categoryOpenedFromSettings_=false;var st=$('firebaseSettingsOverlay');if(st)st.classList.remove('hidden');}
+  };}
 })();
 </script>
 </body>
