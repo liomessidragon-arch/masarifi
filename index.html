@@ -3864,14 +3864,25 @@ function renderSpendingPatternAnalysis_(cur){
   var LN=P.LocalNotifications;
   function remOn(){try{return localStorage.getItem('masarifi_reminder')==='1';}catch(e){return false;}}
   function syncRem(){document.querySelectorAll('#remPills button').forEach(function(b){b.classList.toggle('on',(b.dataset.r==='1')===remOn());});}
+  async function schedule_(){
+    try{await LN.createChannel({id:'reminders',name:'التذكير اليومي',description:'تذكير بتسجيل المصاريف',importance:4,visibility:1,vibration:true});}catch(e){}
+    await LN.cancel({notifications:[{id:1}]});
+    await LN.schedule({notifications:[{id:1,title:'مصاريفي',body:'هل سجّلت مصاريف اليوم؟',channelId:'reminders',smallIcon:'ic_stat_masarifi',iconColor:'#1F7A58',schedule:{on:{hour:21,minute:0},allowWhileIdle:true}}]});
+  }
+  async function exactOk_(){
+    try{var r=await LN.checkExactNotificationSetting();
+      if(r&&r.exact_alarm==='denied'){showToast('اسمح بالمنبّهات الدقيقة ليصل التذكير بوقته');await LN.changeExactNotificationSetting();return false;}
+    }catch(e){}
+    return true;
+  }
   async function setRem(on){
     if(!LN){showToast('الإشعارات غير متاحة');return;}
     try{
       if(on){
         var perm=await LN.requestPermissions();
         if(perm.display!=='granted'){showToast('لم يتم السماح بالإشعارات');return;}
-        await LN.cancel({notifications:[{id:1}]});
-        await LN.schedule({notifications:[{id:1,title:'مصاريفي',body:'هل سجّلت مصاريف اليوم؟',schedule:{on:{hour:21,minute:0},allowWhileIdle:true}}]});
+        await exactOk_();
+        await schedule_();
         localStorage.setItem('masarifi_reminder','1');showToast('تم تفعيل التذكير اليومي');
       }else{
         await LN.cancel({notifications:[{id:1}]});localStorage.setItem('masarifi_reminder','0');showToast('تم إيقاف التذكير');
@@ -3879,10 +3890,12 @@ function renderSpendingPatternAnalysis_(cur){
     }catch(e){showToast('تعذر ضبط التذكير');}
     syncRem();
   }
+  /* re-arm the reminder on every launch (survives updates, reboots, OEM cleanups) */
+  if(LN&&remOn()){LN.checkPermissions().then(function(p){if(p.display==='granted')return schedule_();}).catch(function(){});}
   function addCard(){
     if(document.getElementById('remCard'))return;var a=document.getElementById('themePills');if(!a)return;var host=a.closest('.set-card');if(!host)return;
     var d=document.createElement('div');d.className='set-card';d.id='remCard';
-    d.innerHTML='<div class="set-title">تذكير يومي لتسجيل المصاريف</div><div class="theme-seg" id="remPills"><button data-r="0">إيقاف</button><button data-r="1">تشغيل (9 مساءً)</button></div>';
+    d.innerHTML='<div class="set-title">تذكير يومي لتسجيل المصاريف</div><div class="theme-seg" id="remPills"><button data-r="0">إيقاف</button><button data-r="1">تشغيل (9 مساءً)</button></div><div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.8;">إذا تأخر التذكير: من إعدادات الجوال ← التطبيقات ← مصاريفي ← البطارية، اختر «بدون قيود».</div>';
     host.parentNode.insertBefore(d,host.nextSibling);
     d.addEventListener('click',function(e){var b=e.target.closest('button');if(b)setRem(b.dataset.r==='1');});syncRem();
   }

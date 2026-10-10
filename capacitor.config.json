@@ -3,8 +3,18 @@
   "appName": "مصاريفي",
   "webDir": "www",
   "backgroundColor": "#F8FAFC",
-  "server": { "androidScheme": "https" },
+  "server": {
+    "androidScheme": "https"
+  },
   "plugins": {
-    "SplashScreen": { "launchShowDuration": 0, "launchAutoHide": true, "backgroundColor": "#F8FAFC" }
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "launchAutoHide": true,
+      "backgroundColor": "#F8FAFC"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_masarifi",
+      "iconColor": "#1F7A58"
+    }
   }
 }
