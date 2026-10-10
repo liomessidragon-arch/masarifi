@@ -13,10 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Arrange files
+        run: |
+          mkdir -p www assets notif
+          cp index.html www/index.html
+          cp icon-only.png icon-foreground.png icon-background.png splash.png splash-dark.png assets/
+          cp ic_stat_*.png notif/
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -28,8 +34,13 @@ jobs:
         run: npx capacitor-assets generate --android
       - name: Sync
         run: npx cap sync android
-      - name: Notification permission
-        run: sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/></manifest>#' android/app/src/main/AndroidManifest.xml
+      - name: Notification icon and permissions
+        run: |
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p android/app/src/main/res/drawable-$d
+            cp notif/ic_stat_$d.png android/app/src/main/res/drawable-$d/ic_stat_masarifi.png
+          done
+          sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/><uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/></manifest>#' android/app/src/main/AndroidManifest.xml
       - name: Build debug APK
         if: env.KEYSTORE_BASE64 == ''
         working-directory: android
