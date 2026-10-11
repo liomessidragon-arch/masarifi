@@ -2380,6 +2380,8 @@ function normalizeFirebaseTx_(id,d){
     owner:firebaseUser ? firebaseUser.uid : '',
     toCurrency:x.toCurrency||'',
     toAmount:(x.toAmount===null||x.toAmount===undefined||x.toAmount==='')?null:Number(x.toAmount)||0,
+    goalId:x.goalId?String(x.goalId):'',
+    goalDelta:Number(x.goalDelta)||0,
     createdAt:x.createdAt || 0
   };
 }
@@ -4152,7 +4154,7 @@ function renderSpendingPatternAnalysis_(cur){
   /* ---------- about line in settings ---------- */
   function about(){
     var sh=document.querySelector('#firebaseSettingsOverlay .modal-sheet,#firebaseSettingsOverlay .modal-card');
-    if(sh&&!sh.querySelector('.about-line'))sh.insertAdjacentHTML('beforeend','<div class="about-line">مصاريفي · من تطوير abo-qais · v4.0</div>');
+    var old=sh&&sh.querySelector('.about-line');if(old)old.remove();
   }
   var os=window.openSettings;
   if(typeof os==='function')window.openSettings=function(){var r=os.apply(this,arguments);setTimeout(about,0);return r;};
