@@ -4322,6 +4322,7 @@ function renderSpendingPatternAnalysis_(cur){
       if(b.id==='lkForgot'){forgot();return;}
       var k=b.getAttribute('data-k');if(k==null)return;
       if(k==='b'){buf=buf.slice(0,-1);dots();return;}
+      if(k==='f'){tryBio();return;}
       if(k==='x'){closeLock();return;}
       press(k);});
   }
@@ -4335,9 +4336,9 @@ function renderSpendingPatternAnalysis_(cur){
     else if(mode==='verify')setText('أدخل الرمز الحالي','');
     else if(mode==='set1')setText('اختر رمزاً من 4 أرقام','');
     else setText('أعد إدخال الرمز','');
-    buf='';dots();
+    buf='';dots();syncBioBtn();
   }
-  function openLock(m,cb){buildLock();mode=m;tmp='';onDone=cb||null;renderMode();ov.classList.remove('hidden');}
+  function openLock(m,cb){buildLock();mode=m;tmp='';onDone=cb||null;renderMode();ov.classList.remove('hidden');if(m==='unlock')setTimeout(tryBio,350);}
   function closeLock(){if(!ov)return;ov.classList.add('hidden');buf='';tmp='';document.documentElement.removeAttribute('data-locked');refreshCard();}
   function shake(msg){var d=$('lkDots');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');$('lkSub').textContent=msg||'';buf='';dots();}
   async function press(k){
@@ -4358,7 +4359,7 @@ function renderSpendingPatternAnalysis_(cur){
   async function forgot(){
     var ok=await dlgConfirm_('سيتم تسجيل الخروج من حسابك وإزالة القفل. بياناتك محفوظة بحسابك ولن تضيع.',{title:'نسيت الرمز؟',ok:'تسجيل الخروج',danger:true});
     if(!ok)return;
-    lsDel('masarifi_lock');
+    lsDel('masarifi_lock');lsDel('masarifi_lock_bio');
     try{await firebaseAuth.signOut();}catch(e){}
     location.reload();
   }
@@ -4377,11 +4378,35 @@ function renderSpendingPatternAnalysis_(cur){
   });
   if(getLock()){document.documentElement.setAttribute('data-locked','1');openLock('unlock');}
 
+  /* ---------- biometric (optional, needs native plugin) ---------- */
+  var NB=P.NativeBiometric;
+  function bioOn(){return lsGet('masarifi_lock_bio')==='1'&&!!getLock();}
+  async function bioAvail(){
+    if(!native||!NB||!NB.isAvailable)return false;
+    try{var r=await NB.isAvailable({useFallback:false});return !!(r&&r.isAvailable);}catch(e){return false;}
+  }
+  async function bioVerify(){
+    try{await NB.verifyIdentity({reason:'فتح مصاريفي',title:'مصاريفي',subtitle:'استخدم بصمتك للدخول',description:'',useFallback:false,maxAttempts:3});return true;}
+    catch(e){return false;}
+  }
+  var bioBusy=false;
+  async function tryBio(){
+    if(bioBusy||!bioOn()||mode!=='unlock'||!ov||ov.classList.contains('hidden'))return;
+    bioBusy=true;var ok=await bioVerify();bioBusy=false;
+    if(ok&&mode==='unlock')closeLock();
+  }
+  var lkBio=null;
+  function syncBioBtn(){
+    if(!ov)return;var b=$('lkCancel');
+    if(mode==='unlock'&&bioOn()){b.style.visibility='visible';b.setAttribute('data-k','f');b.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 11v4c0 2-.5 3.5-1.5 5M8 14c0 2.5-.3 4-1 5.5M16 12v3c0 2 .3 3.5 1 5M5 10.5a7 7 0 0 1 14 0M8.5 9a4 4 0 0 1 7 0"/></svg>';b.style.color='var(--emerald)';}
+    else{b.setAttribute('data-k','x');b.textContent='إلغاء';b.style.color='';}
+  }
   /* ---------- settings cards ---------- */
   function refreshCard(){
     var l=!!getLock();
     document.querySelectorAll('#lockPills button').forEach(function(b){b.classList.toggle('on',(b.dataset.l==='1')===l);});
     var ch=$('lockChange');if(ch)ch.style.display=l?'':'none';
+    var br=$('bioRow');if(br){bioAvail().then(function(a){br.style.display=(l&&a)?'':'none';});document.querySelectorAll('#bioPills button').forEach(function(b){b.classList.toggle('on',(b.dataset.b==='1')===bioOn());});}
     document.querySelectorAll('#weekPills button').forEach(function(b){b.classList.toggle('on',(b.dataset.w==='1')===weeklyOn());});
   }
   function addCards(){
@@ -4391,7 +4416,7 @@ function renderSpendingPatternAnalysis_(cur){
       var d=document.createElement('div');d.className='set-card';d.id='notifCard2';
       d.innerHTML='<div class="set-title">ملخص أسبوعي (الأحد 10 صباحاً)</div><div class="theme-seg" id="weekPills"><button data-w="0">إيقاف</button><button data-w="1">تشغيل</button></div>'+
         '<button type="button" class="mini-btn" id="notifTest" style="margin-top:10px;">🔔 اختبار الإشعار (بعد 10 ثوانٍ)</button>'+
-        '<div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.9;">إذا لم تصل الإشعارات على جوال Infinix/XOS: فعّل «التشغيل التلقائي» لمصاريفي من إدارة الهاتف، وقفل التطبيق في قائمة التطبيقات الأخيرة، واسمح له بالعمل في الخلفية من إدارة الطاقة.</div>';
+        '<div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.9;">إذا لم تصل الإشعارات على جوالك: فعّل «التشغيل التلقائي» لمصاريفي من إدارة الهاتف، وقفل التطبيق في قائمة التطبيقات الأخيرة، واسمح له بالعمل في الخلفية من إدارة الطاقة.</div>';
       anchor.parentNode.insertBefore(d,anchor.nextSibling);
       d.addEventListener('click',async function(e){
         var b=e.target.closest('button');if(!b)return;
@@ -4409,13 +4434,18 @@ function renderSpendingPatternAnalysis_(cur){
     }
     if(!$('lockCard')){
       var m=document.createElement('div');m.className='set-card';m.id='lockCard';
-      m.innerHTML='<div class="set-title">قفل التطبيق برمز</div><div class="theme-seg" id="lockPills"><button data-l="0">إيقاف</button><button data-l="1">تشغيل</button></div><button type="button" class="mini-btn" id="lockChange" style="margin-top:10px;">تغيير الرمز</button>';
+      m.innerHTML='<div class="set-title">قفل التطبيق برمز</div><div class="theme-seg" id="lockPills"><button data-l="0">إيقاف</button><button data-l="1">تشغيل</button></div><button type="button" class="mini-btn" id="lockChange" style="margin-top:10px;">تغيير الرمز</button><div id="bioRow" style="display:none;margin-top:14px;"><div class="set-title">فتح بالبصمة (الرمز يبقى احتياطياً)</div><div class="theme-seg" id="bioPills"><button data-b="0">إيقاف</button><button data-b="1">تشغيل</button></div></div>';
       var after=$('notifCard2')||anchor;after.parentNode.insertBefore(m,after.nextSibling);
       m.addEventListener('click',function(e){
         var b=e.target.closest('button');if(!b)return;
+        if(b.dataset.b!=null){
+          if(b.dataset.b==='1'){bioVerify().then(function(ok){if(ok){lsSet('masarifi_lock_bio','1');showToast('تم تفعيل الفتح بالبصمة');}else showToast('لم يتم التحقق من البصمة');refreshCard();});}
+          else{lsDel('masarifi_lock_bio');showToast('تم إيقاف الفتح بالبصمة');refreshCard();}
+          return;
+        }
         if(b.id==='lockChange'){closeSettingsFor_();openLock('verify',function(){openLock('set1');});return;}
         if(b.dataset.l==='1'){if(!getLock()){closeSettingsFor_();openLock('set1');}}
-        else if(b.dataset.l==='0'){if(getLock()){closeSettingsFor_();openLock('verify',function(){lsDel('masarifi_lock');closeLock();showToast('تم إيقاف القفل');});}}
+        else if(b.dataset.l==='0'){if(getLock()){closeSettingsFor_();openLock('verify',function(){lsDel('masarifi_lock');lsDel('masarifi_lock_bio');closeLock();showToast('تم إيقاف القفل');});}}
       });
     }
     refreshCard();

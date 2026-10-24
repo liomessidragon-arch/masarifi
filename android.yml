@@ -28,6 +28,8 @@ jobs:
           java-version: 21
       - name: Install
         run: npm install
+      - name: Biometric plugin (optional)
+        run: npm install @capgo/capacitor-native-biometric@7 || echo "biometric plugin not installed; app will use PIN only"
       - name: Add Android platform
         run: npx cap add android
       - name: Generate icons and splash
@@ -40,7 +42,7 @@ jobs:
             mkdir -p android/app/src/main/res/drawable-$d
             cp notif/ic_stat_$d.png android/app/src/main/res/drawable-$d/ic_stat_masarifi.png
           done
-          sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/></manifest>#' android/app/src/main/AndroidManifest.xml
+          sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/><uses-permission android:name="android.permission.USE_BIOMETRIC"/></manifest>#' android/app/src/main/AndroidManifest.xml
           # keyboard: pan the window instead of resizing the page (fixes keyboard language switching on some phones)
           sed -i 's# android:windowSoftInputMode="[^"]*"##' android/app/src/main/AndroidManifest.xml
           sed -i 's#<activity #<activity android:windowSoftInputMode="adjustPan" #' android/app/src/main/AndroidManifest.xml
