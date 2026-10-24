@@ -40,7 +40,11 @@ jobs:
             mkdir -p android/app/src/main/res/drawable-$d
             cp notif/ic_stat_$d.png android/app/src/main/res/drawable-$d/ic_stat_masarifi.png
           done
-          sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/><uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/></manifest>#' android/app/src/main/AndroidManifest.xml
+          sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/></manifest>#' android/app/src/main/AndroidManifest.xml
+          # keyboard: pan the window instead of resizing the page (fixes keyboard language switching on some phones)
+          sed -i 's# android:windowSoftInputMode="[^"]*"##' android/app/src/main/AndroidManifest.xml
+          sed -i 's#<activity #<activity android:windowSoftInputMode="adjustPan" #' android/app/src/main/AndroidManifest.xml
+          grep -c 'windowSoftInputMode' android/app/src/main/AndroidManifest.xml || true
       - name: Build debug APK
         if: env.KEYSTORE_BASE64 == ''
         working-directory: android
