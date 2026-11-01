@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl">
 <head>
 <script>
 // Early boot safety: must run BEFORE Firebase SDKs initialize.
@@ -882,6 +882,8 @@ html[data-locked="1"] #app,html[data-locked="1"] #setupScreen{visibility:hidden;
 .comp-date{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted);}
 .comp-date input[type=date]{min-height:44px;border-radius:12px;background:var(--paper-2);font-size:13px;font-weight:700;width:100%;min-width:0;}
 #compRange.hidden{display:none;}
+.pdf-opt{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:13.5px;font-weight:700;color:var(--ink);}
+.pdf-opt input{width:20px;height:20px;accent-color:var(--emerald);}
 </style>
 </head>
 <body>
@@ -1244,7 +1246,8 @@ html[data-locked="1"] #app,html[data-locked="1"] #setupScreen{visibility:hidden;
           <label class="comp-date"><span>إلى</span><input type="date" id="compTo" onchange="renderComprehensiveReport_()"></label>
         </div>
         <div id="comprehensiveReportResults" style="margin-top:10px"></div>
-        <button class="secondary-btn" id="compPdfBtn" style="width:100%;margin-top:12px;" onclick="exportComprehensivePdf_()">📄 تصدير PDF (مع جدول العمليات)</button>
+        <label class="pdf-opt"><input type="checkbox" id="compPdfTable" checked><span>تضمين جدول العمليات في الملف</span></label>
+        <button class="secondary-btn" id="compPdfBtn" style="width:100%;margin-top:8px;" onclick="exportComprehensivePdf_()">📄 تصدير PDF</button>
       </div>
     </div>
 
@@ -4226,9 +4229,9 @@ function renderSpendingPatternAnalysis_(cur){
   /* ---------- keyboard language hint ---------- */
   document.addEventListener('focusin',function(e){
     var t=e.target;if(!t||!t.tagName)return;
-    var ok=t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&/^(text|search)$/.test(t.type||'text')&&!t.getAttribute('inputmode'));
-    if(ok&&!t.hasAttribute('lang'))t.setAttribute('lang','ar');
+    if((t.tagName==='TEXTAREA'||t.tagName==='INPUT')&&t.getAttribute('lang')!=='')t.setAttribute('lang','');
   },true);
+  try{document.querySelectorAll('input,textarea').forEach(function(e){e.setAttribute('lang','');});}catch(e){}
 
   /* ---------- notifications (native) ---------- */
   var origSend=window.sendNativeNotification_,origEnable=window.enableNotifications_,nid=1000;
@@ -4494,6 +4497,7 @@ function renderSpendingPatternAnalysis_(cur){
   }
   if(native&&window.jspdf&&jspdf.jsPDF){jspdf.jsPDF.prototype.save=function(n){return savePdf_(this,n||'masarifi.pdf');};}
 
+  try{if(localStorage.getItem('masarifi_pdf_table')==='0'&&$('compPdfTable'))$('compPdfTable').checked=false;}catch(e){}
   window.compPeriodChanged_=function(){
     var v=$('comprehensiveReportPeriod').value,box=$('compRange');
     if(box)box.classList.toggle('hidden',v!=='custom');
@@ -4510,6 +4514,8 @@ function renderSpendingPatternAnalysis_(cur){
     var d=window.lastComprehensive_;
     if(!d){showToast('لا توجد بيانات للتقرير بعد');return;}
     if(!window.jspdf||!jspdf.jsPDF){showToast('مكتبة PDF لم تُحمّل، أعد المحاولة');return;}
+    var withTable=$('compPdfTable')?$('compPdfTable').checked:true;
+    try{localStorage.setItem('masarifi_pdf_table',withTable?'1':'0');}catch(e){}
     showToast('جارٍ تجهيز ملف PDF…');
     try{
       if(document.fonts&&document.fonts.ready)await document.fonts.ready;
@@ -4561,6 +4567,7 @@ function renderSpendingPatternAnalysis_(cur){
         y+=54;
       });
       /* ---- transactions table ---- */
+      if(withTable){
       var txs=(allTransactions||[]).filter(function(t){return t.date&&(!d.fs||t.date>=d.fs)&&t.date<=d.ts;});
       txs.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||((a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():Number(a.createdAt)||0)-(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():Number(b.createdAt)||0));});
       var total=txs.length,CAP=600,cut=total>CAP;if(cut)txs=txs.slice(-CAP);
@@ -4590,6 +4597,7 @@ function renderSpendingPatternAnalysis_(cur){
         y+=RH;
       });
       if(cut){cur.fillStyle='#6B6F7A';cur.font='500 18px '+FF;cur.textAlign='right';cur.fillText('تم عرض آخر '+CAP+' عملية من أصل '+total+'.',R,Math.min(y+30,H-60));}
+      }
       /* ---- footers ---- */
       pages.forEach(function(p,i){
         p.x.fillStyle='#8A8E98';p.x.font='400 16px '+FF;p.x.textAlign='right';
