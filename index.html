@@ -15,7 +15,7 @@ window.__masarifiFinishBoot = function(){
   clearTimeout(window.__masarifiBootTimer);
 };
 </script>
-<meta name="masarifi-version" content="4.0-redesign-v8">
+<meta name="masarifi-version" content="4.0-redesign-v10">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>مصاريفي</title>
@@ -877,6 +877,11 @@ html[data-locked="1"] #app,html[data-locked="1"] #setupScreen{visibility:hidden;
 .lk-pad .lk-aux{background:transparent;box-shadow:none;font-size:14px;color:var(--muted);}
 .lk-link{background:none;border:0;color:var(--emerald);font-weight:700;font-family:inherit;font-size:14px;padding:8px;}
 #appDialogOverlay{z-index:10100;}
+
+/* ===== V4.0 batch 10 ===== */
+.comp-date{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted);}
+.comp-date input[type=date]{min-height:44px;border-radius:12px;background:var(--paper-2);font-size:13px;font-weight:700;width:100%;min-width:0;}
+#compRange.hidden{display:none;}
 </style>
 </head>
 <body>
@@ -1220,12 +1225,13 @@ html[data-locked="1"] #app,html[data-locked="1"] #setupScreen{visibility:hidden;
       <div class="tool-card">
         <div class="tool-card-title">📋 التقرير المالي الشامل</div>
         <div class="tool-select-row">
-          <select id="comprehensiveReportPeriod" onchange="renderComprehensiveReport_()">
+          <select id="comprehensiveReportPeriod" onchange="compPeriodChanged_()">
             <option value="month">هذا الشهر</option>
             <option value="3m">آخر 3 أشهر</option>
             <option value="6m">آخر 6 أشهر</option>
             <option value="year">هذه السنة</option>
             <option value="all">كل الوقت</option>
+            <option value="custom">📅 فترة محددة…</option>
           </select>
           <select id="comprehensiveReportCurrency" onchange="renderComprehensiveReport_()">
             <option value="USD">$ USD</option>
@@ -1233,7 +1239,12 @@ html[data-locked="1"] #app,html[data-locked="1"] #setupScreen{visibility:hidden;
             <option value="TRY">₺ TRY</option>
           </select>
         </div>
+        <div id="compRange" class="tool-select-row hidden" style="margin-top:8px;">
+          <label class="comp-date"><span>من</span><input type="date" id="compFrom" onchange="renderComprehensiveReport_()"></label>
+          <label class="comp-date"><span>إلى</span><input type="date" id="compTo" onchange="renderComprehensiveReport_()"></label>
+        </div>
         <div id="comprehensiveReportResults" style="margin-top:10px"></div>
+        <button class="secondary-btn" id="compPdfBtn" style="width:100%;margin-top:12px;" onclick="exportComprehensivePdf_()">📄 تصدير PDF (مع جدول العمليات)</button>
       </div>
     </div>
 
@@ -3477,6 +3488,11 @@ function comprehensivePeriodDates_(){
   else if(period==='6m') from=new Date(now.getFullYear(),now.getMonth()-5,1,12);
   else if(period==='year') from=new Date(now.getFullYear(),0,1,12);
   else if(period==='all') from=null;
+  else if(period==='custom'){
+    const f=document.getElementById('compFrom')?.value, t=document.getElementById('compTo')?.value;
+    if(f) from=new Date(f+'T12:00:00');
+    if(t) to=new Date(t+'T12:00:00');
+  }
   return {from,to};
 }
 
@@ -3485,7 +3501,8 @@ function renderComprehensiveReport_(){
   const cur=document.getElementById('comprehensiveReportCurrency')?.value||'USD';
   const {from,to}=comprehensivePeriodDates_();
   const fs=from?dateToStr_(from):''; const ts=dateToStr_(to);
-  let income=0,expense=0,missing=false,txCount=0;
+  if(fs&&fs>ts){box.innerHTML='<div class="tool-empty">تاريخ البداية يجب أن يكون قبل تاريخ النهاية.</div>';window.lastComprehensive_=null;return;}
+  let income=0,expense=0,saving=0,missing=false,txCount=0;
   const catTotals={};
   allTransactions.forEach(t=>{
     if(!t.date || (fs&&t.date<fs) || t.date>ts)return;
@@ -3496,10 +3513,12 @@ function renderComprehensiveReport_(){
       const cat=t.category||'غير مصنف'; catTotals[cat]=(catTotals[cat]||0)+v;
     }else if(t.type==='دخل'){
       const v=toBudgetCurrency_(raw,t.currency,cur); if(v<=0&&raw>0&&t.currency!==cur)missing=true; income+=v;
+    }else if(t.type==='ادخار'){
+      const v=toBudgetCurrency_(raw,t.currency,cur); if(v<=0&&raw>0&&t.currency!==cur)missing=true; saving+=v;
     }
   });
-  const net=income-expense;
-  const savingsRate=income>0?(net/income*100):null;
+  const net=income-expense-saving;
+  const savingsRate=income>0?((income-expense)/income*100):null;
   const topCats=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const sym=CUR_SYMBOL[cur]||cur;
   const now=new Date(); now.setHours(12,0,0,0);
@@ -3533,17 +3552,19 @@ function renderComprehensiveReport_(){
   }
 
   const period=document.getElementById('comprehensiveReportPeriod')?.value||'month';
-  const labels={month:'هذا الشهر', '3m':'آخر 3 أشهر','6m':'آخر 6 أشهر',year:'هذه السنة',all:'كل الوقت'};
+  const labels={month:'هذا الشهر', '3m':'آخر 3 أشهر','6m':'آخر 6 أشهر',year:'هذه السنة',all:'كل الوقت',custom:'من '+fs+' إلى '+ts};
   const netClass=net>0?'income':net<0?'expense':'neutral';
   const topHtml=topCats.length?topCats.map((x,i)=>`<div class="rank-row"><div class="rank-num">${i+1}</div><div><div class="rank-name">${escapeHtml(x[0])}</div><div class="rank-sub">${expense>0?Math.round(x[1]/expense*100):0}% من إجمالي الصرف</div></div><div class="rank-value">${fmt(x[1])} ${sym}</div></div>`).join(''):'<div class="tool-empty">لا توجد مصاريف في الفترة.</div>';
   const trendNote=savingsRate===null?'لا يمكن حساب نسبة الادخار لعدم وجود دخل مسجل.':savingsRate>=20?'🟢 نسبة الادخار جيدة حالياً.':savingsRate>0?'🟡 يوجد فائض، لكن نسبة الادخار منخفضة.':'🔴 المصروف يساوي أو يتجاوز الدخل في الفترة.';
 
+  window.lastComprehensive_={label:labels[period],cur,sym,income,expense,saving,net,savingsRate,txCount,topCats,fs,ts};
   box.innerHTML=`<div class="tool-note" style="margin:0 0 8px">${labels[period]} · ${txCount} عملية</div>
     <div class="tool-grid">
       <div class="tool-stat"><span class="v income">${fmt(income)} ${sym}</span><span class="l">إجمالي الدخل</span></div>
       <div class="tool-stat"><span class="v expense">${fmt(expense)} ${sym}</span><span class="l">إجمالي المصروف</span></div>
       <div class="tool-stat"><span class="v ${netClass}">${fmt(net)} ${sym}</span><span class="l">صافي الفترة</span></div>
       <div class="tool-stat"><span class="v">${savingsRate===null?'—':fmt(savingsRate)+'%'}</span><span class="l">نسبة الادخار</span></div>
+      ${saving>0?`<div class="tool-stat"><span class="v" style="color:var(--blue-ink)">${fmt(saving)} ${sym}</span><span class="l">المبلغ المدخر</span></div>`:''}
       ${budgetHtml}
       <div class="tool-stat"><span class="v">${fmt(forecast)} ${sym}</span><span class="l">توقع صرف نهاية الشهر</span></div>
     </div>
@@ -4453,6 +4474,134 @@ function renderSpendingPatternAnalysis_(cur){
   function closeSettingsFor_(){/* the lock overlay sits above settings; nothing to close */}
   var os=window.openSettings;
   if(typeof os==='function')window.openSettings=function(){var r=os.apply(this,arguments);setTimeout(addCards,0);return r;};
+})();
+</script>
+
+<script>
+/* V4.0 batch 10: custom date range + PDF for the comprehensive report */
+(function(){
+  var $=function(i){return document.getElementById(i);};
+  var C=window.Capacitor,native=!!(C&&C.isNativePlatform&&C.isNativePlatform()),P=(C&&C.Plugins)||{};
+
+  function savePdf_(pdf,name){
+    if(native&&P.Filesystem&&P.Share){
+      var uri=pdf.output('datauristring'),b64=String(uri).split('base64,')[1];
+      return P.Filesystem.writeFile({path:name,data:b64,directory:'CACHE'})
+        .then(function(r){return P.Share.share({title:name,url:r.uri,dialogTitle:'حفظ أو مشاركة التقرير'});})
+        .catch(function(e){if(!/cancel/i.test(String((e&&e.message)||e)))showToast('تعذر حفظ الملف');});
+    }
+    pdf.save(name);
+  }
+  if(native&&window.jspdf&&jspdf.jsPDF){jspdf.jsPDF.prototype.save=function(n){return savePdf_(this,n||'masarifi.pdf');};}
+
+  window.compPeriodChanged_=function(){
+    var v=$('comprehensiveReportPeriod').value,box=$('compRange');
+    if(box)box.classList.toggle('hidden',v!=='custom');
+    if(v==='custom'){
+      var now=new Date();
+      if(!$('compFrom').value)$('compFrom').value=dateToStr_(new Date(now.getFullYear(),now.getMonth(),1,12));
+      if(!$('compTo').value)$('compTo').value=todayStr();
+    }
+    renderComprehensiveReport_();
+  };
+
+  var TYPE_COL={'دخل':'#1F6E52','مصروف':'#A8452C','ادخار':'#2B5C9E','تحويل':'#6B6F7A'};
+  window.exportComprehensivePdf_=async function(){
+    var d=window.lastComprehensive_;
+    if(!d){showToast('لا توجد بيانات للتقرير بعد');return;}
+    if(!window.jspdf||!jspdf.jsPDF){showToast('مكتبة PDF لم تُحمّل، أعد المحاولة');return;}
+    showToast('جارٍ تجهيز ملف PDF…');
+    try{
+      if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+      var W=1240,H=1754,S=2,FF='Tajawal, Arial, sans-serif',R=W-70,L=70,TW=W-140;
+      var pages=[];
+      function newPage(){
+        var c=document.createElement('canvas');c.width=W*S;c.height=H*S;
+        var x=c.getContext('2d');x.scale(S,S);x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
+        x.direction='rtl';x.textBaseline='middle';pages.push({c:c,x:x});return x;
+      }
+      function rr(x,px,py,w,h,r,fill){x.fillStyle=fill;x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();x.fill();}
+      function fit(x,t,maxW){t=String(t==null?'':t);if(x.measureText(t).width<=maxW)return t;while(t.length>1&&x.measureText(t+'…').width>maxW)t=t.slice(0,-1);return t+'…';}
+      var sym=d.sym;
+      var LRI='\u2066',PDI='\u2069';
+      function isoDates(t){return String(t).replace(/\d{4}-\d{2}-\d{2}/g,function(m){return LRI+m+PDI;});}
+      function ltrText(ctx,t,px,py,align){var o=ctx.direction;ctx.direction='ltr';ctx.textAlign=align;ctx.fillText(t,px,py);ctx.direction=o;}
+      function sgn(v){return v<0?'-'+fmt(Math.abs(v)):fmt(v);}
+      /* ---- page 1: header + summary ---- */
+      var x=newPage();
+      x.fillStyle='#16213E';x.fillRect(0,0,W,180);
+      x.fillStyle='#ffffff';x.font='800 42px '+FF;x.textAlign='right';x.fillText('التقرير المالي الشامل',R,70);
+      x.fillStyle='#C9D3EA';x.font='500 23px '+FF;x.fillText(isoDates(d.label)+' · '+(CUR_LABEL[d.cur]||d.cur),R,125);
+      var stats=[
+        ['إجمالي الدخل',fmt(d.income)+' '+sym,'#1F6E52'],
+        ['إجمالي المصروف',fmt(d.expense)+' '+sym,'#A8452C'],
+        ['صافي الفترة',sgn(d.net)+' '+sym,d.net>=0?'#1F6E52':'#A8452C'],
+        ['نسبة الادخار',d.savingsRate===null?'—':sgn(d.savingsRate)+'%','#20261f'],
+        ['المبلغ المدخر',fmt(d.saving)+' '+sym,'#2B5C9E'],
+        ['عدد العمليات',String(d.txCount),'#20261f']
+      ];
+      var bw=(TW-30)/2,bh=112;
+      stats.forEach(function(s,i){
+        var col=i%2,row=Math.floor(i/2);
+        var bx=col===0?R-bw:L,by=215+row*(bh+20);
+        rr(x,bx,by,bw,bh,22,'#F4F2EC');
+        x.textAlign='right';x.fillStyle='#6B6F7A';x.font='600 20px '+FF;x.fillText(s[0],bx+bw-26,by+34);
+        x.fillStyle=s[2];x.font='800 34px '+FF;ltrText(x,s[1],bx+bw-26,by+76,'right');
+      });
+      var y=215+3*(bh+20)+30;
+      x.fillStyle='#20261f';x.font='800 28px '+FF;x.textAlign='right';x.fillText('🏆 أهم الفئات',R,y+16);
+      y+=52;
+      if(!d.topCats.length){x.fillStyle='#6B6F7A';x.font='500 20px '+FF;x.fillText('لا توجد مصاريف في الفترة.',R,y+20);y+=50;}
+      d.topCats.forEach(function(c){
+        var pct=d.expense>0?c[1]/d.expense:0;
+        x.fillStyle='#20261f';x.font='700 22px '+FF;x.textAlign='right';x.fillText(fit(x,c[0],300),R,y+22);
+        rr(x,L+250,y+12,520,16,8,'#E4F0EA');rr(x,L+250+520*(1-Math.min(1,pct)),y+12,Math.max(8,520*Math.min(1,pct)),16,8,'#1F6E52');
+        x.fillStyle='#6B6F7A';x.font='600 19px '+FF;x.textAlign='center';x.fillText(Math.round(pct*100)+'%',L+250+560+30,y+22);
+        x.fillStyle='#20261f';x.font='700 21px '+FF;ltrText(x,fmt(c[1])+' '+sym,L+8,y+22,'left');
+        y+=54;
+      });
+      /* ---- transactions table ---- */
+      var txs=(allTransactions||[]).filter(function(t){return t.date&&(!d.fs||t.date>=d.fs)&&t.date<=d.ts;});
+      txs.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||((a.createdAt&&a.createdAt.toMillis?a.createdAt.toMillis():Number(a.createdAt)||0)-(b.createdAt&&b.createdAt.toMillis?b.createdAt.toMillis():Number(b.createdAt)||0));});
+      var total=txs.length,CAP=600,cut=total>CAP;if(cut)txs=txs.slice(-CAP);
+      y+=24;
+      x.fillStyle='#20261f';x.font='800 28px '+FF;x.textAlign='right';x.fillText('📋 العمليات ('+total+')',R,y+16);y+=54;
+      var cx={date:R,type:R-160,cat:R-270,st:R-490};
+      function header(ctx,py){
+        rr(ctx,L,py,TW,48,10,'#16213E');ctx.fillStyle='#ffffff';ctx.font='700 19px '+FF;ctx.textAlign='right';
+        ctx.fillText('التاريخ',cx.date-14,py+25);ctx.fillText('النوع',cx.type-14,py+25);ctx.fillText('الفئة',cx.cat-14,py+25);ctx.fillText('البيان',cx.st-14,py+25);
+        ctx.textAlign='left';ctx.fillText('المبلغ',L+14,py+25);
+      }
+      var cur=x,RH=50;
+      header(cur,y);y+=48;
+      if(!txs.length){cur.fillStyle='#6B6F7A';cur.font='500 20px '+FF;cur.textAlign='right';cur.fillText('لا توجد عمليات في هذه الفترة.',R-14,y+30);}
+      txs.forEach(function(t,i){
+        if(y+RH>H-90){cur=newPage();y=70;header(cur,y);y+=48;}
+        if(i%2===0){cur.fillStyle='#F8F7F3';cur.fillRect(L,y,TW,RH);}
+        var sy=CUR_SYMBOL[t.currency]||t.currency,col=TYPE_COL[t.type]||'#20261f',amt;
+        if(t.type==='تحويل')amt=fmt(t.amount)+' '+sy+(t.toCurrency?' ← '+(Number(t.toAmount)>0?fmt(t.toAmount)+' ':'')+(CUR_SYMBOL[t.toCurrency]||t.toCurrency):'');
+        else amt=(t.type==='دخل'?'+':'-')+fmt(t.amount)+' '+sy;
+        cur.textAlign='right';cur.fillStyle='#20261f';cur.font='500 19px '+FF;
+        cur.fillText(t.date,cx.date-14,y+25);
+        cur.fillStyle=col;cur.font='700 19px '+FF;cur.fillText(t.type,cx.type-14,y+25);
+        cur.fillStyle='#20261f';cur.font='600 19px '+FF;cur.fillText(fit(cur,t.category||'',196),cx.cat-14,y+25);
+        cur.font='500 19px '+FF;cur.fillText(fit(cur,t.statement||'',330),cx.st-14,y+25);
+        cur.fillStyle=col;cur.font='700 20px '+FF;ltrText(cur,fit(cur,amt,300),L+14,y+25,'left');
+        y+=RH;
+      });
+      if(cut){cur.fillStyle='#6B6F7A';cur.font='500 18px '+FF;cur.textAlign='right';cur.fillText('تم عرض آخر '+CAP+' عملية من أصل '+total+'.',R,Math.min(y+30,H-60));}
+      /* ---- footers ---- */
+      pages.forEach(function(p,i){
+        p.x.fillStyle='#8A8E98';p.x.font='400 16px '+FF;p.x.textAlign='right';
+        p.x.fillText('تم إنشاء هذا التقرير من تطبيق مصاريفي بتاريخ '+isoDates(todayStr()),R,H-40);
+        p.x.textAlign='left';p.x.fillText('صفحة '+(i+1)+' من '+pages.length,L,H-40);
+      });
+      var pdf=new jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
+      pages.forEach(function(p,i){if(i>0)pdf.addPage();pdf.addImage(p.c.toDataURL('image/jpeg',0.9),'JPEG',0,0,210,297,undefined,'FAST');});
+      await savePdf_(pdf,'masarifi-report-'+d.fs+'_'+d.ts+'.pdf');
+      if(!native)showToast('تم إنشاء ملف PDF ✅');
+    }catch(e){console.error('PDF error',e);showToast('تعذر إنشاء ملف PDF');}
+  };
 })();
 </script>
 
